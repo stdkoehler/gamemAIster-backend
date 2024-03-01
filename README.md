@@ -5,6 +5,6 @@ pip install pip-tools
 ```
 
 ```shell
-pip-compile
+pip-compile --extra dev --no-emit-index-url --resolver=backtracking pyproject.toml --verbose
 pip-sync requirements.txt
 ```

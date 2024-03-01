@@ -1,33 +1,26 @@
+"""endpoints calling text_gen_webui"""
+
+import requests
 import time
 import json
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
+import sseclient
 
 from pydantic import BaseModel
 
-import requests
-import sseclient
+from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 
-# uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
-
-# https://www.vidavolta.io/streaming-with-fastapi/
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+router = APIRouter(
+    prefix="/text-gen-webui",
+    tags=["text_gen_webui"],
+    responses={404: {"description": "Not found"}},
 )
 
 
-@app.get("/stream_data")
+@router.get("/stream_data")
 async def stream_data():
     async def generate_large_data():
-        for i in range(10):
+        for _ in range(10):
             # Simulate some data generation
             time.sleep(1)
             yield """{"info": "bummer", "text": "yeehaw"}"""
@@ -39,7 +32,7 @@ class Prompt(BaseModel):
     prompt: str
 
 
-@app.post("/user-prompt")
+@router.post("/user-prompt")
 async def user_prompt(prompt: Prompt):
     url = "http://127.0.0.1:5000/v1/completions"
 
@@ -60,12 +53,12 @@ async def user_prompt(prompt: Prompt):
     async def generate_inference():
 
         stream_response = requests.post(
-            url, headers=headers, json=data, verify=False, stream=True
+            url, headers=headers, json=data, verify=False, stream=True, timeout=10
         )
-        client = sseclient.SSEClient(stream_response)
+        messages = sseclient.SSEClient(stream_response)
 
-        for event in client.events():
-            payload = json.loads(event.data)
+        for msg in messages:
+            payload = json.loads(msg.data)
             text = payload["choices"][0]["text"]
             print(text)
             yield json.dumps({"text": text}) + "\n"
