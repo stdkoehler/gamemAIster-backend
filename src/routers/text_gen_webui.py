@@ -1,8 +1,8 @@
 """endpoints calling text_gen_webui"""
 
-import requests
 import time
 import json
+import requests
 import sseclient
 
 from pydantic import BaseModel
@@ -19,6 +19,14 @@ router = APIRouter(
 
 @router.get("/stream_data")
 async def stream_data():
+    """
+    This function is an endpoint for streaming data.
+    It generates dummy data in the form of JSON strings and streams it as a response.
+
+    Returns:
+        StreamingResponse: A streaming response containing the generated data.
+    """
+
     async def generate_large_data():
         for _ in range(10):
             # Simulate some data generation
@@ -29,11 +37,30 @@ async def stream_data():
 
 
 class Prompt(BaseModel):
+    """
+    A class representing a prompt for text generation.
+
+    Attributes:
+        prompt (str): The text prompt for generating text.
+
+    """
+
     prompt: str
 
 
 @router.post("/user-prompt")
 async def user_prompt(prompt: Prompt):
+    """
+    This function handles the user prompt for text generation.
+
+    Parameters:
+        prompt (Prompt): An instance of the Prompt class representing
+            the text prompt for generating text.
+
+    Returns:
+        StreamingResponse: A streaming response containing the generated text.
+
+    """
     url = "http://127.0.0.1:5000/v1/completions"
 
     print("user-prompt")
