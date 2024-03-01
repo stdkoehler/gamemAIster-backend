@@ -3,10 +3,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.routers.text_gen_webui import router
+from src.routers.textgen_webui import router
 
 # uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
-
 # https://www.vidavolta.io/streaming-with-fastapi/
 
 
