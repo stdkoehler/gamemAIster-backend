@@ -3,8 +3,10 @@ name = "shadow-teller-backend"
 version = "1.0.0"
 dependencies = [
     "fastapi",
-    "sseclient",
-    "uvicorn"
+    "requests",
+    "sseclient-py",
+    "uvicorn",
+    "python-json-logger"
 ]
 
 [project.optional-dependencies]
