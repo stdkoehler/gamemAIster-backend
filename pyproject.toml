@@ -1,0 +1,16 @@
+[project]
+name = "shadow-teller-backend"
+version = "1.0.0"
+dependencies = [
+    "fastapi",
+    "sseclient"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "mypy",
+    "pylint",
+    "types-requests"
+]
+
