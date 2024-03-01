@@ -1,7 +1,9 @@
 """endpoints calling text_gen_webui"""
 
-import time
 import json
+import asyncio
+from typing import AsyncGenerator
+
 import requests
 import sseclient
 
@@ -27,11 +29,18 @@ async def stream_data():
         StreamingResponse: A streaming response containing the generated data.
     """
 
-    async def generate_large_data():
+    async def generate_large_data() -> AsyncGenerator[str, None]:
+        """
+        An asynchronous generator that simulates the generation
+        of json data by yielding JSON strings.
+
+        Yields:
+            str: JSON strings representing the generated data.
+        """
         for _ in range(10):
             # Simulate some data generation
-            time.sleep(1)
-            yield """{"info": "bummer", "text": "yeehaw"}"""
+            await asyncio.sleep(1)
+            yield '{"info": "bummer", "text": "yeehaw"}'
 
     return StreamingResponse(generate_large_data())
 
@@ -62,9 +71,6 @@ async def user_prompt(prompt: Prompt):
 
     """
     url = "http://127.0.0.1:5000/v1/completions"
-
-    print("user-prompt")
-
     headers = {"Content-Type": "application/json"}
 
     data = {
@@ -76,9 +82,20 @@ async def user_prompt(prompt: Prompt):
         "stream": True,
     }
 
-    # for async streaming only works with workers>1
     async def generate_inference():
+        """
+        Generate the inference for text generation.
 
+        This function sends a POST request to a specified URL with the given headers and data.
+        It then streams the response and extracts the generated text from the payload.
+        The generated text is yielded as JSON strings.
+
+        For async streaming only works with workers>1
+
+        Returns:
+            StreamingResponse: A streaming response containing the generated text.
+
+        """
         stream_response = requests.post(
             url, headers=headers, json=data, verify=False, stream=True, timeout=10
         )
@@ -87,7 +104,6 @@ async def user_prompt(prompt: Prompt):
         for msg in messages:
             payload = json.loads(msg.data)
             text = payload["choices"][0]["text"]
-            print(text)
             yield json.dumps({"text": text}) + "\n"
 
     return StreamingResponse(generate_inference(), media_type="application/x-ndjson")
