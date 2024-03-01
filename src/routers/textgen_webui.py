@@ -12,11 +12,42 @@ from pydantic import BaseModel
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
+
+from src.utils.logger import configure_logger
+
+log = configure_logger("textgen_webui")
+
 router = APIRouter(
-    prefix="/text-gen-webui",
-    tags=["text_gen_webui"],
+    prefix="/textgen-webui",
+    tags=["textgen_webui"],
     responses={404: {"description": "Not found"}},
 )
+
+
+@router.get("/test")
+def test():
+    url = "http://127.0.0.1:5000/v1/completions"
+
+    headers = {"Content-Type": "application/json"}
+
+    data = {
+        "prompt": "This is a cake recipe:\n\n1.",
+        "max_tokens": 200,
+        "temperature": 1,
+        "top_p": 0.9,
+        "seed": 10,
+        "stream": True,
+    }
+
+    stream_response = requests.post(
+        url, headers=headers, json=data, verify=False, stream=True, timeout=10
+    )
+    client = sseclient.SSEClient(stream_response)  # type: ignore
+
+    print(data["prompt"], end="")
+    for event in client.events():
+        payload = json.loads(event.data)
+        print(payload["choices"][0]["text"], end="")
 
 
 @router.get("/stream_data")
@@ -42,6 +73,7 @@ async def stream_data():
             await asyncio.sleep(1)
             yield '{"info": "bummer", "text": "yeehaw"}'
 
+    log.info("stream_data")
     return StreamingResponse(generate_large_data())
 
 
@@ -73,6 +105,8 @@ async def user_prompt(prompt: Prompt):
     url = "http://127.0.0.1:5000/v1/completions"
     headers = {"Content-Type": "application/json"}
 
+    log.info("user-prompt")
+
     data = {
         "prompt": prompt.prompt,
         "max_tokens": 200,
@@ -99,10 +133,10 @@ async def user_prompt(prompt: Prompt):
         stream_response = requests.post(
             url, headers=headers, json=data, verify=False, stream=True, timeout=10
         )
-        messages = sseclient.SSEClient(stream_response)
+        client = sseclient.SSEClient(stream_response)
 
-        for msg in messages:
-            payload = json.loads(msg.data)
+        for event in client.events():
+            payload = json.loads(event.data)
             text = payload["choices"][0]["text"]
             yield json.dumps({"text": text}) + "\n"
 
