@@ -21,8 +21,8 @@ None
 
 Conversation:
 {history}
-### {current_user_input}
-### {LLM_PREFIX}:{SYSTEM_END}"""
+{current_user_input}
+{LLM_PREFIX}:{SYSTEM_END}"""
 
 SUMMARY_TEMPLATE = """{SYSTEM_PREFIX} You are an expert summarizer of longer text.
 Progressively summarize the lines of conversation provided, adding onto the previous summary returning a new summary. Current summary and the new lines of conversation result in a resulting new summary.
@@ -103,7 +103,7 @@ class Interaction:
             f"{self.format_user_input(self._user_input)}\n"
             f"{self.format_llm_output(self._llm_output)}"
         )
-    
+
     @property
     def user_input_formatted(self):
         return Interaction.format_user_input(self._user_input)
@@ -423,7 +423,7 @@ class SummaryChat:
             role=self._role,
             summary=self._memory.summary,
             history=self._memory.text_interactions_unsummarized(),
-            current_user_input=last_interaction.user_input_formatted.
+            current_user_input=last_interaction.user_input_formatted,
             SYSTEM_PREFIX=Actor.SYSTEM.value,
             SYSTEM_END=Actor.SYSTEM_END.value,
             USER_PREFIX=Actor.USER.value,
@@ -440,7 +440,6 @@ class SummaryChat:
 
         print()
 
-
     def predict(self, user_input: str, last_interaction: Interaction | None):
         """
         Predicts the AI language model's response to a given question in the chat conversation.
@@ -449,19 +448,18 @@ class SummaryChat:
 
         Predict will be calls when the Send button for Player is pushed. It takes into account
         the date in the Gamemaster field of the UI which will be sent with last_interaction.
-        
 
         Args:
             question (str): The question to be asked to the AI language model.
         """
-        history = self._memory.interactions_unsummarized()
+        history = self._memory.text_interactions_unsummarized()
         if last_interaction is not None:
             history += last_interaction.format_interaction()
 
         prompt = CHAT_TEMPLATE.format(
             role=self._role,
             summary=self._memory.summary,
-            history=self._memory.text_interactions_unsummarized(),
+            history=history,
             current_user_input=Interaction.format_user_input(user_input),
             SYSTEM_PREFIX=Actor.SYSTEM.value,
             SYSTEM_END=Actor.SYSTEM_END.value,
@@ -485,5 +483,3 @@ class SummaryChat:
 
         print("--- History:")
         print(self._memory.text_interactions_complete())
-
-    def regenerate(self)

@@ -172,7 +172,7 @@ class InteractionPrompt(BaseModel):
 
     """
 
-    interaction: InteractionSchema | None
+    interaction: InteractionSchema | None = None
     prompt: str
 
 
