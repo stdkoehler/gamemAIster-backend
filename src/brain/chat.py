@@ -37,14 +37,17 @@ New lines of conversation:
 Sandra: Why do you think artificial intelligence is a force for good?
 Sam: Because artificial intelligence will help humans reach their full potential.
 
-{LLM_PREFIX}: Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good because it will help humans reach their full potential.
+###
+Your Summary: Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good because it will help humans reach their full potential.
 END OF EXAMPLE
 
 {current_summary}
 
 New lines of conversation:
 {unsummarized_interactions}
-{LLM_PREFIX}:{SYSTEM_END}"""
+
+###
+Your Summary:{SYSTEM_END}"""
 
 
 # pygmalion
@@ -455,6 +458,9 @@ class SummaryChat:
         history = self._memory.text_interactions_unsummarized()
         if last_interaction is not None:
             history += last_interaction.format_interaction()
+
+        print("Current Summary:")
+        print(self._memory.summary)
 
         prompt = CHAT_TEMPLATE.format(
             role=self._role,
