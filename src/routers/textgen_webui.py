@@ -50,6 +50,18 @@ def test():
         print(payload["choices"][0]["text"], end="")
 
 
+@router.get("/test-memory")
+def test_memory():
+    from src.brain.chat import SummaryChat
+
+    chat = SummaryChat(
+        "http://127.0.0.1:5000",
+        role="You are an unhelpful AI assistent and try to assault the user whenever possible.",
+    )
+    for chunk in chat.predict("Tell me why"):
+        print(chunk, end="")
+
+
 @router.get("/stream_data")
 async def stream_data():
     """
