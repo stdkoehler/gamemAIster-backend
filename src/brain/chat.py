@@ -73,7 +73,7 @@ class Actor(Enum):
 
     SYSTEM = ""
     USER = "USER"
-    LLM = "ASSISTANT"
+    LLM = "AI"
     SYSTEM_END = ""
 
 
@@ -87,7 +87,7 @@ class Interaction:
         _llm_output (str): The AI language model output in the interaction.
     """
 
-    def __init__(self, id_: str, user_input: str, llm_output: str):
+    def __init__(self, user_input: str, llm_output: str, id_: str | None = None):
         self._id = id_
         self._user_input = user_input
         self._llm_output = llm_output
@@ -103,6 +103,10 @@ class Interaction:
             f"{self.format_user_input(self._user_input)}\n"
             f"{self.format_llm_output(self._llm_output)}"
         )
+    
+    @property
+    def user_input_formatted(self):
+        return Interaction.format_user_input(self._user_input)
 
     @staticmethod
     def format_user_input(user_input: str):
@@ -149,10 +153,17 @@ class LLMConfig:
     max_tokens: int = 2048
     temperature: float = 0.7
     top_p: float = 0.9
-    min_p: int = 0
-    top_k: int = 1
-    frequency_penalty: float = 1.15
-    stop_words: list[str] = field(default_factory=list)
+    min_p: float = 0
+    top_k: int = 20
+    repetition_penalty: float = 1.15
+    presence_penalty: float = 0
+    frequency_penalty: float = 0
+    guidance_scale: float = 1
+    mirostat_mode: int = 0
+    mirostat_tau: float = 5
+    mirostat_eta: float = 0.1
+    smoothing_factor: float = 0
+    stop: list[str] = field(default_factory=list)
 
 
 class LLMClient:
@@ -185,6 +196,7 @@ class LLMClient:
         data = asdict(llm_config)
         data["prompt"] = prompt
         data["stream"] = True
+        data["stop"] = ["USER", "User", "###"]
 
         stream_response = requests.post(
             self._completion_url,
@@ -396,13 +408,56 @@ class SummaryChat:
         self._role = role
         self._memory = SummaryMemory(self._llm_client, last_k, history)
 
-    def predict(self, user_input: str):
+    def regenerate(self, last_interaction: Interaction):
         """
-        Predicts the AI language model's response to a given question in the chat conversation.
+        Regenerates the llm output of the last interaction
+        This is triggered on pushing Regenerate of PlayerPrev.
+        This will create a new Gamemaster output
 
         Args:
             question (str): The question to be asked to the AI language model.
         """
+        history = self._memory.interactions_unsummarized()
+
+        prompt = CHAT_TEMPLATE.format(
+            role=self._role,
+            summary=self._memory.summary,
+            history=self._memory.text_interactions_unsummarized(),
+            current_user_input=last_interaction.user_input_formatted.
+            SYSTEM_PREFIX=Actor.SYSTEM.value,
+            SYSTEM_END=Actor.SYSTEM_END.value,
+            USER_PREFIX=Actor.USER.value,
+            LLM_PREFIX=Actor.LLM.value,
+        )
+
+        print("--- Prompt:")
+        print(prompt)
+
+        llm_response = ""
+        for chunk in self._llm_client.completion_stream(prompt):
+            llm_response += chunk
+            yield chunk
+
+        print()
+
+
+    def predict(self, user_input: str, last_interaction: Interaction | None):
+        """
+        Predicts the AI language model's response to a given question in the chat conversation.
+        Predict is called on Sending of a new user input. The previous interaction will then be
+        persisted in the memory.
+
+        Predict will be calls when the Send button for Player is pushed. It takes into account
+        the date in the Gamemaster field of the UI which will be sent with last_interaction.
+        
+
+        Args:
+            question (str): The question to be asked to the AI language model.
+        """
+        history = self._memory.interactions_unsummarized()
+        if last_interaction is not None:
+            history += last_interaction.format_interaction()
+
         prompt = CHAT_TEMPLATE.format(
             role=self._role,
             summary=self._memory.summary,
@@ -424,11 +479,11 @@ class SummaryChat:
 
         print()
 
-        interaction = Interaction(
-            id_=str(len(self._memory)), user_input=user_input, llm_output=llm_response
-        )
-
-        self._memory.append(interaction)
+        if last_interaction is not None:
+            last_interaction._id = str(len(self._memory))
+            self._memory.append(last_interaction)
 
         print("--- History:")
         print(self._memory.text_interactions_complete())
+
+    def regenerate(self)

@@ -12,6 +12,9 @@ from pydantic import BaseModel
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
+from src.extensions import gamemaster_chat
+from src.brain.chat import Interaction
+
 
 from src.utils.logger import configure_logger
 
@@ -151,5 +154,99 @@ async def user_prompt(prompt: Prompt):
             payload = json.loads(event.data)
             text = payload["choices"][0]["text"]
             yield json.dumps({"text": text}) + "\n"
+
+    return StreamingResponse(generate_inference(), media_type="application/x-ndjson")
+
+
+class InteractionSchema(BaseModel):
+    user_input: str
+    llm_output: str
+
+
+class InteractionPrompt(BaseModel):
+    """
+    A class representing a prompt for text generation.
+
+    Attributes:
+        prompt (str): The text prompt for generating text.
+
+    """
+
+    interaction: InteractionSchema | None
+    prompt: str
+
+
+@router.post("/gamemaster-regenerate")
+async def post_gamemaster_regenerate(last_interaction: InteractionSchema):
+    """
+    This function handles the user prompt for text generation.
+
+    Parameters:
+        prompt (Prompt): An instance of the Prompt class representing
+            the text prompt for generating text.
+
+    Returns:
+        StreamingResponse: A streaming response containing the generated text.
+
+    """
+
+    async def generate_inference():
+        """
+        Generate the inference for text generation.
+
+        This function sends a POST request to a specified URL with the given headers and data.
+        It then streams the response and extracts the generated text from the payload.
+        The generated text is yielded as JSON strings.
+
+        For async streaming only works with workers>1
+
+        Returns:
+            StreamingResponse: A streaming response containing the generated text.
+
+        """
+        interaction = Interaction(
+            last_interaction.user_input, last_interaction.llm_output
+        )
+        for chunk in gamemaster_chat.regenerate(interaction):
+            yield json.dumps({"text": chunk}) + "\n"
+
+    return StreamingResponse(generate_inference(), media_type="application/x-ndjson")
+
+
+@router.post("/gamemaster-send")
+async def post_gamemaster_send(prompt: InteractionPrompt):
+    """
+    This function handles the user prompt for text generation.
+
+    Parameters:
+        prompt (Prompt): An instance of the Prompt class representing
+            the text prompt for generating text.
+
+    Returns:
+        StreamingResponse: A streaming response containing the generated text.
+
+    """
+
+    async def generate_inference():
+        """
+        Generate the inference for text generation.
+
+        This function sends a POST request to a specified URL with the given headers and data.
+        It then streams the response and extracts the generated text from the payload.
+        The generated text is yielded as JSON strings.
+
+        For async streaming only works with workers>1
+
+        Returns:
+            StreamingResponse: A streaming response containing the generated text.
+
+        """
+        interaction = (
+            Interaction(prompt.interaction.user_input, prompt.interaction.llm_output)
+            if prompt.interaction is not None
+            else None
+        )
+        for chunk in gamemaster_chat.predict(prompt.prompt, interaction):
+            yield json.dumps({"text": chunk}) + "\n"
 
     return StreamingResponse(generate_inference(), media_type="application/x-ndjson")
