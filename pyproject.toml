@@ -6,7 +6,8 @@ dependencies = [
     "requests",
     "sseclient-py",
     "uvicorn",
-    "python-json-logger"
+    "python-json-logger",
+    "sqlalchemy",
 ]
 
 [project.optional-dependencies]

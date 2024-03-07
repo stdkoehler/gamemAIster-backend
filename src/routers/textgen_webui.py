@@ -9,11 +9,13 @@ import sseclient
 
 from pydantic import BaseModel
 
+import sqlalchemy
+
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
-from src.extensions import gamemaster_chat
-from src.brain.chat import Interaction
+from src.brain.chat import SummaryChat, Interaction
+from src.brain.templates import BASE_ROLE, BASE_GAMEMASTER
 
 
 from src.utils.logger import configure_logger
@@ -51,18 +53,6 @@ def test():
     for event in client.events():
         payload = json.loads(event.data)
         print(payload["choices"][0]["text"], end="")
-
-
-@router.get("/test-memory")
-def test_memory():
-    from src.brain.chat import SummaryChat
-
-    chat = SummaryChat(
-        "http://127.0.0.1:5000",
-        role="You are an unhelpful AI assistent and try to assault the user whenever possible.",
-    )
-    for chunk in chat.predict("Tell me why"):
-        print(chunk, end="")
 
 
 @router.get("/stream_data")
@@ -172,12 +162,18 @@ class InteractionPrompt(BaseModel):
 
     """
 
+    session_id: str
     interaction: InteractionSchema | None = None
     prompt: str
 
 
+class InteractionRegeneration(BaseModel):
+    session_id: str
+    interaction: InteractionSchema
+
+
 @router.post("/gamemaster-regenerate")
-async def post_gamemaster_regenerate(last_interaction: InteractionSchema):
+async def post_gamemaster_regenerate(regeneration: InteractionRegeneration):
     """
     This function handles the user prompt for text generation.
 
@@ -189,6 +185,13 @@ async def post_gamemaster_regenerate(last_interaction: InteractionSchema):
         StreamingResponse: A streaming response containing the generated text.
 
     """
+
+    gamemaster_chat = SummaryChat(
+        "http://127.0.0.1:5000",
+        role=BASE_ROLE + BASE_GAMEMASTER,
+        session_id=regeneration.session_id,
+        engine=sqlalchemy.create_engine("sqlite:///memory.db"),
+    )
 
     async def generate_inference():
         """
@@ -205,7 +208,7 @@ async def post_gamemaster_regenerate(last_interaction: InteractionSchema):
 
         """
         interaction = Interaction(
-            last_interaction.user_input, last_interaction.llm_output
+            regeneration.interaction.user_input, regeneration.interaction.llm_output
         )
         for chunk in gamemaster_chat.regenerate(interaction):
             yield json.dumps({"text": chunk}) + "\n"
@@ -226,6 +229,13 @@ async def post_gamemaster_send(prompt: InteractionPrompt):
         StreamingResponse: A streaming response containing the generated text.
 
     """
+
+    gamemaster_chat = SummaryChat(
+        "http://127.0.0.1:5000",
+        role=BASE_ROLE + BASE_GAMEMASTER,
+        session_id=prompt.session_id,
+        engine=sqlalchemy.create_engine("sqlite:///memory.db"),
+    )
 
     async def generate_inference():
         """

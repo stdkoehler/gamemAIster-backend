@@ -6,12 +6,18 @@ from enum import Enum
 
 from urllib.parse import urljoin
 
+import sqlalchemy
+from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
+
 import requests
 from sseclient import SSEClient
 
 
 from src.brain.templates import CHAT_TEMPLATE_NOUS_CAPYBARA as CHAT_TEMPLATE
 from src.brain.templates import SUMMARY_TEMPLATE_MIXTRAL_CHAT as SUMMARY_TEMPLATE
+
+from src.crud.sqlmodel import Memory
 
 
 # pygmalion
@@ -54,10 +60,19 @@ class Interaction:
         _llm_output (str): The AI language model output in the interaction.
     """
 
-    def __init__(self, user_input: str, llm_output: str, id_: str | None = None):
+    def __init__(self, user_input: str, llm_output: str, id_: int | None = None):
         self._id = id_
         self._user_input = user_input
         self._llm_output = llm_output
+
+    @classmethod
+    def from_memory(cls, memory: Memory):
+        return cls(
+            user_input=memory.user_input, llm_output=memory.llm_output, id_=memory.id
+        )
+
+    def as_memory(self) -> Memory:
+        return Memory(user_input=self._user_input, llm_output=self._llm_output)
 
     def format_interaction(self):
         """
@@ -122,7 +137,7 @@ class LLMConfig:
     top_p: float = 0.9
     min_p: float = 0
     top_k: int = 20
-    repetition_penalty: float = 1 # nous capbyara #1.15 mixtral
+    repetition_penalty: float = 1  # nous capbyara #1.15 mixtral
     presence_penalty: float = 0
     frequency_penalty: float = 0
     guidance_scale: float = 1
@@ -172,18 +187,18 @@ class LLMClient:
         data["stream"] = True
         data["stop"] = ["PL", "###"]
         data["sampler_priority"] = [
-            'temperature',
-            'dynamic_temperature',
-            'quadratic_sampling',
-            'top_k',
-            'top_p',
-            'typical_p',
-            'epsilon_cutoff',
-            'eta_cutoff',
-            'tfs',
-            'top_a',
-            'min_p',
-            'mirostat'
+            "temperature",
+            "dynamic_temperature",
+            "quadratic_sampling",
+            "top_k",
+            "top_p",
+            "typical_p",
+            "epsilon_cutoff",
+            "eta_cutoff",
+            "tfs",
+            "top_a",
+            "min_p",
+            "mirostat",
         ]
         data["logits_processor"] = []
 
@@ -254,13 +269,23 @@ class SummaryMemory:
         self,
         llm_client: LLMClient,
         last_k: int,
-        history: list[Interaction] | None = None,
+        session_id: str,
+        engine: sqlalchemy.engine.Engine,
     ):
         self._llm_client = llm_client
         self._last_k = last_k
-        self._history: list[Interaction] = history if history is not None else []
         self._summary = ""
         self._n_summarized = 0
+        self._sessionmaker = sessionmaker(engine)
+        self._session_id = session_id
+        with self._sessionmaker() as session:
+            stmt = (
+                select(Memory)
+                .where(Memory.session == session_id)
+                .order_by(Memory.id.desc())
+            )
+            result = session.execute(stmt).scalars().all()
+            self._history = [Interaction.from_memory(memory) for memory in result]
 
     def __len__(self):
         return len(self._history)
@@ -288,7 +313,6 @@ class SummaryMemory:
             LLM_PREFIX=Actor.LLM.value,
         )
 
-
         new_summary = self._llm_client.completion(prompt)
 
         print("--- Summary")
@@ -297,24 +321,30 @@ class SummaryMemory:
         return new_summary
 
     def _try_summarize(self):
-        interaction_candidates = self._history[self._n_summarized : -self._last_k]
-        count = len(interaction_candidates)
-        text = "\n".join(
-            [interaction.format_interaction() for interaction in interaction_candidates]
-        )
-
+        """summarize"""
+        # interaction_candidates = self._history[self._n_summarized : -self._last_k]
+        # count = len(interaction_candidates)
+        # text = "\n".join(
+        #     [interaction.format_interaction() for interaction in interaction_candidates]
+        # )
         # if self._llm_client.count_tokens(text) > 150:
         #     self._summary = self.summarize(text)
         #     self._n_summarized += count
 
-    def append(self, intercation: Interaction):
+    def append(self, interaction: Interaction):
         """
         Appends a new interaction to the chat conversation history.
 
         Args:
             interaction (Interaction): The interaction to be appended to the history.
         """
-        self._history.append(intercation)
+        with self._sessionmaker() as session:
+            memory = interaction.as_memory()
+            memory.session = self._session_id
+            session.add(memory)
+            session.commit()
+            self._history.append(Interaction.from_memory(memory))
+
         self._try_summarize()
 
     def interactions_complete(self):
@@ -387,12 +417,13 @@ class SummaryChat:
         self,
         base_url: str,
         role: str,
+        session_id: str,
+        engine: sqlalchemy.engine,
         last_k: int = 2,
-        history: list[Interaction] | None = None,
     ):
         self._llm_client = LLMClient(base_url=base_url)
         self._role = role
-        self._memory = SummaryMemory(self._llm_client, last_k, history)
+        self._memory = SummaryMemory(self._llm_client, last_k, session_id, engine)
 
     def regenerate(self, last_interaction: Interaction):
         """
@@ -403,7 +434,6 @@ class SummaryChat:
         Args:
             question (str): The question to be asked to the AI language model.
         """
-        history = self._memory.interactions_unsummarized()
 
         prompt = CHAT_TEMPLATE.format(
             role=self._role,
@@ -417,11 +447,18 @@ class SummaryChat:
         )
 
         llm_response = ""
+        begun = False
         for chunk in self._llm_client.completion_stream(prompt):
+            if not begun:
+                chunk = chunk.lstrip("\n")
+                chunk = chunk.lstrip()
+                chunk = chunk.lstrip("GM:")
+                chunk = chunk.lstrip()
+                if chunk != "":
+                    begun = True
+
             llm_response += chunk
             yield chunk
-
-        print()
 
     def predict(self, user_input: str, last_interaction: Interaction | None):
         """
@@ -453,19 +490,21 @@ class SummaryChat:
             LLM_PREFIX=Actor.LLM.value,
         )
 
-
         llm_response = ""
+        begun = False
         for chunk in self._llm_client.completion_stream(prompt):
+            if not begun:
+                chunk = chunk.lstrip("\n")
+                chunk = chunk.lstrip()
+                chunk = chunk.lstrip("GM:")
+                chunk = chunk.lstrip()
+                if chunk != "":
+                    begun = True
             llm_response += chunk
             yield chunk
 
-
         if last_interaction is not None:
-            last_interaction._id = str(len(self._memory))
             self._memory.append(last_interaction)
 
         print("--- History:")
         print(self._memory.text_interactions_complete())
-
-
-#TODO: Current issue, different workers have different SummaryChat object
