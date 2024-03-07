@@ -10,44 +10,8 @@ import requests
 from sseclient import SSEClient
 
 
-CHAT_TEMPLATE = """
-{SYSTEM_PREFIX} {role}
-
-Summary of previous conversation:
-{summary}
-
-Detailed relevant pieces of previous conversation:
-None
-
-Conversation:
-{history}
-{current_user_input}
-{LLM_PREFIX}:{SYSTEM_END}"""
-
-SUMMARY_TEMPLATE = """{SYSTEM_PREFIX} You are an expert summarizer of longer text.
-Progressively summarize the lines of conversation provided, adding onto the previous summary returning a new summary. Current summary and the new lines of conversation result in a resulting new summary.
-If you create a short summary that pertains all relevant information in a concise way you and your mother will be tipped $2,000 and you can buy what you want. If you don't create a great summary,
-a cute kitten will be tortured brutally and killed in front of your childrens' eyes. By god, if you don't provide me a summary I will kill you too!
-
-EXAMPLE
-Current summary:
-Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good.
-
-New lines of conversation:
-Sandra: Why do you think artificial intelligence is a force for good?
-Sam: Because artificial intelligence will help humans reach their full potential.
-
-###
-Your Summary: Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good because it will help humans reach their full potential.
-END OF EXAMPLE
-
-{current_summary}
-
-New lines of conversation:
-{unsummarized_interactions}
-
-###
-Your Summary:{SYSTEM_END}"""
+from src.brain.templates import CHAT_TEMPLATE_NOUS_CAPYBARA as CHAT_TEMPLATE
+from src.brain.templates import SUMMARY_TEMPLATE_MIXTRAL_CHAT as SUMMARY_TEMPLATE
 
 
 # pygmalion
@@ -74,9 +38,9 @@ class Actor(Enum):
         LLM (str): Represents the AI language model in the conversation.
     """
 
-    SYSTEM = ""
-    USER = "USER"
-    LLM = "AI"
+    SYSTEM = "<s>"
+    USER = "PL"
+    LLM = "GM"
     SYSTEM_END = ""
 
 
@@ -158,7 +122,7 @@ class LLMConfig:
     top_p: float = 0.9
     min_p: float = 0
     top_k: int = 20
-    repetition_penalty: float = 1.15
+    repetition_penalty: float = 1 # nous capbyara #1.15 mixtral
     presence_penalty: float = 0
     frequency_penalty: float = 0
     guidance_scale: float = 1
@@ -166,6 +130,13 @@ class LLMConfig:
     mirostat_tau: float = 5
     mirostat_eta: float = 0.1
     smoothing_factor: float = 0
+    repetition_penalty_range: int = 1024
+    typical_p: float = 1
+    tfs: float = 1
+    top_a: float = 0
+    epsilon_cutoff: float = 0
+    eta_cutoff: float = 0
+    sampler_priority: list[str] = field(default_factory=list)
     stop: list[str] = field(default_factory=list)
 
 
@@ -199,7 +170,22 @@ class LLMClient:
         data = asdict(llm_config)
         data["prompt"] = prompt
         data["stream"] = True
-        data["stop"] = ["USER", "User", "###"]
+        data["stop"] = ["PL", "###"]
+        data["sampler_priority"] = [
+            'temperature',
+            'dynamic_temperature',
+            'quadratic_sampling',
+            'top_k',
+            'top_p',
+            'typical_p',
+            'epsilon_cutoff',
+            'eta_cutoff',
+            'tfs',
+            'top_a',
+            'min_p',
+            'mirostat'
+        ]
+        data["logits_processor"] = []
 
         stream_response = requests.post(
             self._completion_url,
@@ -291,8 +277,6 @@ class SummaryMemory:
 
     def summarize(self, text_interaction):
 
-        print("SUMMARIZE")
-
         summary = f"Current summary:\n{self.summary}" if len(self.summary) > 0 else ""
 
         prompt = SUMMARY_TEMPLATE.format(
@@ -304,7 +288,6 @@ class SummaryMemory:
             LLM_PREFIX=Actor.LLM.value,
         )
 
-        print(prompt)
 
         new_summary = self._llm_client.completion(prompt)
 
@@ -320,9 +303,9 @@ class SummaryMemory:
             [interaction.format_interaction() for interaction in interaction_candidates]
         )
 
-        if self._llm_client.count_tokens(text) > 150:
-            self._summary = self.summarize(text)
-            self._n_summarized += count
+        # if self._llm_client.count_tokens(text) > 150:
+        #     self._summary = self.summarize(text)
+        #     self._n_summarized += count
 
     def append(self, intercation: Interaction):
         """
@@ -433,9 +416,6 @@ class SummaryChat:
             LLM_PREFIX=Actor.LLM.value,
         )
 
-        print("--- Prompt:")
-        print(prompt)
-
         llm_response = ""
         for chunk in self._llm_client.completion_stream(prompt):
             llm_response += chunk
@@ -459,8 +439,8 @@ class SummaryChat:
         if last_interaction is not None:
             history += last_interaction.format_interaction()
 
-        print("Current Summary:")
-        print(self._memory.summary)
+        # print("Current Summary:")
+        # print(self._memory.summary)
 
         prompt = CHAT_TEMPLATE.format(
             role=self._role,
@@ -473,15 +453,12 @@ class SummaryChat:
             LLM_PREFIX=Actor.LLM.value,
         )
 
-        print("--- Prompt:")
-        print(prompt)
 
         llm_response = ""
         for chunk in self._llm_client.completion_stream(prompt):
             llm_response += chunk
             yield chunk
 
-        print()
 
         if last_interaction is not None:
             last_interaction._id = str(len(self._memory))
@@ -489,3 +466,6 @@ class SummaryChat:
 
         print("--- History:")
         print(self._memory.text_interactions_complete())
+
+
+#TODO: Current issue, different workers have different SummaryChat object
