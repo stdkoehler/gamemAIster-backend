@@ -9,8 +9,6 @@ import sseclient
 
 from pydantic import BaseModel
 
-import sqlalchemy
-
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
@@ -184,8 +182,7 @@ async def post_gamemaster_send(prompt: InteractionPrompt):
     gamemaster_chat = SummaryChat(
         "http://127.0.0.1:5000",
         role=BASE_ROLE + BASE_GAMEMASTER,
-        session_id=prompt.session_id,
-        engine=sqlalchemy.create_engine("sqlite:///memory.db"),
+        session_name=prompt.session_id,
     )
 
     async def generate_inference():
