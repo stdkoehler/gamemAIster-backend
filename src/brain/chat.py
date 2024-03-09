@@ -289,7 +289,7 @@ class SummaryMemory:
             stmt = (
                 select(Memory)
                 .where(Memory.session == session_id)
-                .order_by(Memory.id.desc())
+                .order_by(Memory.id.asc())
             )
             result = session.execute(stmt).scalars().all()
             self._history = [Interaction.from_memory(memory) for memory in result]
