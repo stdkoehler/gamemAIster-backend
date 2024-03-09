@@ -1,6 +1,7 @@
 """ Chat Conversation Memory """
 
 import json
+import re
 from dataclasses import dataclass, asdict, field
 from enum import Enum
 
@@ -19,6 +20,8 @@ from src.brain.templates import SUMMARY_TEMPLATE_MIXTRAL_CHAT as SUMMARY_TEMPLAT
 
 from src.crud.sqlmodel import Memory
 
+# strip beginning linebreaks, spaces, GM, :
+strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
 
 # pygmalion
 # class Actor(Enum):
@@ -89,6 +92,10 @@ class Interaction:
     @property
     def user_input_formatted(self):
         return Interaction.format_user_input(self._user_input)
+
+    @property
+    def llm_output_formatted(self):
+        return Interaction.format_llm_output(self._llm_output)
 
     @staticmethod
     def format_user_input(user_input: str):
@@ -425,42 +432,15 @@ class SummaryChat:
         self._role = role
         self._memory = SummaryMemory(self._llm_client, last_k, session_id, engine)
 
-    def regenerate(self, last_interaction: Interaction):
-        """
-        Regenerates the llm output of the last interaction
-        This is triggered on pushing Regenerate of PlayerPrev.
-        This will create a new Gamemaster output
+    @staticmethod
+    def _trim_chunk(chunk: str) -> str:
+        print(chunk)
+        chunk = re.sub(strip_pattern, "", chunk)
+        chunk = chunk.lstrip()
+        print(chunk)
+        return chunk
 
-        Args:
-            question (str): The question to be asked to the AI language model.
-        """
-
-        prompt = CHAT_TEMPLATE.format(
-            role=self._role,
-            summary=self._memory.summary,
-            history=self._memory.text_interactions_unsummarized(),
-            current_user_input=last_interaction.user_input_formatted,
-            SYSTEM_PREFIX=Actor.SYSTEM.value,
-            SYSTEM_END=Actor.SYSTEM_END.value,
-            USER_PREFIX=Actor.USER.value,
-            LLM_PREFIX=Actor.LLM.value,
-        )
-
-        llm_response = ""
-        begun = False
-        for chunk in self._llm_client.completion_stream(prompt):
-            if not begun:
-                chunk = chunk.lstrip("\n")
-                chunk = chunk.lstrip()
-                chunk = chunk.lstrip("GM:")
-                chunk = chunk.lstrip()
-                if chunk != "":
-                    begun = True
-
-            llm_response += chunk
-            yield chunk
-
-    def predict(self, user_input: str, last_interaction: Interaction | None):
+    def predict(self, user_input: str, last_interaction: Interaction | None = None):
         """
         Predicts the AI language model's response to a given question in the chat conversation.
         Predict is called on Sending of a new user input. The previous interaction will then be
@@ -494,10 +474,7 @@ class SummaryChat:
         begun = False
         for chunk in self._llm_client.completion_stream(prompt):
             if not begun:
-                chunk = chunk.lstrip("\n")
-                chunk = chunk.lstrip()
-                chunk = chunk.lstrip("GM:")
-                chunk = chunk.lstrip()
+                chunk = self._trim_chunk(chunk)
                 if chunk != "":
                     begun = True
             llm_response += chunk

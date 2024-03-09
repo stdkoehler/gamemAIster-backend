@@ -163,57 +163,8 @@ class InteractionPrompt(BaseModel):
     """
 
     session_id: str
-    interaction: InteractionSchema | None = None
     prompt: str
-
-
-class InteractionRegeneration(BaseModel):
-    session_id: str
-    interaction: InteractionSchema
-
-
-@router.post("/gamemaster-regenerate")
-async def post_gamemaster_regenerate(regeneration: InteractionRegeneration):
-    """
-    This function handles the user prompt for text generation.
-
-    Parameters:
-        prompt (Prompt): An instance of the Prompt class representing
-            the text prompt for generating text.
-
-    Returns:
-        StreamingResponse: A streaming response containing the generated text.
-
-    """
-
-    gamemaster_chat = SummaryChat(
-        "http://127.0.0.1:5000",
-        role=BASE_ROLE + BASE_GAMEMASTER,
-        session_id=regeneration.session_id,
-        engine=sqlalchemy.create_engine("sqlite:///memory.db"),
-    )
-
-    async def generate_inference():
-        """
-        Generate the inference for text generation.
-
-        This function sends a POST request to a specified URL with the given headers and data.
-        It then streams the response and extracts the generated text from the payload.
-        The generated text is yielded as JSON strings.
-
-        For async streaming only works with workers>1
-
-        Returns:
-            StreamingResponse: A streaming response containing the generated text.
-
-        """
-        interaction = Interaction(
-            regeneration.interaction.user_input, regeneration.interaction.llm_output
-        )
-        for chunk in gamemaster_chat.regenerate(interaction):
-            yield json.dumps({"text": chunk}) + "\n"
-
-    return StreamingResponse(generate_inference(), media_type="application/x-ndjson")
+    prev_interaction: InteractionSchema | None = None
 
 
 @router.post("/gamemaster-send")
@@ -252,8 +203,10 @@ async def post_gamemaster_send(prompt: InteractionPrompt):
 
         """
         interaction = (
-            Interaction(prompt.interaction.user_input, prompt.interaction.llm_output)
-            if prompt.interaction is not None
+            Interaction(
+                prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output
+            )
+            if prompt.prev_interaction is not None
             else None
         )
         for chunk in gamemaster_chat.predict(prompt.prompt, interaction):
