@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 
-class Session(BaseModel):
-    session_id: int
+class Mission(BaseModel):
+    mission_id: int
     name: str

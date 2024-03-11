@@ -36,7 +36,7 @@ class SummaryMemory:
         self,
         llm_client: LLMClient,
         last_k: int,
-        session_name: str,
+        mission_name: str,
     ):
         self._llm_client = llm_client
         self._last_k = last_k
@@ -44,11 +44,11 @@ class SummaryMemory:
         self._n_summarized = 0
 
         try:
-            self._session_id = crud_instance.get_session_id(session_name)
+            self._mission_id = crud_instance.get_mission_id(mission_name)
         except ValueError:
-            self._session_id = crud_instance.insert_session(session_name)
+            self._mission_id = crud_instance.insert_mission(mission_name)
 
-        self._history = crud_instance.get_interactions(self._session_id)
+        self._history = crud_instance.get_interactions(self._mission_id)
 
     def __len__(self):
         return len(self._history)
@@ -101,7 +101,7 @@ class SummaryMemory:
         Args:
             interaction (Interaction): The interaction to be appended to the history.
         """
-        crud_instance.insert_interaction(self._session_id, interaction)
+        crud_instance.insert_interaction(self._mission_id, interaction)
 
         self._try_summarize()
 
@@ -175,12 +175,12 @@ class SummaryChat:
         self,
         base_url: str,
         role: str,
-        session_name: str,
+        mission_name: str,
         last_k: int = 2,
     ):
         self._llm_client = LLMClient(base_url=base_url)
         self._role = role
-        self._memory = SummaryMemory(self._llm_client, last_k, session_name)
+        self._memory = SummaryMemory(self._llm_client, last_k, mission_name)
 
     @staticmethod
     def _trim_chunk(chunk: str) -> str:

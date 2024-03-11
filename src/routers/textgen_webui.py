@@ -182,7 +182,7 @@ async def post_gamemaster_send(prompt: InteractionPrompt):
     gamemaster_chat = SummaryChat(
         "http://127.0.0.1:5000",
         role=BASE_ROLE + BASE_GAMEMASTER,
-        session_name=prompt.session_id,
+        mission_name=prompt.session_id,
     )
 
     async def generate_inference():

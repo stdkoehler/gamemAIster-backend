@@ -7,21 +7,21 @@ from src.brain.gamemaster import Gamemaster
 
 from src.utils.logger import configure_logger
 
-log = configure_logger("session")
+log = configure_logger("mission")
 
 router = APIRouter(
-    prefix="/session",
-    tags=["session"],
+    prefix="/mission",
+    tags=["mission"],
     responses={404: {"description": "Not found"}},
 )
 
 
-@router.post("/new-session")
-def new_session():
+@router.post("/new-mission")
+def new_mission():
     gamemaster = Gamemaster("http://127.0.0.1:5000")
-    session_description = gamemaster.generate_session()
-    crud_instance.new_session(
-        name=session_description["title"], description=session_description["task"]
+    mission_description = gamemaster.generate_mission()
+    crud_instance.new_mission(
+        name=mission_description["title"], description=mission_description["task"]
     )
 
 
