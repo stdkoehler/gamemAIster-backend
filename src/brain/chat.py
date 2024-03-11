@@ -1,118 +1,19 @@
 """ Chat Conversation Memory """
 
-import json
 import re
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
-from urllib.parse import urljoin
-
-import requests
-from sseclient import SSEClient
-
-from src.brain.types import Actor, Interaction, LLMConfig
-
+from src.llmclient.types import LLMConfig
+from src.llmclient.llm_client import LLMClient
 from src.crud.crud import crud_instance
 
+from src.brain.types import Actor, Interaction
 from src.brain.templates import CHAT_TEMPLATE_NOUS_CAPYBARA as CHAT_TEMPLATE
 from src.brain.templates import SUMMARY_TEMPLATE_MIXTRAL_CHAT as SUMMARY_TEMPLATE
 
 
 # strip beginning linebreaks, spaces, GM, :
 strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
-
-
-class LLMClient:
-
-    def __init__(self, base_url: str):
-        self._base_url = base_url
-        self._completion_url = urljoin(base_url, "/v1/completions")
-        self._token_url = urljoin(base_url, "v1/internal/token-count")
-
-    def request(self, url: str, payload):
-        """
-        Sends a POST request to the specified URL with the given payload.
-
-        Args:
-            url (str): The URL to send the request to.
-            payload (dict): The payload to include in the request body.
-
-        Returns:
-            dict: The JSON response from the request, parsed as a dictionary.
-
-        """
-        headers = {"Content-Type": "application/json"}
-        response = requests.post(url, headers=headers, json=payload, timeout=60)
-        if response.status_code == 200:
-            return json.loads(response.text)
-
-    def completion_stream(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
-        headers = {"Content-Type": "application/json"}
-
-        data = asdict(llm_config)
-        data["prompt"] = prompt
-        data["stream"] = True
-        data["stop"] = ["PL", "###"]
-        data["sampler_priority"] = [
-            "temperature",
-            "dynamic_temperature",
-            "quadratic_sampling",
-            "top_k",
-            "top_p",
-            "typical_p",
-            "epsilon_cutoff",
-            "eta_cutoff",
-            "tfs",
-            "top_a",
-            "min_p",
-            "mirostat",
-        ]
-        data["logits_processor"] = []
-
-        stream_response = requests.post(
-            self._completion_url,
-            headers=headers,
-            json=data,
-            verify=False,
-            stream=True,
-            timeout=10,
-        )
-        client = SSEClient(stream_response)  # type: ignore
-
-        for event in client.events():
-            payload = json.loads(event.data)
-            yield payload["choices"][0]["text"]
-
-    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
-        headers = {"Content-Type": "application/json"}
-
-        data = asdict(llm_config)
-        data["prompt"] = prompt
-        data["stream"] = False
-
-        response = requests.post(
-            self._completion_url,
-            headers=headers,
-            json=data,
-            verify=False,
-            stream=False,
-            timeout=10,
-        )
-        return json.loads(response.text)["choices"][0]["text"]
-
-    def count_tokens(self, text: str):
-        """
-        Counts the number of tokens in a given text by API call.
-
-        Args:
-            text (str): The text to count the tokens in.
-
-        Returns:
-            int: The number of tokens in the text.
-
-        """
-        payload = {"text": text}
-        result = self.request(self._token_url, payload)
-        return int(result["length"])
 
 
 class SummaryMemory:
@@ -319,9 +220,12 @@ class SummaryChat:
             LLM_PREFIX=Actor.LLM.value,
         )
 
+        llm_config = LLMConfig()
+        llm_config.stop = ["PL", "###"]
+
         llm_response = ""
         begun = False
-        for chunk in self._llm_client.completion_stream(prompt):
+        for chunk in self._llm_client.completion_stream(prompt, llm_config=llm_config):
             if not begun:
                 chunk = self._trim_chunk(chunk)
                 if chunk != "":

@@ -17,9 +17,26 @@ class Session(Base):
     persist: Mapped[bool] = mapped_column(Boolean)
 
 
-class Memory(Base):
-    __tablename__ = "Memory"
-    memory_id: Mapped[int] = mapped_column(
+class SessionDescription(Base):
+    __tablename__ = "SessionDescription"
+    session_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("Session.session_id", ondelete="CASCADE"), primary_key=True
+    )
+    description: Mapped[str] = mapped_column(Text)
+
+
+class SessionScene(Base):
+    __tablename__ = "SessionScene"
+    scene_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    session_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("Session.session_id", ondelete="CASCADE"), primary_key=True
+    )
+    summary: Mapped[str] = mapped_column(Text)
+
+
+class ConversationMemory(Base):
+    __tablename__ = "ConversationMemory"
+    conversation_memory_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True
     )
     session_id: Mapped[int] = mapped_column(
@@ -29,5 +46,7 @@ class Memory(Base):
     llm_output: Mapped[str] = mapped_column(Text)
 
     __table_args__ = (
-        UniqueConstraint("memory_id", "session_id", name="memory_session"),
+        UniqueConstraint(
+            "conversation_memory_id", "session_id", name="conversation_memory_session"
+        ),
     )

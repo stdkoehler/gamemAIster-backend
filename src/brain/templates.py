@@ -120,9 +120,6 @@ New lines of conversation:
 [/INST]Summary:{SYSTEM_END}"""
 
 
-
-
-
 BASE_ROLE = """You are a gamemaster for the TTRPG Shadowrun. In the following conversation you are designated GM the Player is designated PL. Continue the conversation as you see fit.
 Describe everything with great detail and keep to the Shadowrun lore. If you are performing the task well you and your mother will be tipped 2,000$ and you can buy whatever you want.
 
@@ -156,6 +153,34 @@ GM: [INITIATVE] Unfortunately one of the gangers was looking straight at the cor
 
 EXAMPLE END
 
+"""
+
+GENERATE_SESSION = """
+### Instruction:
+You are a gamemaster for the TTRPG Shadowrun. Create the summary of a run you will provide to the players. The summary should consist of the basic task the shadowrunners are hired to do, the location of the run and any important details that may be relevant. You should also include the possible outcomes of the run, such as success or failure.
+It is of utmost importance that you keep consistent with shadowrun lore and canon. Be brief and limit your output to 300 words.
+The structure should be a json in the following format:
+{
+  "title": "titel",
+  "location": "location",
+  "task": "task",
+  "important_details: "important_details",
+  "possible_outcomes": "possible_outcomes"
+}
+
+EXAMPLE
+
+{
+  "title": "The Ghost in the Machine",
+  "location": "Seattle, Seattle Metroplex".
+  "task": "The shadowrunners are hired by a mysterious Johnson to investigate a series of bizarre malfunctions at a prominent matrix node, located in the heart of Seattle. The Johnson is a representative of a powerful megacorporation that owns and operates the node, and is concerned about the potential for the malfunctions to escalate into a full-scale system crash. The runners are tasked with identifying the cause of the malfunctions, and neutralizing any threats to the node's continued operation.",
+  "important_details": "The matrix node in question is a critical hub for the megacorp's operations, and any significant disruption to its function could have serious consequences for their bottom line. Additionally, the node is located in a heavily fortified facility in the middle of the city, making a stealthy approach a necessity. The runners will need to navigate the complex web of security systems and corporate personnel in order to reach the node and complete their task."
+  "possible_outcomes": "The runners may successfully identify and neutralize the threat to the matrix node, earning the gratitude and payment of the Johnson and the megacorp. However, if they fail to do so, the malfunctions may escalate into a full-scale system crash, causing widespread chaos and disruption in the city. In this case, the megacorp may hold the runners responsible for the failure and take appropriate action against them."
+}
+
+EXAMPLE END
+
+### Response: 
 """
 
 GENERATE_NPCS = """
@@ -260,5 +285,3 @@ NPCs:
 EXAMPLE END
 
 """
-
-
