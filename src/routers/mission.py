@@ -7,6 +7,8 @@ from src.brain.gamemaster import Gamemaster
 
 from src.utils.logger import configure_logger
 
+import src.routers.schema.mission as api_schema_mission
+
 log = configure_logger("mission")
 
 router = APIRouter(
@@ -17,15 +19,18 @@ router = APIRouter(
 
 
 @router.post("/new-mission")
-def new_mission():
+def new_mission() -> api_schema_mission.Mission:
     gamemaster = Gamemaster("http://127.0.0.1:5000")
-    mission_description = gamemaster.generate_mission()
-    crud_instance.new_mission(
-        name=mission_description["title"], description=mission_description["task"]
-    )
+    mission = gamemaster.generate_mission()
+    crud_instance.insert_mission(mission=mission)
+    return mission
 
 
-@router.get("/sessions")
-async def sessions():
+@router.post("/save-mission")
+def save_mission(mission_id: int):
+    crud_instance.save_mission(mission_id=mission_id)
 
-    log.info("stream_data")
+
+@router.get("/missions")
+async def missions() -> list[api_schema_mission.Mission]:
+    return crud_instance.list_missions()

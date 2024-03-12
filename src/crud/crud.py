@@ -1,11 +1,11 @@
 import sqlalchemy
-from sqlalchemy import event, select, delete, and_
+from sqlalchemy import event, select, update, delete, and_
 from sqlalchemy.orm import sessionmaker
 
 from src.crud.sqlmodel import Mission, MissionDescription, ConversationMemory
 from src.brain.types import Interaction
 
-import src.routers.schema.mission as schema_mission
+import src.routers.schema.mission as api_schema_mission
 
 
 class CRUD:
@@ -34,38 +34,53 @@ class CRUD:
                 raise ValueError(f"No mission with name {mission_name}")
             return result
 
-    def new_mission(self, name, description):
+    def insert_mission(
+        self, mission: api_schema_mission.Mission
+    ) -> api_schema_mission.Mission:
         with self._sessionmaker() as session:
-            new_mission = Mission(name=name, persist=False)
-            session.add(new_mission)
+            db_mission = Mission(name=mission.name, persist=False)
+            session.add(db_mission)
             session.flush()
-            mission_description = MissionDescription(
-                mission_id=new_mission.mission_id, description=description
+            db_mission_description = MissionDescription(
+                mission_id=db_mission.mission_id, description=mission.description
             )
-            session.add(mission_description)
+            session.add(db_mission_description)
+            session.commit()
+            mission.mission_id = db_mission.mission_id
+            return mission
+
+    def save_mission(self, mission_id: int):
+        with self._sessionmaker() as session:
+            stmt = (
+                update(Mission)
+                .where(Mission.mission_id == mission_id)
+                .values(persist=True)
+            )
+            session.execute(stmt)
             session.commit()
 
-    def list_missions(self) -> list[schema_mission.Mission]:
+    def list_missions(self) -> list[api_schema_mission.Mission]:
 
         with self._sessionmaker() as session:
             stmt = (
-                select(Mission)
+                select(Mission, MissionDescription)
+                .join(
+                    MissionDescription,
+                    Mission.mission_id == MissionDescription.mission_id,
+                )
                 .where(Mission.persist.is_(True))
                 .order_by(Mission.mission_id)
             )
-            results = session.execute(stmt).scalars().all()
+            results = session.execute(stmt).all()
 
             return [
-                schema_mission.Mission(mission_id=result.mission_id, name=result.name)
+                api_schema_mission.Mission(
+                    mission_id=result.Mission.mission_id,
+                    name=result.Mission.name,
+                    description=result.MissionDescription.description,
+                )
                 for result in results
             ]
-
-    def insert_mission(self, mission_name: str) -> int:
-        with self._sessionmaker() as session:
-            new_mission = Mission(name=mission_name, persist=False)
-            session.add(new_mission)
-            session.commit()
-            return new_mission.mission_id
 
     def get_interactions(self, mission_id: int) -> list[Interaction]:
         with self._sessionmaker() as session:

@@ -18,6 +18,8 @@ from src.brain.templates import BASE_ROLE, BASE_GAMEMASTER
 
 from src.utils.logger import configure_logger
 
+import src.routers.schema.interaction as api_schema_interaction
+
 log = configure_logger("interaction")
 
 router = APIRouter(
@@ -146,27 +148,8 @@ async def user_prompt(prompt: Prompt):
     return StreamingResponse(generate_inference(), media_type="application/x-ndjson")
 
 
-class InteractionSchema(BaseModel):
-    user_input: str
-    llm_output: str
-
-
-class InteractionPrompt(BaseModel):
-    """
-    A class representing a prompt for text generation.
-
-    Attributes:
-        prompt (str): The text prompt for generating text.
-
-    """
-
-    session_id: str
-    prompt: str
-    prev_interaction: InteractionSchema | None = None
-
-
 @router.post("/gamemaster-send")
-async def post_gamemaster_send(prompt: InteractionPrompt):
+async def post_gamemaster_send(prompt: api_schema_interaction.InteractionPrompt):
     """
     This function handles the user prompt for text generation.
 
