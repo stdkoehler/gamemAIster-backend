@@ -36,17 +36,13 @@ class SummaryMemory:
         self,
         llm_client: LLMClient,
         last_k: int,
-        mission_name: str,
+        mission_id: int,
     ):
         self._llm_client = llm_client
         self._last_k = last_k
         self._summary = ""
         self._n_summarized = 0
-
-        try:
-            self._mission_id = crud_instance.get_mission_id(mission_name)
-        except ValueError:
-            self._mission_id = crud_instance.insert_mission(mission_name)
+        self._mission_id = mission_id
 
         self._history = crud_instance.get_interactions(self._mission_id)
 
@@ -175,12 +171,15 @@ class SummaryChat:
         self,
         base_url: str,
         role: str,
-        mission_name: str,
+        mission_id: int,
         last_k: int = 2,
     ):
         self._llm_client = LLMClient(base_url=base_url)
         self._role = role
-        self._memory = SummaryMemory(self._llm_client, last_k, mission_name)
+        self._mission = crud_instance.get_mission_description(
+            mission_id=mission_id
+        ).description
+        self._memory = SummaryMemory(self._llm_client, last_k, mission_id)
 
     @staticmethod
     def _trim_chunk(chunk: str) -> str:

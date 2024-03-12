@@ -59,6 +59,22 @@ class CRUD:
             session.execute(stmt)
             session.commit()
 
+    def get_mission_description(self, mission_id: int) -> api_schema_mission.Mission:
+        with self._sessionmaker() as session:
+            stmt = select(Mission, MissionDescription).join(
+                MissionDescription,
+                and_(
+                    MissionDescription.mission_id == Mission.mission_id,
+                    Mission.mission_id == mission_id,
+                ),
+            )
+            result = session.execute(stmt).scalar_one()
+        return api_schema_mission.Mission(
+            mission_id=result.Mission.mission_id,
+            name=result.Mission.name,
+            description=result.MissionDescription.description,
+        )
+
     def list_missions(self) -> list[api_schema_mission.Mission]:
 
         with self._sessionmaker() as session:

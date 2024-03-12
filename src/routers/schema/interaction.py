@@ -15,6 +15,6 @@ class InteractionPrompt(BaseModel):
 
     """
 
-    session_id: str
+    mission_id: int
     prompt: str
     prev_interaction: InteractionSchema | None = None
