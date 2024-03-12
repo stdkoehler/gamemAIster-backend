@@ -68,7 +68,7 @@ class CRUD:
                     Mission.mission_id == mission_id,
                 ),
             )
-            result = session.execute(stmt).scalar_one()
+            result = session.execute(stmt).one()
         return api_schema_mission.Mission(
             mission_id=result.Mission.mission_id,
             name=result.Mission.name,
