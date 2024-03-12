@@ -210,6 +210,7 @@ class SummaryChat:
 
         prompt = CHAT_TEMPLATE.format(
             role=self._role,
+            mission=self._mission,
             summary=self._memory.summary,
             history=history,
             current_user_input=Interaction.format_user_input(user_input),

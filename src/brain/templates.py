@@ -6,6 +6,9 @@ CHAT_TEMPLATE_NOUS_CAPYBARA = """{SYSTEM_PREFIX} Below is an instruction that de
 ### Instruction:
 {role}
 
+The Mission you are to narrate:
+{mission}
+
 {summary}
 
 {history}
@@ -48,6 +51,9 @@ CHAT_TEMPLATE_MIXTRAL_CHAT = """{SYSTEM_PREFIX} Below is an instruction that des
 ### Instruction:
 {role}
 
+The Mission you are to narrate:
+{mission}
+
 Summary of previous conversation:
 {summary}
 
@@ -87,6 +93,9 @@ Summary:{SYSTEM_END}"""
 
 ### Mixtral Instruct
 CHAT_TEMPLATE_MIXTRAL_INSTRUCT = """{SYSTEM_PREFIX} [INST] {role}
+
+The Mission you are to narrate:
+{mission}
 
 Summary of previous conversation:
 {summary}
