@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.routers.textgen_webui import router as textgen_webui_router
+from src.routers.interaction import router as interaction_router
 from src.routers.mission import router as session_router
 
 # uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
@@ -20,5 +20,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(textgen_webui_router)
+app.include_router(interaction_router)
 app.include_router(session_router)

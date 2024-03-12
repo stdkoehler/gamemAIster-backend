@@ -18,11 +18,11 @@ from src.brain.templates import BASE_ROLE, BASE_GAMEMASTER
 
 from src.utils.logger import configure_logger
 
-log = configure_logger("textgen_webui")
+log = configure_logger("interaction")
 
 router = APIRouter(
-    prefix="/textgen-webui",
-    tags=["textgen_webui"],
+    prefix="/interaction",
+    tags=["interaction"],
     responses={404: {"description": "Not found"}},
 )
 
