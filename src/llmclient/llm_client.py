@@ -78,7 +78,7 @@ class LLMClient:
             json=data,
             verify=False,
             stream=False,
-            timeout=10,
+            timeout=60,
         )
         return json.loads(response.text)["choices"][0]["text"]
 
