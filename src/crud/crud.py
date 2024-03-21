@@ -1,5 +1,6 @@
 import sqlalchemy
 from sqlalchemy import event, select, update, delete, and_
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import sessionmaker
 
 from src.crud.sqlmodel import Mission, MissionDescription, ConversationMemory
@@ -59,7 +60,9 @@ class CRUD:
             session.execute(stmt)
             session.commit()
 
-    def get_mission_description(self, mission_id: int) -> api_schema_mission.Mission:
+    def get_mission_description(
+        self, mission_id: int
+    ) -> api_schema_mission.Mission | None:
         with self._sessionmaker() as session:
             stmt = select(Mission, MissionDescription).join(
                 MissionDescription,
@@ -68,7 +71,11 @@ class CRUD:
                     Mission.mission_id == mission_id,
                 ),
             )
-            result = session.execute(stmt).one()
+            try:
+                result = session.execute(stmt).one()
+            except NoResultFound:
+                return None
+
         return api_schema_mission.Mission(
             mission_id=result.Mission.mission_id,
             name=result.Mission.name,
@@ -93,6 +100,7 @@ class CRUD:
                 api_schema_mission.Mission(
                     mission_id=result.Mission.mission_id,
                     name=result.Mission.name,
+                    name_custom=result.Mission.name_custom,
                     description=result.MissionDescription.description,
                 )
                 for result in results

@@ -15,6 +15,6 @@ dev = [
     "pytest",
     "mypy",
     "pylint",
-    "types-requests"
+    "types-requests",
 ]
 

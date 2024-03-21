@@ -176,9 +176,10 @@ class SummaryChat:
     ):
         self._llm_client = LLMClient(base_url=base_url)
         self._role = role
-        self._mission = crud_instance.get_mission_description(
-            mission_id=mission_id
-        ).description
+        mission = crud_instance.get_mission_description(mission_id=mission_id)
+        if mission is None:
+            raise ValueError("No mission could be loaded from database.")
+        self._mission = mission.description
         self._memory = SummaryMemory(self._llm_client, last_k, mission_id)
 
     @staticmethod
