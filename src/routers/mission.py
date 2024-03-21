@@ -31,8 +31,8 @@ def new_mission() -> api_schema_mission.Mission:
 
 
 @router.post("/save-mission")
-def save_mission(mission_id: int):
-    crud_instance.save_mission(mission_id=mission_id)
+def save_mission(mission: api_schema_mission.SaveMission):
+    crud_instance.save_mission(mission)
 
 
 @router.get("/missions")

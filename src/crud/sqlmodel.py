@@ -13,6 +13,7 @@ class Mission(Base):
     mission_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True
     )
+    name_custom: Mapped[str] = mapped_column(String(50), default="")
     name: Mapped[str] = mapped_column(String(50))
     persist: Mapped[bool] = mapped_column(Boolean)
 

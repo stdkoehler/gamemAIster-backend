@@ -49,12 +49,12 @@ class CRUD:
             mission.mission_id = db_mission.mission_id
             return mission
 
-    def save_mission(self, mission_id: int):
+    def save_mission(self, mission: api_schema_mission.SaveMission):
         with self._sessionmaker() as session:
             stmt = (
                 update(Mission)
-                .where(Mission.mission_id == mission_id)
-                .values(persist=True)
+                .where(Mission.mission_id == mission.mission_id)
+                .values(persist=True, name_custom=mission.name_custom)
             )
             session.execute(stmt)
             session.commit()
