@@ -38,6 +38,7 @@ class CRUD:
     def insert_mission(
         self, mission: api_schema_mission.Mission
     ) -> api_schema_mission.Mission:
+        self._cleanse_unpersisted()
         with self._sessionmaker() as session:
             db_mission = Mission(name=mission.name, persist=False)
             session.add(db_mission)
