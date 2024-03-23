@@ -38,3 +38,8 @@ def save_mission(mission: api_schema_mission.SaveMission):
 @router.get("/missions")
 async def missions() -> list[api_schema_mission.Mission]:
     return crud_instance.list_missions()
+
+
+@router.get("/mission/{mission_id}")
+async def get_mission(mission_id: int) -> api_schema_mission.Mission | None:
+    return crud_instance.get_mission_description(mission_id=mission_id)
