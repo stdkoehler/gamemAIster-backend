@@ -184,10 +184,8 @@ class SummaryChat:
 
     @staticmethod
     def _trim_chunk(chunk: str) -> str:
-        print(chunk)
         chunk = re.sub(strip_pattern, "", chunk)
         chunk = chunk.lstrip()
-        print(chunk)
         return chunk
 
     def predict(self, user_input: str, last_interaction: Interaction | None = None):
