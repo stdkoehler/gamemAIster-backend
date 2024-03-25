@@ -1,6 +1,6 @@
 ```shell
 C:\Users\Stefan\AppData\Local\Programs\Python\Python312\python.exe -m venv .venv
-.\.venv\Scrips\activate
+.\.venv\Scripts\activate
 pip install pip-tools
 ```
 
