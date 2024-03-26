@@ -16,5 +16,6 @@ dev = [
     "mypy",
     "pylint",
     "types-requests",
+    "beautifulsoup4",
 ]
 
