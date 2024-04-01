@@ -80,6 +80,7 @@ class CRUD:
         return api_schema_mission.Mission(
             mission_id=result.Mission.mission_id,
             name=result.Mission.name,
+            name_custom=result.Mission.name_custom,
             description=result.MissionDescription.description,
         )
 
