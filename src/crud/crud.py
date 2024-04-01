@@ -140,5 +140,29 @@ class CRUD:
             session.add(memory)
             session.commit()
 
+    def update_last_interaction(self, mission_id: int, interaction: Interaction):
+        with self._sessionmaker() as session:
+            stmt = (
+                select(ConversationMemory)
+                .join(
+                    Mission,
+                    and_(
+                        Mission.mission_id == ConversationMemory.mission_id,
+                        Mission.mission_id == mission_id,
+                    ),
+                )
+                .order_by(ConversationMemory.conversation_memory_id.desc())
+                .limit(1)
+            )
+            result = session.execute(stmt)
+            conversation_memory = result.scalar_one_or_none()
+
+            if conversation_memory is not None:
+                conversation_memory.user_input = interaction.user_input
+                conversation_memory.llm_output = interaction.llm_output
+                session.commit()
+            else:
+                print("No ConversationMemory found for the given mission_id.")
+
 
 crud_instance = CRUD(dbase="sqlite:///memory.db")

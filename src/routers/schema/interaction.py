@@ -16,5 +16,5 @@ class InteractionPrompt(BaseModel):
     """
 
     mission_id: int
-    prompt: str
+    prompt: str | None = None
     prev_interaction: InteractionSchema | None = None

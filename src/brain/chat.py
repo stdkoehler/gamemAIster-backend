@@ -101,7 +101,17 @@ class SummaryMemory:
 
         self._try_summarize()
 
-    def interactions_complete(self):
+    def update_last(self, interaction: Interaction):
+        """
+        Appdates the last interaction in memory.
+
+        Args:
+            interaction (Interaction): The interaction that overwrites the last interaction
+        """
+        crud_instance.update_last_interaction(self._mission_id, interaction)
+        self._history[-1] = interaction
+
+    def interactions_complete(self) -> list[Interaction]:
         """
         Returns the complete history of interactions in the chat conversation.
 
@@ -110,7 +120,7 @@ class SummaryMemory:
         """
         return self._history
 
-    def interactions_summarized(self):
+    def interactions_summarized(self) -> list[Interaction]:
         """
         Returns a list of interactions that have already been summarized in the chat conversation.
 
@@ -119,7 +129,7 @@ class SummaryMemory:
         """
         return self._history[: self._n_summarized]
 
-    def interactions_unsummarized(self):
+    def interactions_unsummarized(self) -> list[Interaction]:
         """
         Returns the current interactions (that have not been summarized yet) in the chat conversation.
 
@@ -128,7 +138,7 @@ class SummaryMemory:
         """
         return self._history[self._n_summarized :]
 
-    def text_interactions_unsummarized(self):
+    def text_interactions_unsummarized(self) -> str:
         """
         Returns the formatted text of the current interactions in the chat conversation.
 
@@ -136,10 +146,28 @@ class SummaryMemory:
             str: The formatted text of the current interactions.
         """
         return "\n".join(
-            [
+            interaction.format_interaction()
+            for interaction in self.interactions_unsummarized()
+        )
+
+    def text_interactions_unsummarized_regenerate(self) -> tuple[str, str]:
+        """
+        Returns the formatted text of the current interactions in the chat conversation, excluding the last interaction.
+
+        Returns:
+            tuple[str, str]: A tuple containing two strings:
+                - The formatted text of the current interactions, excluding the last interaction.
+                - The user input of the last interaction.
+        """
+        if not self._history:
+            return "", ""
+        unsummarized_interactions = self.interactions_unsummarized()
+        return (
+            "\n".join(
                 interaction.format_interaction()
-                for interaction in self.interactions_unsummarized()
-            ]
+                for interaction in unsummarized_interactions[:-1]
+            ),
+            self._history[-1].user_input,
         )
 
     def text_interactions_complete(self):
@@ -188,21 +216,33 @@ class SummaryChat:
         chunk = chunk.lstrip()
         return chunk
 
-    def predict(self, user_input: str, last_interaction: Interaction | None = None):
+    def predict(
+        self, user_input: str | None, last_interaction: Interaction | None = None
+    ):
         """
         Predicts the AI language model's response to a given question in the chat conversation.
         Predict is called on Sending of a new user input. The previous interaction will then be
         persisted in the memory.
 
         Predict will be calls when the Send button for Player is pushed. It takes into account
-        the date in the Gamemaster field of the UI which will be sent with last_interaction.
+        the data in the Gamemaster field of the UI which will be sent with last_interaction.
 
         Args:
-            question (str): The question to be asked to the AI language model.
+            user_input (str | None): If it is None we either gegenerate the last interaction
+            last_interaction (Interaction | None): The previous interaction. If it is not None, we will update the previous interaction
         """
-        history = self._memory.text_interactions_unsummarized()
+
+        is_regenerate = True if user_input is None else False
+
         if last_interaction is not None:
-            history += last_interaction.format_interaction()
+            self._memory.update_last(last_interaction)
+
+        if user_input is None:
+            history, user_input = (
+                self._memory.text_interactions_unsummarized_regenerate()
+            )
+        else:
+            history = self._memory.text_interactions_unsummarized()
 
         # print("Current Summary:")
         # print(self._memory.summary)
@@ -232,8 +272,17 @@ class SummaryChat:
             llm_response += chunk
             yield chunk
 
-        if last_interaction is not None:
-            self._memory.append(last_interaction)
+        pattern = (
+            r"(?:What\ do\ you\ want\ to\ |What\ would\ you\ like\ to\ )\S[\S\s]*\?\s*"
+        )
+        llm_response = re.sub(pattern, "", llm_response)
+
+        interaction = Interaction(user_input=user_input, llm_output=llm_response)
+
+        if is_regenerate:
+            self._memory.update_last(interaction)
+        else:
+            self._memory.append(interaction)
 
         print("--- History:")
         print(self._memory.text_interactions_complete())
