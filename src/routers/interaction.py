@@ -193,3 +193,13 @@ async def post_gamemaster_send(prompt: api_schema_interaction.InteractionPrompt)
             yield json.dumps({"text": chunk}) + "\n"
 
     return StreamingResponse(generate_inference(), media_type="application/x-ndjson")
+
+
+@router.post("/stop-generation")
+async def post_stop_generation():
+    """
+    Stop an ongoing LLM generation
+    """
+    requests.post("http://127.0.0.1:5000/v1/internal/stop-generation", timeout=60)
+
+    return None
