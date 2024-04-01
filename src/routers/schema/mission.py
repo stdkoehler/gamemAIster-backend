@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from src.routers.schema.interaction import InteractionSchema
+
 
 class Mission(BaseModel):
     mission_id: int | None = None
@@ -11,3 +13,8 @@ class Mission(BaseModel):
 class SaveMission(BaseModel):
     mission_id: int
     name_custom: str
+
+
+class LoadMission(BaseModel):
+    mission: Mission
+    interactions: list[InteractionSchema]
