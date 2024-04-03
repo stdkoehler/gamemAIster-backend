@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn",
     "python-json-logger",
     "sqlalchemy",
+    "regex",
 ]
 
 [project.optional-dependencies]
