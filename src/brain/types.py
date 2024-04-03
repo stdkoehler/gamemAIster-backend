@@ -12,10 +12,10 @@ class Actor(Enum):
         LLM (str): Represents the AI language model in the conversation.
     """
 
-    SYSTEM = "<s>"
-    USER = "PL"
-    LLM = "GM"
-    SYSTEM_END = ""
+    SYSTEM = "<|im_start|>system"
+    SYSTEM_END = "<|im_end|>"
+    USER = "<|im_start|>user\n{msg}<|im_end|>"
+    LLM = "<|im_start|>assistant\n{msg}<|im_end|>"
 
 
 class Interaction:
@@ -72,7 +72,7 @@ class Interaction:
         Returns:
             str: The formatted user input with the actor prefix.
         """
-        return f"{Actor.USER.value}: {user_input}"
+        return Actor.USER.value.format(msg=user_input)
 
     @staticmethod
     def format_llm_output(llm_output: str):
@@ -85,4 +85,4 @@ class Interaction:
         Returns:
             str: The formatted llm output with the llm prefix.
         """
-        return f"{Actor.LLM.value}: {llm_output}"
+        return Actor.LLM.value.format(msg=llm_output)

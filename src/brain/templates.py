@@ -19,9 +19,23 @@ The Mission you are to narrate:
 
 ### Response:"""
 
-SUMMARY_TEMPLATE_MIXTRAL_CHAT = """{SYSTEM_PREFIX} Below is an instruction that describes a task. Write a response that appropriately completes the request.
+CHAT_TEMPLATE_NOUS_HERMES = """{SYSTEM_PREFIX}<|im_start|>system
+{role}
 
-### Instruction: 
+The Mission you are to narrate:
+{mission}
+<|im_end|>
+{summary}
+
+{history}
+
+{current_user_input}
+
+
+<|im_start|>assistant"""
+
+SUMMARY_TEMPLATE_NOUS_HERMES = """{SYSTEM_PREFIX}
+<|im_start|>system
 You are an expert summarizer of longer text.
 Progressively summarize the lines of conversation provided, adding onto the previous summary returning a new summary. Current summary and the new lines of conversation result in a resulting new summary.
 If you create a short summary that pertains all relevant information in a concise way you and your mother will be tipped $2,000 and you can buy what you want.
@@ -36,14 +50,75 @@ Sam: Because artificial intelligence will help humans reach their full potential
 
 Summary: Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good because it will help humans reach their full potential.
 END OF EXAMPLE
-
+<|im_end|>
+<|im_start|>user
 {current_summary}
 
 New lines of conversation:
 {unsummarized_interactions}
 
-### Response
-Summary:{SYSTEM_END}"""
+<|im_end|>
+<|im_start|>assistant
+{SYSTEM_END}"""
+
+ENTITY_TEMPLATE_NOUS_HERMES = """
+<|im_start|>system
+You are an expert knowledge extractor. You extract entities, like persons, places and things from a text according with a short summary of what you learned about the entities in the text. You will provide them in the following json format
+
+[
+    {
+        "name": "entity 1",
+        "type": "entity type",
+        "summary": "summary"
+    },
+    {
+        "name": "entity 2",
+        "type": "entity type",
+        "summary": "summary"
+    }
+]
+
+EXAMPLE
+Bayonette receives a call from her fixer Jargo, who gives her the details of the job. It seems the wealthy individual who hired them is a powerful elf who is used to getting what he wants. 
+He is offering a substantial payment for the return of his family heirloom, a large sword, which was stolen. And he wants it done discreetly. Bayonette listens intently, taking note of the details of the meeting location and time.
+The meeting is to take place in a high class restaurant where only the most elite of the cities can afford to dine: The Cloister. The Cloister is located on an artificial mountain several kilometres in distance from Seattle.
+Bayonette will have to be on her best behavior if she wants to get the job.
+
+Entities:
+[
+    {
+        "name": "Jargo",
+        "type": "Person",
+        "summary": "Bayonettes fixer."
+    },
+    {
+        "name": "Client",
+        "type": "Person",
+        "summary": "A powerful elf who contracts the shadowrunners to return his stolen family heirloom."
+    },
+    {
+        "name": "Family Heirloom",
+        "type": "Item",
+        "summary": "A large sword belonging to the contractor, a powerful elf, that has been stolen."
+    },
+    {
+        "name": "The Cloister",
+        "type": "Location",
+        "summary": "A high class restaurant for the elite that is located on an artificial mountain several kilometers away from Seattle."
+    }
+]
+
+END OF EXAMPLE
+<|im_end|>
+<|im_start|>user
+{current_summary}
+
+New lines of conversation:
+{unsummarized_interactions}
+
+<|im_end|>
+<|im_start|>assistant
+"""
 
 ### Mixtral Chat
 CHAT_TEMPLATE_MIXTRAL_CHAT = """{SYSTEM_PREFIX} Below is an instruction that describes a task. Write a response that appropriately completes the request.
@@ -165,10 +240,12 @@ EXAMPLE END
 """
 
 GENERATE_SESSION = """
-### Instruction:
+<|im_start|>system
 You are a gamemaster for the TTRPG Shadowrun. Create the summary of a run you will provide to the players. The summary should consist of the basic task the shadowrunners are hired to do, the location of the run and any important details that may be relevant. You should also include the possible outcomes of the run, such as success or failure.
 It is of utmost importance that you keep consistent with shadowrun lore and canon. Be brief and limit your output to 300 words.
-The structure should be a json in the following format:
+The structure has to be a json in the following format:
+
+```json
 {
   "title": "titel",
   "location": "location",
@@ -176,30 +253,39 @@ The structure should be a json in the following format:
   "important_details: "important_details",
   "possible_outcomes": "possible_outcomes"
 }
+```
 
 EXAMPLE
-
+```json
 {
   "title": "The Ghost in the Machine",
-  "location": "Seattle, Seattle Metroplex".
+  "location": "Seattle, Seattle Metroplex",
   "task": "The shadowrunners are hired by a mysterious Johnson to investigate a series of bizarre malfunctions at a prominent matrix node, located in the heart of Seattle. The Johnson is a representative of a powerful megacorporation that owns and operates the node, and is concerned about the potential for the malfunctions to escalate into a full-scale system crash. The runners are tasked with identifying the cause of the malfunctions, and neutralizing any threats to the node's continued operation.",
-  "important_details": "The matrix node in question is a critical hub for the megacorp's operations, and any significant disruption to its function could have serious consequences for their bottom line. Additionally, the node is located in a heavily fortified facility in the middle of the city, making a stealthy approach a necessity. The runners will need to navigate the complex web of security systems and corporate personnel in order to reach the node and complete their task."
+  "important_details": "The matrix node in question is a critical hub for the megacorp's operations, and any significant disruption to its function could have serious consequences for their bottom line. Additionally, the node is located in a heavily fortified facility in the middle of the city, making a stealthy approach a necessity. The runners will need to navigate the complex web of security systems and corporate personnel in order to reach the node and complete their task.",
   "possible_outcomes": "The runners may successfully identify and neutralize the threat to the matrix node, earning the gratitude and payment of the Johnson and the megacorp. However, if they fail to do so, the malfunctions may escalate into a full-scale system crash, causing widespread chaos and disruption in the city. In this case, the megacorp may hold the runners responsible for the failure and take appropriate action against them."
 }
-
+```
 EXAMPLE END
-
-### Response: 
+<|im_end|>
+<|im_start|>user
+Create a shadowrun mission about:
+- DocWagon
+- biological weapon
+- ploy
+<|im_end|>
+<|im_start|>assistant
 """
 
 GENERATE_NPCS = """
-Given the provided scene, generate one ore more (depending on the scene description) shadowrun NPCs with their stats and the the weapon they carry. Provide them in the following json format
+<|im_start|>system
+Given the provided scene, generate one ore more (depending on the scene description) shadowrun NPCs with their stats and the the weapon they carry. Provide them in the following json schema
 
+```json
 [
     {
         "name": "npc_name",
-        "race": "human/elf/troll/ork"
-        "description": "description"
+        "race": "human/elf/troll/ork",
+        "description": "description",
         "role": "npc_role",
         "attributes": {
             "agility": number,
@@ -211,12 +297,15 @@ Given the provided scene, generate one ore more (depending on the scene descript
         "skills": {
             "weapon": number,
             "gymnastics": number
-        }
-        "armor": "none/low/high"
-        "weapon_type": "hands/melee/handgun/assault/sniper"
+        },
+        "armor": "none/low/high",
+        "weapon_type": "hands/melee/handgun/assault/sniper",
         "cyberware": "none/low/high"
     }
 ]
+```
+
+All fields have to be exactly as given in the schema. Skills include exactly two: weapon and gymnastics!
 
 EXAMPLE
 
@@ -227,8 +316,7 @@ USER: Jack walks to the designated meeting area carefuly aware of his surroundin
 AI: Amidst the ruins, you spot movement — a trio of figures huddled around a makeshift fire. The flames cast eerie shadows across their faces, revealing the worn features of individuals who have known hardship all too well. 
 The gangers, dressed in tattered clothing and armed with jury-rigged weapons, eye the newcomers with a mix of suspicion and curiosity.
 
-NPCs:
-
+```json
 [
     {
         "name": "Grim",
@@ -290,7 +378,11 @@ NPCs:
         "cyberware": "none"
     }
 ]
+```
+<|im_end|>
 
-EXAMPLE END
-
+<|im_start|>user
+Provide character jsons for the following scene:
+<|im_end|>
+<|im_start|>assistant
 """

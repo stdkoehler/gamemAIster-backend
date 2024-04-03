@@ -8,7 +8,7 @@ from src.llmclient.llm_client import LLMClient
 from src.crud.crud import crud_instance
 
 from src.brain.types import Actor, Interaction
-from src.brain.templates import CHAT_TEMPLATE_NOUS_CAPYBARA as CHAT_TEMPLATE
+from src.brain.templates import CHAT_TEMPLATE_NOUS_HERMES as CHAT_TEMPLATE
 from src.brain.templates import SUMMARY_TEMPLATE_MIXTRAL_CHAT as SUMMARY_TEMPLATE
 
 
@@ -255,8 +255,6 @@ class SummaryChat:
             current_user_input=Interaction.format_user_input(user_input),
             SYSTEM_PREFIX=Actor.SYSTEM.value,
             SYSTEM_END=Actor.SYSTEM_END.value,
-            USER_PREFIX=Actor.USER.value,
-            LLM_PREFIX=Actor.LLM.value,
         )
 
         llm_config = LLMConfig()
