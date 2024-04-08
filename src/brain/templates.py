@@ -40,6 +40,13 @@ You are an expert summarizer of longer text.
 Progressively summarize the lines of conversation provided, adding onto the previous summary returning a new summary. Current summary and the new lines of conversation result in a resulting new summary.
 If you create a short summary that pertains all relevant information in a concise way you and your mother will be tipped $2,000 and you can buy what you want.
 
+Provide your answer as json in the following schema:
+```json
+{{
+    "summary": "Your summary of the events"
+}}
+```
+
 EXAMPLE
 Current summary:
 Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good.
@@ -48,7 +55,11 @@ New lines of conversation:
 Sandra: Why do you think artificial intelligence is a force for good?
 Sam: Because artificial intelligence will help humans reach their full potential.
 
-Summary: Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good because it will help humans reach their full potential.
+```json
+{{
+    "summary": "Sandra asks what Sam thinks of artificial intelligence. Sam thinks artificial intelligence is a force for good because it will help humans reach their full potential."
+}}
+```
 END OF EXAMPLE
 <|im_end|>
 <|im_start|>user
@@ -65,18 +76,20 @@ ENTITY_TEMPLATE_NOUS_HERMES = """
 <|im_start|>system
 You are an expert knowledge extractor. You extract entities, like persons, places and things from a text according with a short summary of what you learned about the entities in the text. You will provide them in the following json format
 
+```json
 [
-    {
+    {{
         "name": "entity 1",
         "type": "entity type",
         "summary": "summary"
-    },
-    {
+    }},
+    {{
         "name": "entity 2",
         "type": "entity type",
         "summary": "summary"
-    }
+    }}
 ]
+```
 
 EXAMPLE
 Bayonette receives a call from her fixer Jargo, who gives her the details of the job. It seems the wealthy individual who hired them is a powerful elf who is used to getting what he wants. 
@@ -84,36 +97,33 @@ He is offering a substantial payment for the return of his family heirloom, a la
 The meeting is to take place in a high class restaurant where only the most elite of the cities can afford to dine: The Cloister. The Cloister is located on an artificial mountain several kilometres in distance from Seattle.
 Bayonette will have to be on her best behavior if she wants to get the job.
 
-Entities:
+```json
 [
-    {
+    {{
         "name": "Jargo",
         "type": "Person",
         "summary": "Bayonettes fixer."
-    },
-    {
+    }},
+    {{
         "name": "Client",
         "type": "Person",
         "summary": "A powerful elf who contracts the shadowrunners to return his stolen family heirloom."
-    },
-    {
+    }},
+    {{
         "name": "Family Heirloom",
         "type": "Item",
         "summary": "A large sword belonging to the contractor, a powerful elf, that has been stolen."
-    },
-    {
+    }},
+    {{
         "name": "The Cloister",
         "type": "Location",
         "summary": "A high class restaurant for the elite that is located on an artificial mountain several kilometers away from Seattle."
-    }
+    }}
 ]
-
+```
 END OF EXAMPLE
 <|im_end|>
 <|im_start|>user
-{current_summary}
-
-New lines of conversation:
 {unsummarized_interactions}
 
 <|im_end|>
