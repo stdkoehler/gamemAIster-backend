@@ -45,7 +45,7 @@ match = regex.search(pattern, text, regex.DOTALL)
 if match is not None:
     print(match.group(0))
 
-match = re.search(pattern, text.replace("'", '"'), regex.DOTALL)
+match = regex.search(pattern, text.replace("'", '"'), regex.DOTALL)
 if match is not None:
     print(match.group(0))
 

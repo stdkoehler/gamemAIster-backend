@@ -9,6 +9,7 @@ dependencies = [
     "python-json-logger",
     "sqlalchemy",
     "regex",
+    "chromadb"
 ]
 
 [project.optional-dependencies]
@@ -18,5 +19,9 @@ dev = [
     "pylint",
     "types-requests",
     "beautifulsoup4",
+    "sentence_transformers", # needed for custom embedding model
+    "einops", # needed for custom embedding model
+    "ragatouille",
+    "rank_bm25",
 ]
 
