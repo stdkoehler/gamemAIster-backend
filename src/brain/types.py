@@ -35,7 +35,8 @@ class Interaction:
 
     def format_interaction(self):
         """
-        Formats the interaction by combining the formatted user input and the formatted AI language model output.
+        Formats the interaction by combining the formatted user input and the
+        formatted AI language model output.
 
         Returns:
             str: The formatted interaction.
@@ -44,6 +45,17 @@ class Interaction:
             f"{self.format_user_input(self._user_input)}\n"
             f"{self.format_llm_output(self._llm_output)}"
         )
+
+    def format_interaction_summary(self):
+        """
+        Formats the interaction by combining the formatted user input and the
+        formatted AI language model output. Use this for summarizing the interaction
+        and for entity extraction. (not using the LLM Intruct keywords)
+
+        Returns:
+            str: The formatted interaction.
+        """
+        return f"Player: {self._user_input}\n" f"Gamemaster: {self._llm_output}"
 
     @property
     def user_input(self):
