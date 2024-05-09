@@ -23,5 +23,6 @@ dev = [
     "einops", # needed for custom embedding model
     "ragatouille",
     "rank_bm25",
+    "sqlite-vss",
 ]
 

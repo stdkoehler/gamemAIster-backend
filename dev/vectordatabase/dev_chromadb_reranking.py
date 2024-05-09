@@ -1,11 +1,21 @@
 """ Try different retrieval methods """
 
+from pathlib import Path
 import uuid
 
 import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
 
 from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer, AutoModel
+import torch
+
+# doesnt work on windows
+# from ragatouille import RAGPretrainedModel
+# RAG = RAGPretrainedModel.from_pretrained("colbert-ir/colbertv2.0")
+
+tokenizer = AutoTokenizer.from_pretrained("colbert-ir/colbertv2.0")
+model = AutoModel.from_pretrained("colbert-ir/colbertv2.0")
 
 
 nomic_model = SentenceTransformer(
@@ -17,6 +27,61 @@ class NomicEmbedText(EmbeddingFunction):
     def __call__(self, doc: Documents) -> Embeddings:
         embeddings = nomic_model.encode(doc)
         return list(embeddings.tolist())
+
+
+# class RagatouilleEmbed(EmbeddingFunction):
+#     def __call__(self, input: Documents) -> Embeddings:
+#         embeddings = rag_model.encode(input)
+#         return list(embeddings.tolist())
+
+
+def maxsim(query_embedding, document_embedding):
+    # Expand dimensions for broadcasting
+    # Query: [batch_size, query_length, embedding_size]
+    #   -> [batch_size, query_length, 1, embedding_size]
+    # Document: [batch_size, doc_length, embedding_size]
+    #   -> [batch_size, 1, doc_length, embedding_size]
+    expanded_query = query_embedding.unsqueeze(2)
+    expanded_doc = document_embedding.unsqueeze(1)
+
+    # Compute cosine similarity across the embedding dimension\n",
+    sim_matrix = torch.nn.functional.cosine_similarity(
+        expanded_query, expanded_doc, dim=-1
+    )
+
+    # Take the maximum similarity for each query token (across all document tokens)
+    # sim_matrix shape: [batch_size, query_length, doc_length]
+    max_sim_scores, _ = torch.max(sim_matrix, dim=2)
+
+    # Average these maximum scores across all query tokens
+    avg_max_sim = torch.mean(max_sim_scores, dim=1)
+    return avg_max_sim
+
+
+def colbert_rerank(documents: list[str], query: str):
+    scores = []
+    query_encoding = tokenizer(query, return_tensors="pt")
+    query_embedding = model(**query_encoding).last_hidden_state.mean(dim=1)
+
+    for doc in documents:
+        doc_encoding = tokenizer(
+            doc, return_tensors="pt", truncation=True, max_length=512
+        )
+        doc_embedding = model(**doc_encoding).last_hidden_state
+
+        # Calculate MaxSim score
+        score = maxsim(query_embedding.unsqueeze(0), doc_embedding)
+        scores.append(
+            {
+                "score": score.item(),
+                "document": doc,
+            }
+        )
+
+    return scores
+
+
+print(colbert_rerank(["banana", "apple", "gun"], "pear"))
 
 
 example_data = [
@@ -66,8 +131,6 @@ except ValueError:
 
 collection = client.create_collection("entities", embedding_function=NomicEmbedText())
 
-# embedding is calculated on documents. In that case on the content of the "name" field
-# all other data is metadata and hence not considered
 collection.add(
     documents=[data["name"] for data in example_data],
     metadatas=[
