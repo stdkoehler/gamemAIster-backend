@@ -5,7 +5,7 @@ import json
 
 from src.llmclient.llm_client import LLMClient
 
-from src.brain.templates import GENERATE_SESSION
+from src.brain.templates import GENERATE_SESSION_EXPANDED as GENERATE_SESSION
 
 import src.routers.schema.mission as api_schema_mission
 
@@ -49,7 +49,12 @@ class Gamemaster:
         try:
             data = json.loads(json_string)
             print(data)
-            mission = {"name": data["title"], "description": data["task"]}
+            mission = {
+                "name": data["title"],
+                "description": data["task"]
+                + data["important_details"]
+                + data["possible_outcomes"],
+            }
             return api_schema_mission.Mission.model_validate(mission)
         except json.decoder.JSONDecodeError as exc:
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
