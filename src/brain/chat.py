@@ -9,8 +9,8 @@ from src.crud.crud import crud_instance
 
 from src.brain.types import Actor, Interaction
 from src.brain.templates import CHAT_TEMPLATE_NOUS_HERMES as CHAT_TEMPLATE
-from src.brain.templates import SUMMARY_TEMPLATE_MIXTRAL_CHAT as SUMMARY_TEMPLATE
-
+from src.brain.templates import SUMMARY_TEMPLATE_NOUS_HERMES as SUMMARY_TEMPLATE
+from src.brain.templates import ENTITY_TEMPLATE_NOUS_HERMES as ENTITY_TEMPLATE
 
 # strip beginning linebreaks, spaces, GM, :
 strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
@@ -37,12 +37,14 @@ class SummaryMemory:
         llm_client: LLMClient,
         last_k: int,
         mission_id: int,
+        min_summary_tokens: int = 1024,
     ):
         self._llm_client = llm_client
         self._last_k = last_k
         self._summary = ""
         self._n_summarized = 0
         self._mission_id = mission_id
+        self._min_summary_tokens = min_summary_tokens
 
         self._history = crud_instance.get_interactions(self._mission_id)
 
@@ -59,6 +61,26 @@ class SummaryMemory:
         """
         return self._summary
 
+    def extract_entities(self, text_interaction):
+
+        prompt = ENTITY_TEMPLATE.format(
+            unsummarized_interactions=text_interaction,
+            SYSTEM_PREFIX=Actor.SYSTEM.value,
+            SYSTEM_END=Actor.SYSTEM_END.value,
+            USER_PREFIX=Actor.USER.value,
+            LLM_PREFIX=Actor.LLM.value,
+        )
+
+        print("--- Extract entity prompt")
+        print(prompt)
+
+        entities = self._llm_client.completion(prompt)
+
+        print("--- Extract entity")
+        print("Entities: ", entities)
+
+        return entities
+
     def summarize(self, text_interaction):
 
         summary = f"Current summary:\n{self.summary}" if len(self.summary) > 0 else ""
@@ -72,6 +94,9 @@ class SummaryMemory:
             LLM_PREFIX=Actor.LLM.value,
         )
 
+        print("--- Summary prompt")
+        print(prompt)
+
         new_summary = self._llm_client.completion(prompt)
 
         print("--- Summary")
@@ -81,14 +106,19 @@ class SummaryMemory:
 
     def _try_summarize(self):
         """summarize"""
-        # interaction_candidates = self._history[self._n_summarized : -self._last_k]
-        # count = len(interaction_candidates)
-        # text = "\n".join(
-        #     [interaction.format_interaction() for interaction in interaction_candidates]
-        # )
-        # if self._llm_client.count_tokens(text) > 150:
-        #     self._summary = self.summarize(text)
-        #     self._n_summarized += count
+        interaction_candidates = self._history[self._n_summarized : -self._last_k]
+        count = len(interaction_candidates)
+        text = "\n".join(
+            [
+                interaction.format_interaction_summary()
+                for interaction in interaction_candidates
+            ]
+        )
+        # if self._llm_client.count_tokens(text) > self._min_summary_tokens:
+        if self._llm_client.count_tokens(text) > 256:
+            self._summary = self.summarize(text)
+            entities = self.extract_entities(text)
+            # self._n_summarized += count
 
     def append(self, interaction: Interaction):
         """
@@ -110,6 +140,9 @@ class SummaryMemory:
         """
         crud_instance.update_last_interaction(self._mission_id, interaction)
         self._history[-1] = interaction
+
+        # todo: debugging remove later
+        self._try_summarize()
 
     def interactions_complete(self) -> list[Interaction]:
         """
