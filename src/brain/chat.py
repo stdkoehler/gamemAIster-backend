@@ -291,7 +291,7 @@ class SummaryChat:
         )
 
         llm_config = LLMConfig()
-        llm_config.stop = ["PL", "###"]
+        llm_config.stop = ["PL", "###", "/FIN"]
 
         llm_response = ""
         begun = False
