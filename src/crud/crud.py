@@ -11,7 +11,8 @@ from src.crud.sqlmodel import (
     SummaryMemory,
     EntityMemory,
 )
-from src.brain.types import Interaction
+
+from src.brain.types import Interaction, Entity
 
 import src.routers.schema.mission as api_schema_mission
 
@@ -199,6 +200,31 @@ class CRUD:
                 session.commit()
             except IntegrityError:
                 session.rollback()
+
+    def update_entities(self, mission_id, entities: list[Entity]):
+        with self._sessionmaker() as session:
+            for entity in entities:
+                stmt = select(EntityMemory).where(
+                    EntityMemory.mission_id == mission_id,
+                    EntityMemory.name == entity.name,
+                )
+                existing_entity = session.execute(stmt).scalar_one_or_none()
+
+                if existing_entity:
+                    existing_entity.summary += entity.summary
+                else:
+                    new_entity = EntityMemory(
+                        mission_id=mission_id,
+                        name=entity.name,
+                        type=entity.type,
+                        summary=entity.summary,
+                    )
+                    session.add(new_entity)
+
+                try:
+                    session.commit()
+                except IntegrityError:
+                    session.rollback()
 
 
 crud_instance = CRUD(dbase="sqlite:///memory.db")

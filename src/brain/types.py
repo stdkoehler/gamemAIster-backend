@@ -1,6 +1,7 @@
 """ Types """
 
 from enum import Enum
+from pydantic import BaseModel
 
 
 class Actor(Enum):
@@ -98,3 +99,13 @@ class Interaction:
             str: The formatted llm output with the llm prefix.
         """
         return Actor.LLM.value.format(msg=llm_output)
+
+
+class Entity(BaseModel):
+    """
+    A class representing an entity extracted from a text.
+    """
+
+    name: str
+    type: str
+    summary: str

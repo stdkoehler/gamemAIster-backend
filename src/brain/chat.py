@@ -8,7 +8,7 @@ from src.llmclient.types import LLMConfig
 from src.llmclient.llm_client import LLMClient
 from src.crud.crud import crud_instance
 
-from src.brain.types import Actor, Interaction
+from src.brain.types import Actor, Interaction, Entity
 from src.brain.utils import extract_json_schema
 from src.brain.templates import CHAT_TEMPLATE_NOUS_HERMES as CHAT_TEMPLATE
 from src.brain.templates import SUMMARY_TEMPLATE_NOUS_HERMES as SUMMARY_TEMPLATE
@@ -63,7 +63,7 @@ class SummaryMemory:
         """
         return self._summary
 
-    def extract_entities(self, text_interaction):
+    def extract_entities(self, text_interaction) -> list[Entity]:
 
         prompt = ENTITY_TEMPLATE.format(
             unsummarized_interactions=text_interaction,
@@ -76,7 +76,20 @@ class SummaryMemory:
         print("--- Extract entity prompt")
         print(prompt)
 
-        entities = self._llm_client.completion(prompt)
+        response = self._llm_client.completion(prompt)
+        json_string = extract_json_schema(response)
+
+        entities = []
+        try:
+            entity_objs = json.loads(json_string)
+            for entity in entity_objs:
+                entities.append(Entity.model_validate(entity))
+        except json.decoder.JSONDecodeError as exc:
+            raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
+        except KeyError as exc:
+            raise ValueError(
+                f"LLM response is missing required keys: {json_string}"
+            ) from exc
 
         print("--- Extract entity")
         print("Entities: ", entities)
@@ -133,6 +146,7 @@ class SummaryMemory:
             crud_instance.update_summary(
                 self._mission_id, self._summary, self._n_summarized
             )
+            crud_instance.update_entities(self._mission_id, entities)
 
     def append(self, interaction: Interaction):
         """

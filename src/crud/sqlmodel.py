@@ -67,6 +67,6 @@ class EntityMemory(Base):
     mission_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE"), primary_key=True
     )
-    entity: Mapped[str] = mapped_column(Text, primary_key=True)
-    entity_type: Mapped[str] = mapped_column(Text)
+    name: Mapped[str] = mapped_column(Text, primary_key=True)
+    type: Mapped[str] = mapped_column(Text)
     summary: Mapped[str] = mapped_column(Text)
