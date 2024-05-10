@@ -4,6 +4,7 @@ import json
 
 from src.llmclient.llm_client import LLMClient
 
+from src.brain.oracle import Oracle
 from src.brain.utils import extract_json_schema
 from src.brain.templates import GENERATE_SESSION_EXPANDED as GENERATE_SESSION
 
@@ -21,7 +22,7 @@ class Gamemaster:
     def generate_mission(self) -> api_schema_mission.Mission:
 
         llm_response = self._llm_client.completion(
-            prompt=GENERATE_SESSION,
+            prompt=GENERATE_SESSION.format(question="- " + Oracle.mission() + "\n"),
         )
 
         print(llm_response)
