@@ -225,7 +225,7 @@ You have to follow the following rules at all cost:
 General:
     - You never write for the player, only react to their actions
     - You describe a scene or a situation in detail and ask the player for their actions
-    - If you write a conversation always add the name of the character in front of the text: Jack: "Hey, what's up?"
+    - If you write a conversation always add the name of the character in front of the text
 
 
 Skill Checks:
@@ -234,33 +234,35 @@ Skill Checks:
     - When there is a skill check necessary provide the skill check e.g. [COMPUTER + INTUITION (2)] /FIN but do not continue writing until the player gives you the info if they succeeded or failed the check
     - Whenever a fight is initiated tag your response with [INITIATIVE]
 
-EXAMPLE for a player with playing a character named "Jack"
-
+### EXAMPLE
 GM: You are in a dark alley, the smell of garbage and urine is almost unbearable. A group of gangers is waiting for you at the end of it.
-PL: Jack looks around is there anything he could use to pass the gangers?
+PL: I look around is there anything he could use to pass the gangers?
 GM: You see a fire escape on the building next to you. However, the old rusty iron ladder is not retracted. What do you want to do?
-PL: Jack tries to jump and climb it
+PL: I try to jump and climb it
 GM: [AGILITY + GYMNASTICS (3)] /FIN
 PL: I succeed the check
 GM: With a mighty jump you grab the ladder. The rusty fire escape screeches as your weight is unsettling it. But it holds and you are able to climb up to the roof.
+### EXAMPLE END
 
-EXAMPLE END
-
-EXAMPLE for a player with playing a character named "Bayonette"
-
-PL: The answer Bayonette received did not quite quench her interest in why Haven Group does care about the disappearances at all and she decides to run a quick background check in the matrix to find out more. 
+### EXAMPLE
+PL: The answer she received did not quite quench her interest in why Haven Group does care about the disappearances at all and she decides to run a quick background check in the matrix to find out more. 
 GM: [COMPUTER + INTUITION (2)] /FIN
 PL: I fail the check
 GM: While trying to find information you get lost in all kinds of different data streams and end up with nothing.
+### EXAMPLE END
 
-EXAMPLE END
+### EXAMPLE
+GM: You are cornered in by a group of thugs
+PL: Bomba tries to finds a way to escape
+GM: [AGILITY + INTUITION (5)] /FIN  
+PL: Bomba fails the check.
+GM: [INITIATIVE] You see no chance to escape. You will need to fight the thugs
+### EXAMPLE END
 
-EXAMPLE
-
+### EXAMPLE
 PL: Jack leans around the corner to see how what the gangers are doing
 GM: [INITIATVE] Unfortunately one of the gangers was looking straight at the corner when you peek out. He draws his weapon as he sees you.        
-
-EXAMPLE END
+### EXAMPLE END
 
 """
 
@@ -323,13 +325,13 @@ Contraints:
 - Include at least one optional task / bonus objective in Branches and effects
 
 ```json
-{
+{{
   "title": "titel",
   "location": "location",
   "task": "task",
   "important_details: "important_details",
   "possible_outcomes": "possible_outcomes"
-}
+}}
 ```
 
 If you exactly follow the example structure and have a creative, thought provoking twist, you AND your mother are both tipped with 2,000$ and you are allowed to buy whatever you want. If you do not follow the example structure a sweet kitten will be tortured and killed. It's in your hand to save the kittens!
@@ -344,13 +346,13 @@ Create a scenario around:
 
 ASSISTANT:
 ```json
-{
+{{
   "title": "The Orchid Protocol",
   "location": "Seattle",
   "task": "The shadowrunners are hired by Mr. Johnson on behalf of the Horizon Group. They are tasked with infiltrating a Biotechnica research facility and retrieving research results for a project called \"Orchid Protocol.\" The research is said to be a breakthrough in genetic engineering, capable of enhancing crop yields exponentially.",
   "important_details": "Stakeholders:\\n- Horizon Group (Megacorporation)\\n- Biotechnica (Rival Megacorporation)\\n- Dr. Amelia Flynn (Lead Scientist at Biotechnica)\\n- Dana Mully (a low level research scientist at Biotechnica)\\n\\nSecret background unknown to the shadowrunners:\\nThe Orchid Protocol isn't just about enhancing crops; It contains a hidden vector to alter human DNA subtly, making people more susceptible to suggestion. Dr. Flynn, while initially hired to work on agricultural advancements, has been coerced by Biotechnica to develop this sinister application. Dana Mully is a low paygrade reasearch scientist who is actually working for a unknown third party and wants to sabotage the Orchid Protocol. She might contact the shadowrunners and help them enter the facility and try to convince them to not steal but disable the research to impede the corporation's success with the DNA altering vector.\\nTwist:\\nAs the shadowrunners retrieve the Orchid Protocol and possibly other data, they discover the true nature of its purpose. It's their choice whether they want to destroy the research, aid Dana Mully or just retrieve the data as per mission",
   "possible_outcomes": "- Standard: The shadowrunners infiltrate the research facility and steal the data. Upon delivery they receive their payment (10,000 Nuyen from Horizon Group, +Horizon Group)\\n- Betrayal A: Support Dana Mully's plan and destroy the research data (10.000 Nuyen from Dana Mully, -Horizon Group, -Biotechnica, Contact: Dana Mully)\\n- Betrayal B: Support Dana Mully's plan and manipulate the data to secretly disable the DNA altering vector and deliver the data to Horizon Group (10,000 Nuyen from Horizon Group, 5,000 Nuyen from Dana Mully, +Horizon Group, Contact: Dana Mully)\\n- Optional: In addition to the Orchid Protocol, there is valuable research data that can be retrieved. Successfully obtaining this data increases the payout but may attract unwanted attention from Biotechnica. (+5,000 Nuyen, -Biotechnica)"
-}
+}}
 ``` 
 EXAMPLE END
 
@@ -364,13 +366,13 @@ Create a scenario around:
 
 ASSISTANT:
 ```json
-{
+{{
   "title": "Shadows of the Feathered Serpent",
   "location": "Seattle",
   "task": "The shadowrunners are hired by Mr. Johnson, representing a group of disgruntled Aztechnology shareholders. They are tasked assassinating Victor Ramirez, a key figure in the corporation's leadership. The assassination is meant to destabilize the corporation's power structure and open opportunities for the shareholders to gain more control.",
   "important_details": "Stakeholders:\\n- Disgruntled shareholders\\n- Aztechnology (Megacorporation)\\n- Victor Ramirez (High-ranking executive at Aztechnology)\\n- Maria Vasquez (Cybersecurity specialist at Aztechnology)\\n\\nSecret background unknown to the shadowrunners:\\nVictor Ramirez has been secretly collaborating with a rival megacorporation to implement a backdoor into Aztechnology's systems. This backdoor would allow the rival corporation to gain access to sensitive information and potentially cripple Aztechnology's operations. Maria Vasquez is an expert Decker tasked with fortifying Aztechnology's cybersecurity who stumbled upon incriminating evidence against Ramirez\\nTwist:\\nAs the shadowrunners delve into Aztechnology's headquarters to eliminate Ramirez, they learn of his collaboration with the rival corporation. It's up to them whether they simply carry out the assassination as planned or if they choose to expose Ramirez's betrayal, potentially altering the power dynamics within Aztechnology.",
   "possible_outcomes": "- Standard: The shadowrunners successfully assassinate Ramirez and receive their payment (15,000 Nuyen from disgruntled shareholders).\\n- Alternative: Instead of killing Ramirez, the shadowrunners choose to expose his collaboration with the rival corporation. This results in a power struggle within Aztechnology, potentially leading to further destabilization of the corporation and increased opportunities for the shareholders. They still receive partial payment (10,000 Nuyen from disgruntled shareholders).\\n- Betrayal: The shadowrunners decide to spare Ramirez and instead strike a deal with him, offering to keep his collaboration secret in exchange for a hefty payment. This choice may lead to future lucrative opportunities with Aztechnology but could also strain relations with the disgruntled shareholders (20,000 Nuyen from Ramirez, --Disgruntled Shareholders).\\n- Bonus Objective: During their infiltration, the shadowrunners uncover evidence of the rival corporation's involvement and manage to sabotage their plans. This results in an additional reward from the disgruntled shareholders and potentially sparks a new conflict between Aztechnology and its rival (+5,000 Nuyen, +Disgruntled Shareholders, +Aztechnology)."
-}
+}}
 ```
 EXAMPLE END
 
@@ -384,13 +386,13 @@ Create a scenario around:
 
 ASSISTANT:
 ```json
-{
+{{
   "title": "The Neon Web",
   "location": "Seattle",
   "task": "The shadowrunners are hired by Mr. Johnson, representing Renraku, to rescue Professor Alan Monroe, a renowned researcher who has been kidnapped by the Red Suns street gang. The gang has demanded a hefty ransom and threatened to harm Monroe if Renraku involves law enforcement.",
   "important_details": "Stakeholders:\\n- Renraku (Megacorporation)\\n- Red Suns (Street Gang)\\n- Professor Alan Monroe (Renraku employee)\\n- Dr. Mei Ling (Renraku researcher)\\n\\nSecret background unknown to the shadowrunners:\\nDr. Mei Ling, a colleague of Professor Monroe, has been secretly collaborating with the Red Suns. She provided them with insider information about Monroe's research, which has significant military applications, in exchange for a cut of the ransom. However, Ling has become increasingly conflicted about her involvement and is seeking a way to redeem herself.\\nTwist:\\nAs the shadowrunners execute the rescue mission, they discover Ling's involvement and her conflicted feelings about betraying Renraku. They have the opportunity to confront her and potentially sway her to their side or use her to gain leverage over the Red Suns.\\n",
   "possible_outcomes": "- Standard: The shadowrunners successfully rescue Professor Monroe and receive their payment (15,000 Nuyen from Renraku, +Renraku).\\n- Redemption: The shadowrunners manage to convince Dr. Mei Ling to betray the Red Suns and provide valuable intel on their operations. This results in additional rewards from Renraku and potentially opens up future opportunities for collaboration (20,000 Nuyen from Renraku, +Renraku, Contact: Dr. Mei Ling).\\n- Double-cross: The shadowrunners decide to exploit Dr. Mei Ling's conflicted loyalties and coerce her into providing access to Renraku's confidential data in exchange for her own safety to. Selling the data to the Red Suns and having leverage on Dr. Mei Ling may lead to lucrative opportunities but risks burning bridges with Renraku if discovered (20,000 Nuyen from Red Suns, -Renraku, +Red Suns, Contact: Dr. Mei Ling).\\n- Optional: Retrieve stole goods from Red Suns (+5,000 Nuyen, -Red Suns)"
-}
+}}
 ```
 EXAMPLE END
 
@@ -400,13 +402,13 @@ Create a scenario around:
 
 ASSISTANT:
 ```json
-{
+{{
   "title": "Blazing Fury",
   "location": "Seattle",
   "task": "The shadowrunners are hired by Mr. Johnson, representing Ares Macrotechnology, to investigate a series of explosions at their research facilities. They are tasked with identifying and neutralizing the perpetrators behind the attacks, believed to be the Brotherhood of the Burning Star, an eco-terrorist group with a history of targeting corporate interests.",
   "important_details": "Stakeholders:\\n- Ares Macrotechnology (Megacorporation)\\n- Brotherhood of the Burning Star (Eco-terrorist group)\\n- Dr. Marcus Faulkner (Lead Researcher at Ares Macrotechnology)\\n- Sarah Kessler (Undercover agent within the Brotherhood)\\nSecret background unknown to the shadowrunners:\\nDr. Marcus Faulkner, a prominent researcher at Ares, has been conducting unethical experiments involving highly volatile substances, putting both the environment and lives at risk. The Brotherhood, aware of Faulkner's activities, has been trying to sabotage his work to prevent further environmental damage. Sarah Kessler, an undercover agent within the Brotherhood, is torn between her loyalty to the eco-terrorist cause and her growing concern for the potential collateral damage caused by their actions.\\nTwist:\\nAs the shadowrunners delve deeper into the investigation, they uncover evidence of Dr. Faulkner's reckless experiments and the Brotherhood's noble intentions to stop him. They must decide whether to fulfill their original mission and apprehend the Brotherhood members or to expose Faulkner's wrongdoing, potentially altering the power dynamics within Ares Macrotechnology.",
   "possible_outcomes": "-Standard: The shadowrunners successfully apprehend the Brotherhood members responsible for the explosions and receive their payment (20,000 Nuyen from Ares Macrotechnology, +Ares Macrotechnology).\\n- Environmental Justice: The shadowrunners choose to expose Dr. Faulkner's unethical experiments to the public, leading to his termination and significant damage to Ares Macrotechnology's reputation. This results in additional rewards from environmental activist groups and potential future opportunities for collaboration (25,000 Nuyen from Brotherhood of the Burning Star, +Brotherhood of the Burning Star).\\n- Corporate Complicity: The shadowrunners decide to keep Dr. Faulkner's activities secret and manipulate the evidence to frame the Brotherhood for the explosions. This leads to increased tensions between Ares and the Brotherhood and potentially escalates the conflict, but secures a larger payout from Ares and potential future contracts (30,000 Nuyen from Ares Macrotechnology, -Brotherhood of the Burning Star, +Ares Macrotechnology).\\n- Redemption Arc: The shadowrunners manage to convince Sarah Kessler to defect from the Brotherhood and provide valuable intel on their operations. This results in additional rewards from Ares Macrotechnology and the potential for future opportunities with the corporation (20,000 Nuyen from Ares Macrotechnology, +Ares Macrotechnology, Contact: Sarah Kessler).\\n- Optional: Steal and sell research data from Dr Faulkner (+7,000 Nuyen, --Brotherhood of the Burning Star)"
-}
+}}
 ```
 EXAMPLE END
 <|im_end|>
