@@ -22,7 +22,7 @@ class Gamemaster:
     def generate_mission(self) -> api_schema_mission.Mission:
 
         llm_response = self._llm_client.completion(
-            prompt=GENERATE_SESSION.format(question="- " + Oracle.mission() + "\n"),
+            prompt=GENERATE_SESSION.format(question=Oracle.mission()),
         )
 
         print(llm_response)
