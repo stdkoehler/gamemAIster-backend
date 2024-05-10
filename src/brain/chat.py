@@ -1,6 +1,7 @@
 """ Chat Conversation Memory """
 
 import re
+import json
 from dataclasses import dataclass
 
 from src.llmclient.types import LLMConfig
@@ -8,6 +9,7 @@ from src.llmclient.llm_client import LLMClient
 from src.crud.crud import crud_instance
 
 from src.brain.types import Actor, Interaction
+from src.brain.utils import extract_json_schema
 from src.brain.templates import CHAT_TEMPLATE_NOUS_HERMES as CHAT_TEMPLATE
 from src.brain.templates import SUMMARY_TEMPLATE_NOUS_HERMES as SUMMARY_TEMPLATE
 from src.brain.templates import ENTITY_TEMPLATE_NOUS_HERMES as ENTITY_TEMPLATE
@@ -41,11 +43,11 @@ class SummaryMemory:
     ):
         self._llm_client = llm_client
         self._last_k = last_k
-        self._summary = ""
         self._n_summarized = 0
         self._mission_id = mission_id
         self._min_summary_tokens = min_summary_tokens
 
+        self._summary, self._n_summarized = crud_instance.get_summary(self._mission_id)
         self._history = crud_instance.get_interactions(self._mission_id)
 
     def __len__(self):
@@ -97,7 +99,18 @@ class SummaryMemory:
         print("--- Summary prompt")
         print(prompt)
 
-        new_summary = self._llm_client.completion(prompt)
+        response = self._llm_client.completion(prompt)
+        json_string = extract_json_schema(response)
+
+        try:
+            summary_obj = json.loads(json_string)
+            new_summary = summary_obj["summary"]
+        except json.decoder.JSONDecodeError as exc:
+            raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
+        except KeyError as exc:
+            raise ValueError(
+                f"LLM response is missing required keys: {json_string}"
+            ) from exc
 
         print("--- Summary")
         print("New summary: ", new_summary)
@@ -107,18 +120,19 @@ class SummaryMemory:
     def _try_summarize(self):
         """summarize"""
         interaction_candidates = self._history[self._n_summarized : -self._last_k]
-        count = len(interaction_candidates)
         text = "\n".join(
             [
                 interaction.format_interaction_summary()
                 for interaction in interaction_candidates
             ]
         )
-        # if self._llm_client.count_tokens(text) > self._min_summary_tokens:
-        if self._llm_client.count_tokens(text) > 256:
+        if self._llm_client.count_tokens(text) > self._min_summary_tokens:
             self._summary = self.summarize(text)
             entities = self.extract_entities(text)
-            # self._n_summarized += count
+            self._n_summarized += len(interaction_candidates)
+            crud_instance.update_summary(
+                self._mission_id, self._summary, self._n_summarized
+            )
 
     def append(self, interaction: Interaction):
         """
@@ -142,7 +156,7 @@ class SummaryMemory:
         self._history[-1] = interaction
 
         # todo: debugging remove later
-        self._try_summarize()
+        # self._try_summarize()
 
     def interactions_complete(self) -> list[Interaction]:
         """

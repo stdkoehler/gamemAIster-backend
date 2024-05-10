@@ -51,3 +51,22 @@ class ConversationMemory(Base):
             "conversation_memory_id", "mission_id", name="conversation_memory_mission"
         ),
     )
+
+
+class SummaryMemory(Base):
+    __tablename__ = "SummaryMemory"
+    mission_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE"), primary_key=True
+    )
+    summary: Mapped[str] = mapped_column(Text)
+    n_summarized: Mapped[int] = mapped_column(Integer)
+
+
+class EntityMemory(Base):
+    __tablename__ = "EntityMemory"
+    mission_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE"), primary_key=True
+    )
+    entity: Mapped[str] = mapped_column(Text, primary_key=True)
+    entity_type: Mapped[str] = mapped_column(Text)
+    summary: Mapped[str] = mapped_column(Text)

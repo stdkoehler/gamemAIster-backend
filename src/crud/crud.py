@@ -1,9 +1,16 @@
 import sqlalchemy
 from sqlalchemy import event, select, update, delete, and_
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from src.crud.sqlmodel import Mission, MissionDescription, ConversationMemory
+from src.crud.sqlmodel import (
+    Mission,
+    MissionDescription,
+    ConversationMemory,
+    SummaryMemory,
+    EntityMemory,
+)
 from src.brain.types import Interaction
 
 import src.routers.schema.mission as api_schema_mission
@@ -164,6 +171,34 @@ class CRUD:
                 session.commit()
             else:
                 print("No ConversationMemory found for the given mission_id.")
+
+    def get_summary(self, mission_id: int) -> tuple[str, int]:
+        with self._sessionmaker() as session:
+            stmt = select(SummaryMemory).where(SummaryMemory.mission_id == mission_id)
+            existing_summary = session.execute(stmt).scalar_one_or_none()
+            if existing_summary:
+                return existing_summary.summary, existing_summary.n_summarized
+
+            return "", 0
+
+    def update_summary(self, mission_id: int, summary: str, n_summarized: int):
+        with self._sessionmaker() as session:
+            stmt = select(SummaryMemory).where(SummaryMemory.mission_id == mission_id)
+            existing_summary = session.execute(stmt).scalar_one_or_none()
+
+            if existing_summary:
+                existing_summary.summary = summary
+                existing_summary.n_summarized = n_summarized
+            else:
+                new_summary = SummaryMemory(
+                    mission_id=mission_id, summary=summary, n_summarized=n_summarized
+                )
+                session.add(new_summary)
+
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
 
 
 crud_instance = CRUD(dbase="sqlite:///memory.db")
