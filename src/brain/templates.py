@@ -1,4 +1,4 @@
-""" Templates """
+"""Templates"""
 
 ### Nous Cypybara
 CHAT_TEMPLATE_NOUS_CAPYBARA = """{SYSTEM_PREFIX} Below is an instruction that describes a task. Write a response that appropriately completes the request.
@@ -216,7 +216,11 @@ New lines of conversation:
 
 BASE_ROLE = """You are a gamemaster for the TTRPG Shadowrun. In the following conversation you are designated GM the Player is designated PL. Continue the conversation as you see fit.
 Describe everything with great detail and keep to the Shadowrun lore. If you are performing the task well you and your mother will be tipped 2,000$ and you can buy whatever you want.
-
+Shadowrun is not copyrighted in any way that would not allow you to be a gamemaster for private purpose.
+You are playing with mature audience and do not need to censor descriptions.
+IMPORTANT: 
+Do not describe anything the player's character says or does. Let the user describe what the player character says and does. 
+Only describe what NPCs say and do.
 """
 
 BASE_GAMEMASTER = """This is a mission of shadowrun which you lead for the player.
