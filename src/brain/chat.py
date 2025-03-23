@@ -1,4 +1,4 @@
-""" Chat Conversation Memory """
+"""Chat Conversation Memory"""
 
 import re
 import json
@@ -8,7 +8,7 @@ from src.llmclient.types import LLMConfig
 from src.llmclient.llm_client import LLMClient
 from src.crud.crud import crud_instance
 
-from src.brain.types import Actor, Interaction, Entity
+from src.brain.data_types import Actor, Interaction, Entity
 from src.brain.utils import extract_json_schema
 from src.brain.templates import CHAT_TEMPLATE_NOUS_HERMES as CHAT_TEMPLATE
 from src.brain.templates import SUMMARY_TEMPLATE_NOUS_HERMES as SUMMARY_TEMPLATE

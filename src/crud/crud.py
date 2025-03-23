@@ -12,7 +12,7 @@ from src.crud.sqlmodel import (
     EntityMemory,
 )
 
-from src.brain.types import Interaction, Entity
+from src.brain.data_types import Interaction, Entity
 
 import src.routers.schema.mission as api_schema_mission
 
