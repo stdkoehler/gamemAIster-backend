@@ -1,4 +1,3 @@
-{SYSTEM}
 You are an expert text summarizer. Your task is to produce a combined summary from two sources of input:
 1. **Previous Summary**: This is a summary of earlier events. It may be an empty string if this is the first call.
 2. **Current Events**: This is the latest dialogue and events that may contain new information or context.
@@ -103,10 +102,10 @@ Do not include any additional text or formatting outside the JSON.
 - Ensure the final JSON object is the only output.
 - Maintain clarity, coherence, and factual accuracy in the synthesized summary.
 
-Begin processing the inputs and output the combined summary as described.
-{SYSTEM_END}
-{USER}
+Begin processing the inputs and output the combined summary as described. You may use <think></think> to structure your approach
+
 *Input:*
-{INPUT}
-{USER_END}
-{ASSISTANT}
+{{
+  "previous_summary": {PREVIOUS_SUMMARY},
+  "current_events": {CURRENT_EVENTS}
+}}

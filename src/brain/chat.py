@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from dataclasses import dataclass
 
+from pydantic import BaseModel
+
 from src.llmclient.types import LLMConfig
 from src.llmclient.llm_client import LLMClient
 from src.crud.crud import crud_instance
@@ -34,14 +36,22 @@ class SummaryMemory:
         count: int
         text: str
 
+    class EntityResponse(BaseModel):
+        entities: list[Entity]
+        updated_entities: list[Entity]
+
     def __init__(
         self,
         llm_client: LLMClient,
+        summary_template: str,
+        entity_template: str,
         last_k: int,
         mission_id: int,
         min_summary_tokens: int = 1024,
     ):
         self._llm_client = llm_client
+        self._summary_template = summary_template
+        self._entity_template = entity_template
         self._last_k = last_k
         self._n_summarized = 0
         self._mission_id = mission_id
@@ -65,25 +75,33 @@ class SummaryMemory:
 
     def extract_entities(self, text_interaction) -> list[Entity]:
 
-        prompt = ENTITY_TEMPLATE.format(
-            unsummarized_interactions=text_interaction,
-            SYSTEM_PREFIX=Actor.SYSTEM.value,
-            SYSTEM_END=Actor.SYSTEM_END.value,
-            USER_PREFIX=Actor.USER.value,
-            LLM_PREFIX=Actor.LLM.value,
-        )
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.",
+            },
+            {
+                "role": "user",
+                "content": self._entity_template.format(
+                    ENTITIES=json.dumps([]), TEXT=text_interaction
+                ),
+            },
+        ]
 
-        print("--- Extract entity prompt")
-        print(prompt)
+        print("### Entity Prompt")
+        for msg in messages:
+            print(msg)
+            print("-------------")
 
-        response = self._llm_client.completion(prompt)
+        response = self._llm_client.chat_completion(messages=messages)
+
+        print("### Entity Response")
+        print(response)
+
         json_string = extract_json_schema(response)
 
-        entities = []
         try:
-            entity_objs = json.loads(json_string)
-            for entity in entity_objs:
-                entities.append(Entity.model_validate(entity))
+            entity_response = self.EntityResponse.model_validate_json(json_string)
         except json.decoder.JSONDecodeError as exc:
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
         except KeyError as exc:
@@ -91,28 +109,43 @@ class SummaryMemory:
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
 
+        # TODO: consider updated entities
+        entities = entity_response.entities
         print("--- Extract entity")
         print("Entities: ", entities)
 
         return entities
 
     def summarize(self, text_interaction):
+        """
+        Summarize the current summary plus the new text_interactions
+        """
 
-        summary = f"Current summary:\n{self.summary}" if len(self.summary) > 0 else ""
+        summary = self.summary if len(self.summary) > 0 else ""
 
-        prompt = SUMMARY_TEMPLATE.format(
-            current_summary=summary,
-            unsummarized_interactions=text_interaction,
-            SYSTEM_PREFIX=Actor.SYSTEM.value,
-            SYSTEM_END=Actor.SYSTEM_END.value,
-            USER_PREFIX=Actor.USER.value,
-            LLM_PREFIX=Actor.LLM.value,
-        )
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.",
+            },
+            {
+                "role": "user",
+                "content": self._summary_template.format(
+                    PREVIOUS_SUMMARY=summary, CURRENT_EVENTS=text_interaction
+                ),
+            },
+        ]
 
-        print("--- Summary prompt")
-        print(prompt)
+        print("### Summary Prompt")
+        for msg in messages:
+            print(msg)
+            print("-------------")
 
-        response = self._llm_client.completion(prompt)
+        response = self._llm_client.chat_completion(messages=messages)
+
+        print("### Summary Response")
+        print(response)
+
         json_string = extract_json_schema(response)
 
         try:
@@ -125,8 +158,8 @@ class SummaryMemory:
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
 
-        print("--- Summary")
-        print("New summary: ", new_summary)
+        print("### Summary")
+        print(new_summary)
 
         return new_summary
 
@@ -140,8 +173,9 @@ class SummaryMemory:
             ]
         )
         if self._llm_client.count_tokens(text) > self._min_summary_tokens:
-            self._summary = self.summarize(text)
             entities = self.extract_entities(text)
+            self._summary = self.summarize(text)
+
             self._n_summarized += len(interaction_candidates)
             crud_instance.update_summary(
                 self._mission_id, self._summary, self._n_summarized
@@ -270,6 +304,8 @@ class SummaryChat:
         self,
         llm_client: LLMClient,
         role: str,
+        summary_template: str,
+        entity_template: str,
         mission_id: int,
         last_k: int = 2,
     ):
@@ -279,7 +315,13 @@ class SummaryChat:
         if mission is None:
             raise ValueError("No mission could be loaded from database.")
         self._mission = mission.description
-        self._memory = SummaryMemory(self._llm_client, last_k, mission_id)
+        self._memory = SummaryMemory(
+            llm_client=self._llm_client,
+            summary_template=summary_template,
+            entity_template=entity_template,
+            last_k=last_k,
+            mission_id=mission_id,
+        )
 
     @staticmethod
     def _trim_chunk(chunk: str) -> str:

@@ -1,5 +1,5 @@
-{SYSTEM}
 You are an expert knowledge extractor. Your task is to extract entities from a given text and provide a brief summary of each extracted entity based on the information found in the text.
+Use your deep thinking capabilities to structure your approach in extracting the entities.s
 
 **Task Overview:**
 
@@ -69,10 +69,10 @@ Do not include any additional text or formatting outside the JSON.
 **Example 1: Start with empty entities**
 
 *Input:*
-{
+{{
     "text": "Bayonette receives a call from her fixer Jargo, who gives her the details of the job. It seems the wealthy individual who hired them is a powerful elf who is used to getting what he wants. He is offering a substantial payment for the return of his family heirloom, a large sword, which was stolen. And he wants it done discreetly. Bayonette listens intently, taking note of the details of the meeting location and time. The meeting is to take place in a high class restaurant where only the most elite of the cities can afford to dine: The Cloister. The Cloister is located on an artificial mountain several kilometres in distance from Seattle. Bayonette will have to be on her best behavior if she wants to get the job."
     "entities": []
-}
+}}
 
 
 *Output:*
@@ -220,10 +220,11 @@ He recognizes that this is no beggar, but a lookout for the Hallweeners, a gang 
 
 
 
-Begin processing the input text and output the extracted entities as described:
-{SYSTEM_END}
-{USER}
+Begin processing the input text and output the extracted entities as described. Make sure to use <think></think> to structure your approach.
+
+
 *Input:*
-{INPUT}
-{USER_END}
-{ASSISTANT}
+{{
+    "text": {TEXT},
+    "entities": {ENTITIES}
+}}

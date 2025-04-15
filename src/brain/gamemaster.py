@@ -4,12 +4,12 @@ import json
 
 from pathlib import Path
 
+from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
 from src.llmclient.llm_client import LLMClient
 
 from src.brain.oracle import Oracle
 from src.brain.utils import extract_json_schema
-from src.brain.templates import GENERATE_SESSION_EXPANDED_CHAT as GENERATE_SESSION
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
@@ -39,15 +39,43 @@ class Gamemaster:
         ) as f:
             self._mission_template = f.read()
 
-    def summary_chat(self, mission_id: int):
+        with open(
+            Path(__file__).parent / "prompt_templates" / "text_summary_prompt.txt",
+            "r",
+            encoding="utf-8",
+        ) as f:
+            self._summary_template = f.read()
+
+        with open(
+            Path(__file__).parent / "prompt_templates" / "text_entity_prompt.txt",
+            "r",
+            encoding="utf-8",
+        ) as f:
+            self._entity_template = f.read()
+
+    async def stream_interaction_response(
+        self, prompt: api_schema_interaction.InteractionPrompt
+    ):
         """
         Provide summary chat
         """
-        return SummaryChat(
+        chat = SummaryChat(
             llm_client=self._llm_client,
             role=self._role,
-            mission_id=mission_id,
+            summary_template=self._summary_template,
+            entity_template=self._entity_template,
+            mission_id=prompt.mission_id,
         )
+
+        interaction = (
+            Interaction(
+                prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output
+            )
+            if prompt.prev_interaction is not None
+            else None
+        )
+        for chunk in chat.predict(prompt.prompt, interaction):
+            yield json.dumps({"text": chunk}) + "\n"
 
     def generate_mission(self) -> api_schema_mission.Mission:
         """
