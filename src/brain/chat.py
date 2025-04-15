@@ -2,6 +2,7 @@
 
 import re
 import json
+from pathlib import Path
 from dataclasses import dataclass
 
 from src.llmclient.types import LLMConfig
@@ -10,7 +11,6 @@ from src.crud.crud import crud_instance
 
 from src.brain.data_types import Actor, Interaction, Entity
 from src.brain.utils import extract_json_schema
-from src.brain.templates import CHAT_TEMPLATE_NOUS_HERMES as CHAT_TEMPLATE
 from src.brain.templates import SUMMARY_TEMPLATE_NOUS_HERMES as SUMMARY_TEMPLATE
 from src.brain.templates import ENTITY_TEMPLATE_NOUS_HERMES as ENTITY_TEMPLATE
 
@@ -169,7 +169,6 @@ class SummaryMemory:
         crud_instance.update_last_interaction(self._mission_id, interaction)
         self._history[-1] = interaction
 
-        # todo: debugging remove later
         # self._try_summarize()
 
     def interactions_complete(self) -> list[Interaction]:
@@ -245,6 +244,17 @@ class SummaryMemory:
             ]
         )
 
+    def chat(self) -> list[dict[str, str]]:
+        messages = []
+        for interaction in self._history:
+            messages.append(
+                {"role": "user", "content": "PL: " + interaction.user_input}
+            )
+            messages.append(
+                {"role": "assistant", "content": "GM: " + interaction.llm_output}
+            )
+        return messages
+
 
 class SummaryChat:
     """
@@ -258,12 +268,12 @@ class SummaryChat:
 
     def __init__(
         self,
-        base_url: str,
+        llm_client: LLMClient,
         role: str,
         mission_id: int,
         last_k: int = 2,
     ):
-        self._llm_client = LLMClient(base_url=base_url)
+        self._llm_client = llm_client
         self._role = role
         mission = crud_instance.get_mission_description(mission_id=mission_id)
         if mission is None:
@@ -293,37 +303,37 @@ class SummaryChat:
             last_interaction (Interaction | None): The previous interaction. If it is not None, we will update the previous interaction
         """
 
+        # update last interaction - player changed interaction in frontend
         is_regenerate = True if user_input is None else False
 
         if last_interaction is not None:
             self._memory.update_last(last_interaction)
 
+        # regenerate with previous input
         if user_input is None:
-            history, user_input = (
-                self._memory.text_interactions_unsummarized_regenerate()
-            )
-        else:
-            history = self._memory.text_interactions_unsummarized()
+            _, user_input = self._memory.text_interactions_unsummarized_regenerate()
 
         # print("Current Summary:")
         # print(self._memory.summary)
+        system_prompt = self._role.format(MISSION=self._mission)
+        messages = [{"role": "system", "content": system_prompt}]
 
-        prompt = CHAT_TEMPLATE.format(
-            role=self._role,
-            mission=self._mission,
-            summary=self._memory.summary,
-            history=history,
-            current_user_input=Interaction.format_user_input(user_input),
-            SYSTEM_PREFIX=Actor.SYSTEM.value,
-            SYSTEM_END=Actor.SYSTEM_END.value,
-        )
+        messages += self._memory.chat()
+
+        if is_regenerate:
+            # we want to regenerate the last LLM answer, delete it from messages
+            messages = messages[:-1]
+        else:
+            messages.append({"role": "user", "content": "PL: " + user_input})
 
         llm_config = LLMConfig()
         llm_config.stop = ["PL", "###", "/FIN"]
 
         llm_response = ""
         begun = False
-        for chunk in self._llm_client.completion_stream(prompt, llm_config=llm_config):
+        for chunk in self._llm_client.chat_completion_stream(
+            messages, llm_config=llm_config
+        ):
             if not begun:
                 chunk = self._trim_chunk(chunk)
                 if chunk != "":
@@ -331,10 +341,10 @@ class SummaryChat:
             llm_response += chunk
             yield chunk
 
-        pattern = (
-            r"(?:What\ do\ you\ want\ to\ |What\ would\ you\ like\ to\ )\S[\S\s]*\?\s*"
-        )
-        llm_response = re.sub(pattern, "", llm_response)
+        # pattern = (
+        #     r"(?:What\ do\ you\ want\ to\ |What\ would\ you\ like\ to\ )\S[\S\s]*\?\s*"
+        # )
+        # llm_response = re.sub(pattern, "", llm_response)
 
         interaction = Interaction(user_input=user_input, llm_output=llm_response)
 
@@ -343,5 +353,11 @@ class SummaryChat:
         else:
             self._memory.append(interaction)
 
-        print("--- History:")
+        print("### Prompt")
+        for mi in messages:
+            print(mi)
+            print("-------------")
+        print("### Summary:")
+        print(self._memory.summary)
+        print("#### History:")
         print(self._memory.text_interactions_complete())

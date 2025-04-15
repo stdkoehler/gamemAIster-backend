@@ -1,4 +1,4 @@
-""" LLM Client """
+"""LLM Client"""
 
 import json
 from dataclasses import asdict
@@ -25,7 +25,10 @@ class LLMClient:
     def __init__(self, base_url: str):
         self._base_url = base_url
         self._completion_url = urljoin(base_url, "/v1/completions")
+        self._chat_completion_url = urljoin(base_url, "v1/chat/completions")
+        self._stop_generation_url = urljoin(base_url, "v1/internal/stop-generation")
         self._token_url = urljoin(base_url, "v1/internal/token-count")
+        self._headers = {"Content-Type": "application/json"}
 
     def request(self, url: str, payload):
         """
@@ -39,21 +42,39 @@ class LLMClient:
             dict: The JSON response from the request, parsed as a dictionary.
 
         """
-        headers = {"Content-Type": "application/json"}
-        response = requests.post(url, headers=headers, json=payload, timeout=60)
+        response = requests.post(url, headers=self._headers, json=payload, timeout=60)
         if response.status_code == 200:
             return json.loads(response.text)
 
-    def completion_stream(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
-        headers = {"Content-Type": "application/json"}
+    def chat_completion_stream(
+        self, messages: list[dict[str, str]], llm_config: LLMConfig = LLMConfig()
+    ):
+        data = asdict(llm_config)
+        data["messages"] = messages
+        data["stream"] = True
 
+        stream_response = requests.post(
+            self._chat_completion_url,
+            headers=self._headers,
+            json=data,
+            verify=False,
+            stream=True,
+            timeout=10,
+        )
+        client = SSEClient(stream_response)  # type: ignore
+
+        for event in client.events():
+            payload = json.loads(event.data)
+            yield payload["choices"][0]["delta"]["content"]
+
+    def completion_stream(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
         data = asdict(llm_config)
         data["prompt"] = prompt
         data["stream"] = True
 
         stream_response = requests.post(
             self._completion_url,
-            headers=headers,
+            headers=self._headers,
             json=data,
             verify=False,
             stream=True,
@@ -65,16 +86,31 @@ class LLMClient:
             payload = json.loads(event.data)
             yield payload["choices"][0]["text"]
 
-    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
-        headers = {"Content-Type": "application/json"}
+    def chat_completion(
+        self, messages: list[dict[str, str]], llm_config: LLMConfig = LLMConfig()
+    ):
+        data = asdict(llm_config)
+        data["messages"] = messages
+        data["stream"] = False
 
+        response = requests.post(
+            self._chat_completion_url,
+            headers=self._headers,
+            json=data,
+            verify=False,
+            stream=False,
+            timeout=60,
+        )
+        return json.loads(response.text)["choices"][0]["message"]["content"]
+
+    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
         data = asdict(llm_config)
         data["prompt"] = prompt
         data["stream"] = False
 
         response = requests.post(
             self._completion_url,
-            headers=headers,
+            headers=self._headers,
             json=data,
             verify=False,
             stream=False,
@@ -96,3 +132,13 @@ class LLMClient:
         payload = {"text": text}
         result = self.request(self._token_url, payload)
         return int(result["length"])
+
+    def stop_generation(self):
+        """
+        Stops the generation process.
+        """
+        requests.post(
+            self._stop_generation_url,
+            timeout=60,
+        )
+        return None

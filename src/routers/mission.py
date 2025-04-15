@@ -2,6 +2,8 @@
 
 from fastapi import APIRouter
 
+from src.llmclient.llm_client import LLMClient
+
 from src.crud.crud import crud_instance
 from src.brain.gamemaster import Gamemaster
 
@@ -21,7 +23,10 @@ router = APIRouter(
 
 @router.post("/new-mission")
 def new_mission() -> api_schema_mission.Mission:
-    gamemaster = Gamemaster("http://127.0.0.1:5000")
+    """
+    Generate a new mission via LLM call.
+    """
+    gamemaster = Gamemaster(llm_client=LLMClient(base_url="http://127.0.0.1:5000"))
     mission = gamemaster.generate_mission()
     mission = crud_instance.insert_mission(mission=mission)
 
@@ -33,21 +38,33 @@ def new_mission() -> api_schema_mission.Mission:
 
 @router.post("/save-mission")
 def save_mission(mission: api_schema_mission.SaveMission):
+    """
+    Save mission to database.
+    """
     crud_instance.save_mission(mission)
 
 
 @router.get("/missions")
 async def missions() -> list[api_schema_mission.Mission]:
+    """
+    List missons in database
+    """
     return crud_instance.list_missions()
 
 
 @router.get("/mission/{mission_id}")
 async def get_mission(mission_id: int) -> api_schema_mission.Mission | None:
+    """
+    Get the mission description for a given mission id
+    """
     return crud_instance.get_mission_description(mission_id=mission_id)
 
 
 @router.get("/load-mission/{mission_id}")
 async def load_mission(mission_id: int) -> api_schema_mission.LoadMission | None:
+    """
+    Load a mission from database
+    """
     mission = crud_instance.get_mission_description(mission_id=mission_id)
 
     if mission is not None:
