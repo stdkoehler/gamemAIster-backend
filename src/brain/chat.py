@@ -281,12 +281,8 @@ class SummaryMemory:
     def chat(self) -> list[dict[str, str]]:
         messages = []
         for interaction in self._history:
-            messages.append(
-                {"role": "user", "content": "PL: " + interaction.user_input}
-            )
-            messages.append(
-                {"role": "assistant", "content": "GM: " + interaction.llm_output}
-            )
+            messages.append({"role": "user", "content": interaction.user_input})
+            messages.append({"role": "assistant", "content": interaction.llm_output})
         return messages
 
 
@@ -366,7 +362,7 @@ class SummaryChat:
             # we want to regenerate the last LLM answer, delete it from messages
             messages = messages[:-1]
         else:
-            messages.append({"role": "user", "content": "PL: " + user_input})
+            messages.append({"role": "user", "content": user_input})
 
         llm_config = LLMConfig()
         llm_config.stop = ["PL", "###", "/FIN"]

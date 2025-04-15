@@ -1,5 +1,4 @@
 You are an expert knowledge extractor. Your task is to extract entities from a given text and provide a brief summary of each extracted entity based on the information found in the text.
-Use your deep thinking capabilities to structure your approach in extracting the entities.s
 
 **Task Overview:**
 
@@ -220,7 +219,7 @@ He recognizes that this is no beggar, but a lookout for the Hallweeners, a gang 
 
 
 
-Begin processing the input text and output the extracted entities as described. Make sure to use <think></think> to structure your approach.
+Begin processing the input text and output the extracted entities as described.
 
 
 *Input:*
