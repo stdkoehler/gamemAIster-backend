@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from dataclasses import asdict
 
-from src.llmclient.types import LLMConfig
+from src.llmclient.llm_parameters import LLMConfig
 
 # basepath = Path(__file__).parent
 # file = basepath / "corporations_raw.json"

@@ -1,17 +1,69 @@
 """LLM Client"""
 
 import json
+
+from typing import Generator
 from dataclasses import asdict
+from abc import ABC, abstractmethod
 
 from urllib.parse import urljoin
 
 import requests
 from sseclient import SSEClient
 
-from src.llmclient.types import LLMConfig
+from src.llmclient.llm_parameters import LLMConfig
 
 
-class LLMClient:
+class LLMClientBase(ABC):
+    """
+    Abstract Base Class defining all methods required for an LLM Interface
+    """
+
+    @abstractmethod
+    def chat_completion_stream(
+        self, messages: list[dict[str, str]], llm_config: LLMConfig = LLMConfig()
+    ) -> Generator[str, None, None]:
+        pass
+
+    @abstractmethod
+    def completion_stream(
+        self, prompt: str, llm_config: LLMConfig = LLMConfig()
+    ) -> Generator[str, None, None]:
+        pass
+
+    @abstractmethod
+    def chat_completion(
+        self, messages: list[dict[str, str]], llm_config: LLMConfig = LLMConfig()
+    ) -> str:
+        pass
+
+    @abstractmethod
+    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()) -> str:
+        pass
+
+    @abstractmethod
+    def count_tokens(self, text: str) -> int:
+        """
+        Counts the number of tokens in a given text by API call.
+
+        Args:
+            text (str): The text to count the tokens in.
+
+        Returns:
+            int: The number of tokens in the text.
+
+        """
+        pass
+
+    @abstractmethod
+    def stop_generation(self) -> None:
+        """
+        Stops the generation process.
+        """
+        pass
+
+
+class LLMClient(LLMClientBase):
     """
     LLMClient is a class that provides methods for interacting with the LLM API.
 
@@ -48,7 +100,7 @@ class LLMClient:
 
     def chat_completion_stream(
         self, messages: list[dict[str, str]], llm_config: LLMConfig = LLMConfig()
-    ):
+    ) -> Generator[str, None, None]:
         data = asdict(llm_config)
         data["messages"] = messages
         data["stream"] = True
@@ -67,7 +119,9 @@ class LLMClient:
             payload = json.loads(event.data)
             yield payload["choices"][0]["delta"]["content"]
 
-    def completion_stream(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
+    def completion_stream(
+        self, prompt: str, llm_config: LLMConfig = LLMConfig()
+    ) -> Generator[str, None, None]:
         data = asdict(llm_config)
         data["prompt"] = prompt
         data["stream"] = True

@@ -6,10 +6,11 @@ from pathlib import Path
 
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
-from src.llmclient.llm_client import LLMClient
+from src.llmclient.llm_client import LLMClientBase
+from src.llmclient.llm_parameters import LLMConfig
 
 from src.brain.oracle import Oracle
-from src.brain.utils import extract_json_schema
+from src.brain.json_tools import extract_json_schema
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
@@ -19,7 +20,7 @@ class Gamemaster:
 
     def __init__(
         self,
-        llm_client: LLMClient,
+        llm_client: LLMClientBase,
     ):
         self._llm_client = llm_client
 
@@ -100,7 +101,8 @@ class Gamemaster:
                     "role": "user",
                     "content": self._mission_template.format(question=oracle_topic),
                 },
-            ]
+            ],
+            llm_config=LLMConfig(max_tokens=4096),
         )
 
         print(llm_response)

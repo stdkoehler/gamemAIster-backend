@@ -2,19 +2,16 @@
 
 import re
 import json
-from pathlib import Path
 from dataclasses import dataclass
 
 from pydantic import BaseModel
 
-from src.llmclient.types import LLMConfig
-from src.llmclient.llm_client import LLMClient
+from src.llmclient.llm_parameters import LLMConfig
+from src.llmclient.llm_client import LLMClientBase
 from src.crud.crud import crud_instance
 
-from src.brain.data_types import Actor, Interaction, Entity
-from src.brain.utils import extract_json_schema
-from src.brain.templates import SUMMARY_TEMPLATE_NOUS_HERMES as SUMMARY_TEMPLATE
-from src.brain.templates import ENTITY_TEMPLATE_NOUS_HERMES as ENTITY_TEMPLATE
+from src.brain.data_types import Interaction, Entity
+from src.brain.json_tools import extract_json_schema
 
 # strip beginning linebreaks, spaces, GM, :
 strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
@@ -42,7 +39,7 @@ class SummaryMemory:
 
     def __init__(
         self,
-        llm_client: LLMClient,
+        llm_client: LLMClientBase,
         summary_template: str,
         entity_template: str,
         last_k: int,
@@ -298,7 +295,7 @@ class SummaryChat:
 
     def __init__(
         self,
-        llm_client: LLMClient,
+        llm_client: LLMClientBase,
         role: str,
         summary_template: str,
         entity_template: str,

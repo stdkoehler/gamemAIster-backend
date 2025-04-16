@@ -1,4 +1,4 @@
-""" LLM Client Types """
+"""LLM Client Types"""
 
 from dataclasses import dataclass, field
 
