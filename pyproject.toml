@@ -67,7 +67,7 @@ allow_redefinition = true
 warn_unused_ignores = false
 
 [[tool.mypy.overrides]]
-module = ["uvicorn.*"]
+module = ["uvicorn.*", "regex.*"]
 ignore_missing_imports = true
 
 [tool.pylint]
