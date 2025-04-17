@@ -64,7 +64,8 @@ class Gamemaster:
         Provide summary chat
         """
         chat = SummaryChat(
-            llm_client=self._llm_client_reasoning,
+            llm_client_chat=self._llm_client_chat,
+            llm_client_reasoning=self._llm_client_reasoning,
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,
