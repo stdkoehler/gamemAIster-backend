@@ -1,28 +1,96 @@
 [project]
-name = "shadow-teller-backend"
+name = "gamemAIster"
 version = "1.0.0"
+description = ""
+authors = [{ name = "Stefan Koehler", email = "st.d.koehler@gmail.com" }]
+readme = "README.md"
+requires-python = "^3.13"
 dependencies = [
-    "fastapi",
-    "requests",
-    "sseclient-py",
-    "uvicorn",
-    "python-json-logger",
-    "sqlalchemy",
-    "regex",
-    "chromadb",
-    "openai"
+    "fastapi>=0.115.9,<0.116.0",
+    "requests>=2.32.3,<2.33.0",
+    "sseclient-py>=1.8.0,<1.9.0",
+    "uvicorn>=0.34.1,<0.35.0",
+    "python-json-logger>=2.0.7,<2.1.0",
+    "sqlalchemy>=2.0.40,<2.1.0",
+    "regex>=2024.11.6,<2024.12.0",
+    "chromadb>=1.0.5,<1.1.0",
+    "openai>=1.75.0,<1.76.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "mypy",
-    "pylint",
-    "types-requests",
-    "beautifulsoup4",
-    "sentence_transformers", # needed for custom embedding model
-    "einops", # needed for custom embedding model
-    "ragatouille",
-    "rank_bm25",
+    "pytest>=8.3.5,<8.4.0",
+    "mypy>=1.10.0,<1.11.0",
+    "pylint>=3.1.0,<3.2.0",
+    "types-requests>=2.32.0.0,<2.33.0.0",
+    "beautifulsoup4>=4.13.4,<4.14.0",
+    "sentence-transformers>=4.1.0,<4.2.0",
+    "einops>=0.7.0,<0.8.0",
+    "ragatouille>=0.0.5,<0.1.0",
+    "rank-bm25>=0.2.2,<0.3.0",
+    "bandit>=1.8.3,<1.9.0",
+]
+test = [
+    "pytest-asyncio>=0.25.3,<0.26.0",
+    "pytest>=8.3.4,<9.0.0",
+    "pytest-env>=1.1.5,<2.0.0",
+    "pytest-cov>=6.1.0,<7.0.0",
+]
+release = [
+    # "uvicorn-worker>=0.2.0,<0.3.0",
+    "gunicorn>=23.0.0,<24.0.0",
 ]
 
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.mypy]
+exclude = "tests/.*|dev/.*"
+plugins = [
+    "pydantic.mypy",
+    "numpy.typing.mypy_plugin",
+    "sqlalchemy.ext.mypy.plugin",
+]
+cache_dir = ".mypy_cache/normal"
+strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+show_error_codes = true
+show_column_numbers = true
+check_untyped_defs = true
+follow_imports = "silent"
+allow_redefinition = true
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = ["uvicorn.*"]
+ignore_missing_imports = true
+
+[tool.pylint]
+ignore = ["tests", "dev", ".poetry"]
+ignore-paths = ["tests", "dev", ".poetry"]
+disable = [
+    "too-few-public-methods",
+    "too-many-arguments",
+    "too-many-instance-attributes",
+    "too-many-locals",
+    "logging-fstring-interpolation",
+]
+good-names = ["i", "j", "k", "id", "t0", "t1", "ds"]
+ignored-classes = "FieldInfo"
+init-hook = 'import sys; sys.path.append(".")'
+
+[tool.bandit]
+exclude_dirs = ["tests", "dev"]
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "DEBUG"
+asyncio_default_fixture_loop_scope = "session"
+
+[tool.pytest_env]
+CREDENTIALS = ""
