@@ -140,7 +140,6 @@ class LLMClient(LLMClientBase):
             self._chat_completion_url,
             headers=self._headers,
             json=data,
-            verify=False,
             stream=True,
             timeout=10,
         )
@@ -161,7 +160,6 @@ class LLMClient(LLMClientBase):
             self._completion_url,
             headers=self._headers,
             json=data,
-            verify=False,
             stream=True,
             timeout=10,
         )
@@ -189,7 +187,6 @@ class LLMClient(LLMClientBase):
             self._chat_completion_url,
             headers=self._headers,
             json=data,
-            verify=False,
             stream=False,
             timeout=60,
         )
@@ -205,7 +202,6 @@ class LLMClient(LLMClientBase):
             self._completion_url,
             headers=self._headers,
             json=data,
-            verify=False,
             stream=False,
             timeout=60,
         )
