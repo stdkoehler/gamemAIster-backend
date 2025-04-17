@@ -2,6 +2,7 @@
 
 import json
 
+from typing import AsyncGenerator
 from pathlib import Path
 
 from src.brain.data_types import Interaction
@@ -20,9 +21,11 @@ class Gamemaster:
 
     def __init__(
         self,
-        llm_client: LLMClientBase,
+        llm_client_reasoning: LLMClientBase,
+        llm_client_chat: LLMClientBase,
     ):
-        self._llm_client = llm_client
+        self._llm_client_reasoning = llm_client_reasoning
+        self._llm_client_chat = llm_client_chat
 
         with open(
             Path(__file__).parent / "prompt_templates" / "gamemaster_system_prompt.txt",
@@ -56,12 +59,12 @@ class Gamemaster:
 
     async def stream_interaction_response(
         self, prompt: api_schema_interaction.InteractionPrompt
-    ):
+    ) -> AsyncGenerator[str, None]:
         """
         Provide summary chat
         """
         chat = SummaryChat(
-            llm_client=self._llm_client,
+            llm_client=self._llm_client_reasoning,
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,
@@ -91,17 +94,15 @@ class Gamemaster:
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
         # )
 
-        llm_response = self._llm_client.chat_completion(
+        llm_response = self._llm_client_reasoning.chat_completion(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.",
+                    "content": self._mission_template,
                 },
-                {
-                    "role": "user",
-                    "content": self._mission_template.format(question=oracle_topic),
-                },
+                {"role": "user", "content": "Create scenario around:\n" + oracle_topic},
             ],
+            reasoning=True,
             llm_config=LLMConfig(max_tokens=4096),
         )
 

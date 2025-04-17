@@ -1,12 +1,13 @@
 """endpoints calling text_gen_webui"""
 
+import os
 import json
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 from src.brain.gamemaster import Gamemaster
-from src.llmclient.llm_client import LLMClient
+from src.llmclient.llm_client import LLMClient, LLMClientOpenRouter
 
 from src.utils.logger import configure_logger
 
@@ -22,7 +23,9 @@ router = APIRouter(
 
 
 @router.post("/gamemaster-send")
-async def post_gamemaster_send(prompt: api_schema_interaction.InteractionPrompt):
+async def post_gamemaster_send(
+    prompt: api_schema_interaction.InteractionPrompt,
+) -> StreamingResponse:
     """
     This function handles the user prompt for text generation.
 
@@ -35,7 +38,13 @@ async def post_gamemaster_send(prompt: api_schema_interaction.InteractionPrompt)
 
     """
 
-    gamemaster = Gamemaster(llm_client=LLMClient(base_url="http://127.0.0.1:5000"))
+    # gamemaster = Gamemaster(llm_client=LLMClient(base_url="http://127.0.0.1:5000"))
+    api_key = os.getenv("API_KEY_DEEPSEEK")
+    if api_key is None:
+        raise ValueError("OpenRouter API key not set")
+    gamemaster = Gamemaster(
+        llm_client=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat")
+    )
 
     return StreamingResponse(
         gamemaster.stream_interaction_response(prompt),
@@ -44,7 +53,7 @@ async def post_gamemaster_send(prompt: api_schema_interaction.InteractionPrompt)
 
 
 @router.post("/stop-generation")
-async def post_stop_generation():
+async def post_stop_generation() -> None:
     """
     Stop an ongoing LLM generation
     """

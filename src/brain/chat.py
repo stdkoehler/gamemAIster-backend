@@ -3,6 +3,7 @@
 import re
 import json
 from dataclasses import dataclass
+from typing import Generator
 
 from pydantic import BaseModel
 
@@ -57,11 +58,11 @@ class SummaryMemory:
         self._summary, self._n_summarized = crud_instance.get_summary(self._mission_id)
         self._history = crud_instance.get_interactions(self._mission_id)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._history)
 
     @property
-    def summary(self):
+    def summary(self) -> str:
         """
         Returns the summary of the chat conversation.
 
@@ -70,17 +71,15 @@ class SummaryMemory:
         """
         return self._summary
 
-    def extract_entities(self, text_interaction) -> list[Entity]:
+    def extract_entities(self, text_interaction: str) -> list[Entity]:
 
+        entity_input = '*Input:*{{"text": {text},"entities": {entities}}}'
         messages = [
-            {
-                "role": "system",
-                "content": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.",
-            },
+            {"role": "system", "content": self._entity_template},
             {
                 "role": "user",
-                "content": self._entity_template.format(
-                    ENTITIES=json.dumps([]), TEXT=text_interaction
+                "content": entity_input.format(
+                    text=text_interaction, entities=json.dumps([])
                 ),
             },
         ]
@@ -90,7 +89,7 @@ class SummaryMemory:
             print(msg)
             print("-------------")
 
-        response = self._llm_client.chat_completion(messages=messages)
+        response = self._llm_client.chat_completion(messages=messages, reasoning=True)
 
         print("### Entity Response")
         print(response)
@@ -113,22 +112,25 @@ class SummaryMemory:
 
         return entities
 
-    def summarize(self, text_interaction):
+    def summarize(self, text_interaction: str) -> str:
         """
         Summarize the current summary plus the new text_interactions
         """
 
         summary = self.summary if len(self.summary) > 0 else ""
 
+        summary_input = (
+            '*Input:*{{"previous_summary": {prev}, "current_events": {current}}}'
+        )
         messages = [
             {
                 "role": "system",
-                "content": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.",
+                "content": self._summary_template,
             },
             {
                 "role": "user",
-                "content": self._summary_template.format(
-                    PREVIOUS_SUMMARY=summary, CURRENT_EVENTS=text_interaction
+                "content": summary_input.format(
+                    prev=summary, entities=text_interaction
                 ),
             },
         ]
@@ -138,7 +140,7 @@ class SummaryMemory:
             print(msg)
             print("-------------")
 
-        response = self._llm_client.chat_completion(messages=messages)
+        response = self._llm_client.chat_completion(messages=messages, reasoning=True)
 
         print("### Summary Response")
         print(response)
@@ -146,7 +148,7 @@ class SummaryMemory:
         json_string = extract_json_schema(response)
 
         try:
-            summary_obj = json.loads(json_string)
+            summary_obj: dict[str, str] = json.loads(json_string)
             new_summary = summary_obj["summary"]
         except json.decoder.JSONDecodeError as exc:
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
@@ -160,7 +162,7 @@ class SummaryMemory:
 
         return new_summary
 
-    def _try_summarize(self):
+    def _try_summarize(self) -> None:
         """summarize"""
         interaction_candidates = self._history[self._n_summarized : -self._last_k]
         text = "\n".join(
@@ -179,7 +181,7 @@ class SummaryMemory:
             )
             crud_instance.update_entities(self._mission_id, entities)
 
-    def append(self, interaction: Interaction):
+    def append(self, interaction: Interaction) -> None:
         """
         Appends a new interaction to the chat conversation history.
 
@@ -190,7 +192,7 @@ class SummaryMemory:
 
         self._try_summarize()
 
-    def update_last(self, interaction: Interaction):
+    def update_last(self, interaction: Interaction) -> None:
         """
         Appdates the last interaction in memory.
 
@@ -261,7 +263,7 @@ class SummaryMemory:
             self._history[-1].user_input,
         )
 
-    def text_interactions_complete(self):
+    def text_interactions_complete(self) -> str:
         """
         Returns the formatted text of all interactions in the chat conversation.
 
@@ -295,21 +297,22 @@ class SummaryChat:
 
     def __init__(
         self,
-        llm_client: LLMClientBase,
+        llm_client_reasoning: LLMClientBase,
+        llm_client_chat: LLMClientBase,
         role: str,
         summary_template: str,
         entity_template: str,
         mission_id: int,
         last_k: int = 2,
     ):
-        self._llm_client = llm_client
+        self._llm_client_chat = llm_client_chat
         self._role = role
         mission = crud_instance.get_mission_description(mission_id=mission_id)
         if mission is None:
             raise ValueError("No mission could be loaded from database.")
         self._mission = mission.description
         self._memory = SummaryMemory(
-            llm_client=self._llm_client,
+            llm_client=llm_client_reasoning,
             summary_template=summary_template,
             entity_template=entity_template,
             last_k=last_k,
@@ -324,7 +327,7 @@ class SummaryChat:
 
     def predict(
         self, user_input: str | None, last_interaction: Interaction | None = None
-    ):
+    ) -> Generator[str, None, None]:
         """
         Predicts the AI language model's response to a given question in the chat conversation.
         Predict is called on Sending of a new user input. The previous interaction will then be
@@ -366,7 +369,7 @@ class SummaryChat:
 
         llm_response = ""
         begun = False
-        for chunk in self._llm_client.chat_completion_stream(
+        for chunk in self._llm_client_chat.chat_completion_stream(
             messages, llm_config=llm_config
         ):
             if not begun:

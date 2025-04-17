@@ -1,4 +1,4 @@
-""" Types """
+"""Types"""
 
 from enum import Enum
 from pydantic import BaseModel
@@ -34,7 +34,7 @@ class Interaction:
         self._user_input = user_input
         self._llm_output = llm_output
 
-    def format_interaction(self):
+    def format_interaction(self) -> str:
         """
         Formats the interaction by combining the formatted user input and the
         formatted AI language model output.
@@ -47,7 +47,7 @@ class Interaction:
             f"{self.format_llm_output(self._llm_output)}"
         )
 
-    def format_interaction_summary(self):
+    def format_interaction_summary(self) -> str:
         """
         Formats the interaction by combining the formatted user input and the
         formatted AI language model output. Use this for summarizing the interaction
@@ -59,23 +59,23 @@ class Interaction:
         return f"Player: {self._user_input}\n" f"Gamemaster: {self._llm_output}"
 
     @property
-    def user_input(self):
+    def user_input(self) -> str:
         return self._user_input
 
     @property
-    def llm_output(self):
+    def llm_output(self) -> str:
         return self._llm_output
 
     @property
-    def user_input_formatted(self):
+    def user_input_formatted(self) -> str:
         return Interaction.format_user_input(self._user_input)
 
     @property
-    def llm_output_formatted(self):
+    def llm_output_formatted(self) -> str:
         return Interaction.format_llm_output(self._llm_output)
 
     @staticmethod
-    def format_user_input(user_input: str):
+    def format_user_input(user_input: str) -> str:
         """
         Formats the user input by combining it with the actor prefix.
 
@@ -88,7 +88,7 @@ class Interaction:
         return Actor.USER.value.format(msg=user_input)
 
     @staticmethod
-    def format_llm_output(llm_output: str):
+    def format_llm_output(llm_output: str) -> str:
         """
         Formats the user input by combining it with the actor prefix.
 
