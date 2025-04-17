@@ -4,7 +4,7 @@ import os
 
 from fastapi import APIRouter
 
-from src.llmclient.llm_client import LLMClient, LLMClientOpenRouter
+from src.llmclient.llm_client import LLMClientOpenRouter
 
 from src.crud.crud import crud_instance
 from src.brain.gamemaster import Gamemaster
@@ -33,7 +33,10 @@ def new_mission() -> api_schema_mission.Mission:
     if api_key is None:
         raise ValueError("OpenRouter API key not set")
     gamemaster = Gamemaster(
-        llm_client=LLMClientOpenRouter(api_key=api_key, model="deepseek-reasoner")
+        llm_client_chat=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat"),
+        llm_client_reasoning=LLMClientOpenRouter(
+            api_key=api_key, model="deepseek-reasoner"
+        ),
     )
     mission = gamemaster.generate_mission()
     mission = crud_instance.insert_mission(mission=mission)
@@ -45,7 +48,7 @@ def new_mission() -> api_schema_mission.Mission:
 
 
 @router.post("/save-mission")
-def save_mission(mission: api_schema_mission.SaveMission):
+def save_mission(mission: api_schema_mission.SaveMission) -> None:
     """
     Save mission to database.
     """

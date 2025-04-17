@@ -1,7 +1,6 @@
 """endpoints calling text_gen_webui"""
 
 import os
-import json
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
@@ -43,7 +42,10 @@ async def post_gamemaster_send(
     if api_key is None:
         raise ValueError("OpenRouter API key not set")
     gamemaster = Gamemaster(
-        llm_client=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat")
+        llm_client_chat=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat"),
+        llm_client_reasoning=LLMClientOpenRouter(
+            api_key=api_key, model="deepseek-reasoner"
+        ),
     )
 
     return StreamingResponse(
