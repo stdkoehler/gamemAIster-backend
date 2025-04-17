@@ -4,7 +4,7 @@ import os
 
 from fastapi import APIRouter
 
-from src.llmclient.llm_client import LLMClientOpenRouter
+from src.llmclient.llm_client import LLMClient, LLMClientOpenRouter
 
 from src.crud.crud import crud_instance
 from src.brain.gamemaster import Gamemaster
@@ -28,16 +28,22 @@ def new_mission() -> api_schema_mission.Mission:
     """
     Generate a new mission via LLM call.
     """
-    # gamemaster = Gamemaster(llm_client=LLMClient(base_url="http://127.0.0.1:5000"))
-    api_key = os.getenv("API_KEY_DEEPSEEK")
-    if api_key is None:
-        raise ValueError("OpenRouter API key not set")
-    gamemaster = Gamemaster(
-        llm_client_chat=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat"),
-        llm_client_reasoning=LLMClientOpenRouter(
-            api_key=api_key, model="deepseek-reasoner"
-        ),
-    )
+    if os.getenv("LOCAL_LLM") is not None:
+        llm_client_local = LLMClient(base_url="http://127.0.0.1:5000")
+        gamemaster = Gamemaster(
+            llm_client_chat=llm_client_local, llm_client_reasoning=llm_client_local
+        )
+    else:
+        api_key = os.getenv("API_KEY_DEEPSEEK")
+        if api_key is None:
+            raise ValueError("OpenRouter API key not set")
+        gamemaster = Gamemaster(
+            llm_client_chat=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat"),
+            llm_client_reasoning=LLMClientOpenRouter(
+                api_key=api_key, model="deepseek-reasoner"
+            ),
+        )
+
     mission = gamemaster.generate_mission()
     mission = crud_instance.insert_mission(mission=mission)
 

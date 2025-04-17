@@ -36,17 +36,21 @@ async def post_gamemaster_send(
         StreamingResponse: A streaming response containing the generated text.
 
     """
-
-    # gamemaster = Gamemaster(llm_client=LLMClient(base_url="http://127.0.0.1:5000"))
-    api_key = os.getenv("API_KEY_DEEPSEEK")
-    if api_key is None:
-        raise ValueError("OpenRouter API key not set")
-    gamemaster = Gamemaster(
-        llm_client_chat=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat"),
-        llm_client_reasoning=LLMClientOpenRouter(
-            api_key=api_key, model="deepseek-reasoner"
-        ),
-    )
+    if os.getenv("LOCAL_LLM") is not None:
+        llm_client_local = LLMClient(base_url="http://127.0.0.1:5000")
+        gamemaster = Gamemaster(
+            llm_client_chat=llm_client_local, llm_client_reasoning=llm_client_local
+        )
+    else:
+        api_key = os.getenv("API_KEY_DEEPSEEK")
+        if api_key is None:
+            raise ValueError("OpenRouter API key not set")
+        gamemaster = Gamemaster(
+            llm_client_chat=LLMClientOpenRouter(api_key=api_key, model="deepseek-chat"),
+            llm_client_reasoning=LLMClientOpenRouter(
+                api_key=api_key, model="deepseek-reasoner"
+            ),
+        )
 
     return StreamingResponse(
         gamemaster.stream_interaction_response(prompt),
