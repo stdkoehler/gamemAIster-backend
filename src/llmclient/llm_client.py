@@ -88,7 +88,7 @@ class LLMClient(LLMClientBase):
         self._token_url = urljoin(base_url, "v1/internal/token-count")
         self._headers = {"Content-Type": "application/json"}
 
-    def request(self, url: str, payload: dict) -> Any:
+    def request(self, url: str, payload: dict[str, Any]) -> Any:
         """
         Sends a POST request to the specified URL with the given payload.
 
@@ -194,7 +194,7 @@ class LLMClient(LLMClientBase):
             timeout=60,
         )
         text = json.loads(response.text)["choices"][0]["message"]["content"]
-        return text if text is not None else text
+        return text if text is not None else ""
 
     def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()) -> str:
         data = asdict(llm_config)
@@ -324,7 +324,7 @@ class LLMClientOpenRouter(LLMClientBase):
 
         return response
 
-    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()):
+    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()) -> str:
 
         response = None
         while response is None:
@@ -341,7 +341,7 @@ class LLMClientOpenRouter(LLMClientBase):
                 print("Empty LLM response")
         return response
 
-    def count_tokens(self, text: str):
+    def count_tokens(self, text: str) -> int:
         """
         Counts the number of tokens in a given text by API call.
 
@@ -355,8 +355,7 @@ class LLMClientOpenRouter(LLMClientBase):
         # not sure how to count tokens for openrouter models
         return len(text)
 
-    def stop_generation(self):
+    def stop_generation(self) -> None:
         """
         Stops the generation process.
         """
-        pass
