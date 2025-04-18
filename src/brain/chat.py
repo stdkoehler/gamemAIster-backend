@@ -129,9 +129,7 @@ class SummaryMemory:
             },
             {
                 "role": "user",
-                "content": summary_input.format(
-                    prev=summary, entities=text_interaction
-                ),
+                "content": summary_input.format(prev=summary, current=text_interaction),
             },
         ]
 
