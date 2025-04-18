@@ -28,7 +28,8 @@ def new_mission() -> api_schema_mission.Mission:
     """
     Generate a new mission via LLM call.
     """
-    if os.getenv("LOCAL_LLM") is not None:
+    local_llm = os.getenv("LOCAL_LLM")
+    if local_llm is not None and local_llm == "1":
         llm_client_local = LLMClient(base_url="http://127.0.0.1:5000")
         gamemaster = Gamemaster(
             llm_client_chat=llm_client_local, llm_client_reasoning=llm_client_local
