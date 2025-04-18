@@ -12,6 +12,7 @@ from urllib.parse import urljoin
 import requests
 from sseclient import SSEClient
 import openai
+import tiktoken
 
 from src.llmclient.llm_parameters import LLMConfig
 
@@ -188,7 +189,7 @@ class LLMClient(LLMClientBase):
             headers=self._headers,
             json=data,
             stream=False,
-            timeout=60,
+            timeout=360,
         )
         text = json.loads(response.text)["choices"][0]["message"]["content"]
         return text if text is not None else ""
@@ -348,8 +349,10 @@ class LLMClientOpenRouter(LLMClientBase):
             int: The number of tokens in the text.
 
         """
-        # not sure how to count tokens for openrouter models
-        return len(text)
+        encoding = tiktoken.encoding_for_model("gpt-4o")
+        num_tokens = len(encoding.encode(text))
+        print(len(text), num_tokens)
+        return num_tokens
 
     def stop_generation(self) -> None:
         """
