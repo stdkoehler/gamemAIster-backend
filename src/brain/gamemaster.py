@@ -116,10 +116,8 @@ class Gamemaster:
             print("### Result")
             print(data)
             mission = {
-                "name": data["title"],
-                "description": data["task"]
-                + data["important_details"]
-                + data["possible_outcomes"],
+                "name": data["mission"]["meta"]["title"],
+                "description": json_string,
             }
             return api_schema_mission.Mission.model_validate(mission)
         except json.decoder.JSONDecodeError as exc:
