@@ -4,6 +4,7 @@ import re
 import json
 from dataclasses import dataclass
 from typing import Generator
+import threading
 
 from pydantic import BaseModel
 
@@ -73,7 +74,7 @@ class SummaryMemory:
 
     def extract_entities(self, text_interaction: str) -> list[Entity]:
 
-        entity_input = '*Input:*{{"text": {text},"entities": {entities}}}'
+        entity_input = '**Input:**{{"text": {text},"entities": {entities}}}'
         messages = [
             {"role": "system", "content": self._entity_template},
             {
@@ -120,7 +121,7 @@ class SummaryMemory:
         summary = self.summary if len(self.summary) > 0 else ""
 
         summary_input = (
-            '*Input:*{{"previous_summary": {prev}, "current_events": {current}}}'
+            '**Input:**{{"previous_summary": {prev}, "current_events": {current}}}'
         )
         messages = [
             {
@@ -187,8 +188,7 @@ class SummaryMemory:
             interaction (Interaction): The interaction to be appended to the history.
         """
         crud_instance.insert_interaction(self._mission_id, interaction)
-
-        self._try_summarize()
+        threading.Thread(target=self._try_summarize, daemon=True).start()
 
     def update_last(self, interaction: Interaction) -> None:
         """
