@@ -8,6 +8,8 @@
         "--config-file=${workspaceFolder}/pyproject.toml"
     ],
     "mypy-type-checker.ignorePatterns": [
+        "**/tests/*.py",
+        "**/dev/*.py",
         "**/tests/**/*.py",
         "**/dev/**/*.py"
     ],
@@ -15,6 +17,8 @@
         "--configfile=${workspaceFolder}/pyproject.toml"
     ],
     "pylint.ignorePatterns": [
+        "**/tests/*.py",
+        "**/dev/*.py",
         "**/tests/**/*.py",
         "**/dev/**/*.py"
     ],
