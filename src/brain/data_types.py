@@ -111,10 +111,18 @@ class Entity(BaseModel):
     summary: str
 
 
+class UpdatedEntity(Entity):
+    """
+    A class representing an entity extracted from a text.
+    """
+
+    updated_name: str
+
+
 class EntityResponse(BaseModel):
     """
     A class representing a response containing a list of entities and updated entities.
     """
 
     entities: list[Entity]
-    updated_entities: list[Entity]
+    updated_entities: list[UpdatedEntity]

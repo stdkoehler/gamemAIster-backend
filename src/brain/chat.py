@@ -100,7 +100,7 @@ class SummaryMemory:
         json_string = extract_json_schema(response)
 
         try:
-            entity_response = self.EntityResponse.model_validate_json(json_string)
+            entity_response = EntityResponse.model_validate_json(json_string)
         except json.decoder.JSONDecodeError as exc:
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
         except KeyError as exc:

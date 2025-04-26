@@ -1,6 +1,6 @@
 import pytest
 
-from src.brain.data_types import Entity, EntityResponse
+from src.brain.data_types import Entity, EntityResponse, UpdatedEntity
 from src.crud.crud import CRUD
 import io
 import sys
@@ -37,7 +37,12 @@ def test_update_entities(crud_instance):
             Entity(name="Entity2", type="Type2", summary="Summary2"),
         ],
         updated_entities=[
-            Entity(name="Entity3", type="Type1", summary="Summary3"),
+            UpdatedEntity(
+                name="Entity3",
+                updated_name="Entitiy3u",
+                type="Type1",
+                summary="Summary3",
+            ),
         ],
     )
     # only entities shall be inserted, updated_entities are ignored because they
@@ -52,7 +57,12 @@ def test_update_entities(crud_instance):
             Entity(name="Entity3", type="Type2", summary="Summary3"),
         ],
         updated_entities=[
-            Entity(name="Entity2", type="Type1", summary="UpdatedSummary2"),
+            UpdatedEntity(
+                name="Entity2",
+                updated_name="Entity2u",
+                type="Type1",
+                summary="UpdatedSummary2",
+            ),
         ],
     )
     # Entity1 will be appended because it already exists in the db
@@ -64,9 +74,11 @@ def test_update_entities(crud_instance):
     assert len(entities) == 3
     entity1 = next((e for e in entities if e.name == "Entity1"), None)
     assert entity1.summary == "Summary1; Summary1Append"
-    entity2 = next((e for e in entities if e.name == "Entity2"), None)
+    entity2 = next((e for e in entities if e.name == "Entity2u"), None)
     assert entity2.summary == "UpdatedSummary2"
     entity3 = next((e for e in entities if e.name == "Entity3"), None)
     assert entity3.summary == "Summary3"
+    with pytest.raises(StopIteration):
+        next(e for e in entities if e.name == "Entity2")
 
     crud_instance._cleanse_unpersisted()

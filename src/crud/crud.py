@@ -235,6 +235,7 @@ class CRUD:
 
                 if existing_entity is not None:
                     existing_entity.summary = entity.summary
+                    existing_entity.name = entity.updated_name
                 else:
                     print(f"Updated Entity {entity.name} not found in the database.")
 
