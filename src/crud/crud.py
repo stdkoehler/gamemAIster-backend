@@ -207,6 +207,23 @@ class CRUD:
             except IntegrityError:
                 session.rollback()
 
+    def get_entities(self, mission_id: int) -> list[Entity]:
+        with self._sessionmaker() as session:
+            stmt = (
+                select(EntityMemory)
+                .where(EntityMemory.mission_id == mission_id)
+                .order_by(EntityMemory.type.asc())
+            )
+            result = session.execute(stmt).scalars().all()
+            return [
+                Entity(
+                    name=memory.name,
+                    type=memory.type,
+                    summary=memory.summary,
+                )
+                for memory in result
+            ]
+
     def update_entities(self, mission_id: int, entities: list[Entity]) -> None:
         with self._sessionmaker() as session:
             for entity in entities:
