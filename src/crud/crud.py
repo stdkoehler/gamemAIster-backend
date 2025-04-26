@@ -1,3 +1,7 @@
+"""CRUD operations for the mission database."""
+
+from typing import Any
+
 import sqlalchemy
 from sqlalchemy import event, select, update, delete, and_
 from sqlalchemy.orm.exc import NoResultFound
@@ -21,7 +25,7 @@ class CRUD:
     def __init__(self, dbase: str):
         self._engine = sqlalchemy.create_engine(dbase)
 
-        def _fk_pragma_on_connect(dbapi_con, _):
+        def _fk_pragma_on_connect(dbapi_con: Any, _: Any) -> None:
             dbapi_con.execute("pragma foreign_keys=ON")
 
         event.listen(self._engine, "connect", _fk_pragma_on_connect)
@@ -29,7 +33,7 @@ class CRUD:
         self._sessionmaker = sessionmaker(self._engine)
         self._cleanse_unpersisted()
 
-    def _cleanse_unpersisted(self):
+    def _cleanse_unpersisted(self) -> None:
         with self._sessionmaker() as session:
             stmt = delete(Mission).where(Mission.persist.is_(False))
             session.execute(stmt)
@@ -59,7 +63,7 @@ class CRUD:
             mission.mission_id = db_mission.mission_id
             return mission
 
-    def save_mission(self, mission: api_schema_mission.SaveMission):
+    def save_mission(self, mission: api_schema_mission.SaveMission) -> None:
         with self._sessionmaker() as session:
             stmt = (
                 update(Mission)
@@ -139,7 +143,7 @@ class CRUD:
                 for memory in result
             ]
 
-    def insert_interaction(self, mission_id: int, interaction: Interaction):
+    def insert_interaction(self, mission_id: int, interaction: Interaction) -> None:
         memory = ConversationMemory(
             mission_id=mission_id,
             user_input=interaction.user_input,
@@ -149,7 +153,9 @@ class CRUD:
             session.add(memory)
             session.commit()
 
-    def update_last_interaction(self, mission_id: int, interaction: Interaction):
+    def update_last_interaction(
+        self, mission_id: int, interaction: Interaction
+    ) -> None:
         with self._sessionmaker() as session:
             stmt = (
                 select(ConversationMemory)
@@ -182,7 +188,7 @@ class CRUD:
 
             return "", 0
 
-    def update_summary(self, mission_id: int, summary: str, n_summarized: int):
+    def update_summary(self, mission_id: int, summary: str, n_summarized: int) -> None:
         with self._sessionmaker() as session:
             stmt = select(SummaryMemory).where(SummaryMemory.mission_id == mission_id)
             existing_summary = session.execute(stmt).scalar_one_or_none()
@@ -201,7 +207,7 @@ class CRUD:
             except IntegrityError:
                 session.rollback()
 
-    def update_entities(self, mission_id, entities: list[Entity]):
+    def update_entities(self, mission_id: int, entities: list[Entity]) -> None:
         with self._sessionmaker() as session:
             for entity in entities:
                 stmt = select(EntityMemory).where(
