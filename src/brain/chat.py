@@ -6,13 +6,12 @@ from dataclasses import dataclass
 from typing import Generator
 import threading
 
-from pydantic import BaseModel
 
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_client import LLMClientBase
 from src.crud.crud import crud_instance
 
-from src.brain.data_types import Interaction, Entity
+from src.brain.data_types import Interaction, EntityResponse
 from src.brain.json_tools import extract_json_schema
 
 # strip beginning linebreaks, spaces, GM, :
@@ -34,10 +33,6 @@ class SummaryMemory:
     class SummaryInteractions:
         count: int
         text: str
-
-    class EntityResponse(BaseModel):
-        entities: list[Entity]
-        updated_entities: list[Entity]
 
     def __init__(
         self,
@@ -72,7 +67,14 @@ class SummaryMemory:
         """
         return self._summary
 
-    def extract_entities(self, text_interaction: str) -> list[Entity]:
+    def extract_entities(self, text_interaction: str) -> EntityResponse:
+
+        entities_json = json.dumps(
+            [
+                entity.model_dump()
+                for entity in crud_instance.get_entities(self._mission_id)
+            ]
+        )
 
         entity_input = '**Input:**{{"text": {text},"entities": {entities}}}'
         messages = [
@@ -80,7 +82,7 @@ class SummaryMemory:
             {
                 "role": "user",
                 "content": entity_input.format(
-                    text=text_interaction, entities=json.dumps([])
+                    text=text_interaction, entities=entities_json
                 ),
             },
         ]
@@ -107,11 +109,11 @@ class SummaryMemory:
             ) from exc
 
         # TODO: consider updated entities
-        entities = entity_response.entities
         print("--- Extract entity")
-        print("Entities: ", entities)
+        print("Entities: ", entity_response.entities)
+        print("Updated entities: ", entity_response.updated_entities)
 
-        return entities
+        return entity_response
 
     def summarize(self, text_interaction: str) -> str:
         """
@@ -171,14 +173,14 @@ class SummaryMemory:
             ]
         )
         if self._llm_client.count_tokens(text) > self._min_summary_tokens:
-            entities = self.extract_entities(text)
+            entity_response = self.extract_entities(text)
             self._summary = self.summarize(text)
 
             self._n_summarized += len(interaction_candidates)
             crud_instance.update_summary(
                 self._mission_id, self._summary, self._n_summarized
             )
-            crud_instance.update_entities(self._mission_id, entities)
+            crud_instance.update_entities(self._mission_id, entity_response)
 
     def append(self, interaction: Interaction) -> None:
         """

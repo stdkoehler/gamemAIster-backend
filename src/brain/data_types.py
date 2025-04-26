@@ -109,3 +109,12 @@ class Entity(BaseModel):
     name: str
     type: str
     summary: str
+
+
+class EntityResponse(BaseModel):
+    """
+    A class representing a response containing a list of entities and updated entities.
+    """
+
+    entities: list[Entity]
+    updated_entities: list[Entity]

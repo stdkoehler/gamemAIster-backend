@@ -16,7 +16,7 @@ from src.crud.sqlmodel import (
     EntityMemory,
 )
 
-from src.brain.data_types import Interaction, Entity
+from src.brain.data_types import Interaction, Entity, EntityResponse
 
 import src.routers.schema.mission as api_schema_mission
 
@@ -224,9 +224,21 @@ class CRUD:
                 for memory in result
             ]
 
-    def update_entities(self, mission_id: int, entities: list[Entity]) -> None:
+    def update_entities(self, mission_id: int, entity_response: EntityResponse) -> None:
         with self._sessionmaker() as session:
-            for entity in entities:
+            for entity in entity_response.updated_entities:
+                stmt = select(EntityMemory).where(
+                    EntityMemory.mission_id == mission_id,
+                    EntityMemory.name == entity.name,
+                )
+                existing_entity = session.execute(stmt).scalar_one_or_none()
+
+                if existing_entity is not None:
+                    existing_entity.summary = entity.summary
+                else:
+                    print(f"Updated Entity {entity.name} not found in the database.")
+
+            for entity in entity_response.entities:
                 stmt = select(EntityMemory).where(
                     EntityMemory.mission_id == mission_id,
                     EntityMemory.name == entity.name,
@@ -234,7 +246,7 @@ class CRUD:
                 existing_entity = session.execute(stmt).scalar_one_or_none()
 
                 if existing_entity:
-                    existing_entity.summary += entity.summary
+                    existing_entity.summary += "; " + entity.summary
                 else:
                     new_entity = EntityMemory(
                         mission_id=mission_id,
