@@ -234,10 +234,14 @@ class CRUD:
                 existing_entity = session.execute(stmt).scalar_one_or_none()
 
                 if existing_entity is not None:
-                    existing_entity.summary = entity.summary
-                    existing_entity.name = entity.updated_name
+                    if entity.updated_name == "DELETE":
+                        session.delete(existing_entity)
+                    else:
+                        existing_entity.summary = entity.summary
+                        existing_entity.name = entity.updated_name
                 else:
                     print(f"Updated Entity {entity.name} not found in the database.")
+            session.commit()
 
             for entity in entity_response.entities:
                 stmt = select(EntityMemory).where(

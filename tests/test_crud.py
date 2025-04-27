@@ -22,15 +22,15 @@ def test_get_entities(crud_instance):
 
 def test_update_entities(crud_instance):
     crud_instance._cleanse_unpersisted()
+    mission_id = 14
     crud_instance.insert_mission(
         mission=Mission(
-            mission_id=14,
+            mission_id=mission_id,
             name="Test Mission",
             description="This is a test mission.",
         )
     )
 
-    mission_id = 14
     entity_response = EntityResponse(
         entities=[
             Entity(name="Entity1", type="Type1", summary="Summary1"),
@@ -80,5 +80,53 @@ def test_update_entities(crud_instance):
     assert entity3.summary == "Summary3"
     with pytest.raises(StopIteration):
         next(e for e in entities if e.name == "Entity2")
+
+    crud_instance._cleanse_unpersisted()
+
+
+def test_update_entities_with_deletion(crud_instance):
+    crud_instance._cleanse_unpersisted()
+    mission_id = 14
+    crud_instance.insert_mission(
+        mission=Mission(
+            mission_id=mission_id,
+            name="Deletion Test Mission",
+            description="This mission tests entity deletion.",
+        )
+    )
+
+    entity_response = EntityResponse(
+        entities=[
+            Entity(name="EntityA", type="TypeA", summary="SummaryA"),
+            Entity(name="EntityB", type="TypeB", summary="SummaryB"),
+        ],
+        updated_entities=[],
+    )
+    # Insert initial entities
+    crud_instance.update_entities(mission_id, entity_response)
+    entities = crud_instance.get_entities(mission_id)
+    assert len(entities) == 2
+
+    # Update with deletion of EntityA
+    entity_response = EntityResponse(
+        entities=[],
+        updated_entities=[
+            UpdatedEntity(
+                name="EntityA",
+                updated_name="DELETE",
+                type="TypeA",
+                summary="",
+            ),
+        ],
+    )
+    crud_instance.update_entities(mission_id, entity_response)
+
+    entities = crud_instance.get_entities(mission_id)
+    assert len(entities) == 1
+    assert entities[0].name == "EntityB"
+
+    # Ensure EntityA is deleted
+    with pytest.raises(StopIteration):
+        next(e for e in entities if e.name == "EntityA")
 
     crud_instance._cleanse_unpersisted()
