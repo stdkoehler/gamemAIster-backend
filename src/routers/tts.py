@@ -53,19 +53,16 @@ def tts_stream(request: TtsRequest) -> StreamingResponse:
     """
 
     def generate_audio() -> Generator[bytes]:
-        i = 0
         text = request.text.split("---")[0]
         with requests.post(
             "http://127.0.0.1:8001/inference/text-to-speech-stream-webm",
-            json={"model": "JoeyCocoDiaz", "text": text},
+            json={"model": "CaraGee", "text": text},
             timeout=360,
             stream=True,
         ) as r:
             r.raise_for_status()
             for chunk in r.iter_content(chunk_size=4096):
                 if chunk:
-                    i += 1
-                    print(i)
                     yield chunk
 
     return StreamingResponse(

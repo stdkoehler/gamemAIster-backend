@@ -68,7 +68,7 @@ allow_redefinition = true
 warn_unused_ignores = false
 
 [[tool.mypy.overrides]]
-module = ["uvicorn.*", "regex.*"]
+module = ["uvicorn.*", "regex.*", "jsonlogger.*"]
 ignore_missing_imports = true
 
 [tool.pylint]
@@ -92,6 +92,7 @@ exclude_dirs = ["tests", "dev"]
 log_cli = true
 log_cli_level = "DEBUG"
 asyncio_default_fixture_loop_scope = "session"
+addopts = "--capture=no"
 
 [tool.pytest_env]
 CREDENTIALS = ""
