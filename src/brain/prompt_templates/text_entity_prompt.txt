@@ -86,6 +86,60 @@ updated_entities only has elements, when an existing entity needs updating.
    - Format updated entities for the `updated_entities` array
    - Ensure all JSON formatting is valid (escape quotes, etc.)
 
+## Entity Type Definitions
+
+All extracted entities must be categorized into one of the following types:
+
+- **Person**:
+  An individual character, named or unnamed, who is significant to the narrative.
+  *Examples*: Bayonette, Dr. Emily Hart, SINless Person.
+
+- **Organization**:
+  A structured, named group or corporation that does not qualify as a Megacorp.
+  *Examples*: Local syndicates, small corporations, city governments.
+
+- **Megacorp**:
+  A major corporate entity classified as AAA/AA under Shadowrun lore.
+  *Examples*: Aztechnology, Evo Corporation.
+
+- **Faction**:
+  An independent group characterized by its own ideology, goals, or subcultural identity.
+  *Examples*: Halloweeners gang, Humanis Policlub.
+
+- **Group**:
+  A functional unit operating within a larger entity; lacks full independence.
+  *Examples*: Aztech Guards, Knight Errant security team.
+
+- **Item**:
+  A significant physical object relevant to the story’s progression.
+  *Examples*: Family Heirloom Sword, Datachip.
+
+- **Location**:
+  A geographical place, building, area, or landmark with narrative significance.
+  *Examples*: The Cloister, Redmond.
+
+- **Project**:
+  A named project, research initiative, or classified operation.
+  *Examples*: Nextstep Project.
+
+- **Vehicle**:
+  A transport device or unit when individually noteworthy.
+  *Examples*: Rickshaw, Renraku VTOL.
+
+- **Event**:
+  A major, named occurrence impacting the plot.
+  *Examples*: Crash 2.0.
+
+- **AI/System**:
+  An artificial intelligence or critical computer network treated as a distinct entity.
+  *Examples*: Deus, Seattle Grid.
+
+### Classification Guidelines
+- Use the **most specific type** that fits the entity.
+- When independence or allegiance is unclear, prefer **Group** over **Faction** conservatively.
+- In ambiguous cases, prioritize maintaining **narrative integrity** and consistency across entries.
+
+
 ## Implementation Examples
 
 ### Example 1: Start with empty entities*
@@ -162,17 +216,11 @@ updated_entities only has elements, when an existing entity needs updating.
         },
         {
             "name": "Aztech Guards",
-            "type": "Person",
+            "type": "Group",
             "summary": "Two towering guards with cybernetic enhancements who flank the entrance to the Neon Lotus."
         }
     ],
-    "updated_entities": [
-        {
-            "name": "Neon Lotus",
-            "type": "Location",
-            "summary": "A sleek, neon-lit building nestled between towering corporate structures. It's described as a beacon of corporate glamour with an entrance flanked by Aztech guards, featuring a lounge area bathed in soft light and an atmosphere of expensive liquor and sophisticated conversation."
-        }
-    ]
+    "updated_entities": []
 }
 ```
 
@@ -221,6 +269,7 @@ updated_entities only has elements, when an existing entity needs updating.
     "updated_entities": [
         {
             "name": "Neon Lotus",
+            "updated_name": "Neon Lotus",
             "type": "Location",
             "summary": "A sleek, neon-lit building nestled between towering corporate structures. It has a surveillance system that was accessed by Lysandra the decker to find footage of Dr. Emily Hart meeting with a SINless person."
         }
@@ -265,15 +314,18 @@ updated_entities only has elements, when an existing entity needs updating.
 }
 ```
 
-#Example 5: Multiple Updates and New Information
+### Example 5: Multiple Updates and New Information
 
 **Input:**
 {
-    "text": "After meeting with Johnson at the Paradise Club, Shade headed to the Undercity Markets to meet his contact, an info broker called 'Whisper'. The markets were bustling as usual, the smell of street food mixing with the acrid tang of industrial chemicals. He found Whisper at her usual stall, disguised as a fortune teller. 'I need everything you have on Evo Corporation's Nextstep Project,' Shade said quietly. Whisper's eyes narrowed. 'That'll cost you double my usual rate. Evo's security has been extra tight since Director Chang took over the cybernetics division.' She slid a datachip across the table. 'Be careful with this. Chang's been hiring ex-military for her security detail, not just corp drones.'",
+    "text": "After meeting with Johnson at the Paradise Club, Shade learned that the info broker he's supposed to meet is called 'Whisper' and can be found at the Undercity Markets. The markets were bustling as usual, the smell of street food mixing with the acrid tang of industrial chemicals. He found Whisper at her usual stall, disguised as a fortune teller. 'I need everything you have on Evo Corporation's Nextstep Project,' Shade said quietly. Whisper's eyes narrowed. 'That'll cost you double my usual rate. Evo's security has been extra tight since Director Chang took over the cybernetics division. He's the guy your supposed to spy on by the way...' She slid a datachip across the table. 'Be careful with this. Chang's been hiring ex-military for her security detail, not just corp drones.'",
     "entities": [
         {"name": "Johnson", "type": "Person", "summary": "A client who met Shade at the Paradise Club."},
+        {"name": "Info Broker", "type": "Person", "summary": "A person Shade is supposed to find after his meeting with Johnson."},
         {"name": "Paradise Club", "type": "Location", "summary": "A meeting location where Shade met Johnson."},
-        {"name": "Shade", "type": "Person", "summary": "The main character who met with Johnson."}
+        {"name": "Shade", "type": "Person", "summary": "The main character who met with Johnson."},
+        {"name": "Evo Corporation", "type": "Megacorp", "summary": "The corporation Johnson is targeting"},
+        {"name": "Target", "type": "Person", "summary": "An important person working for Evo Corporation"}
     ]
 }
 
@@ -282,34 +334,38 @@ updated_entities only has elements, when an existing entity needs updating.
 {
     "entities": [
         {
-            "name": "Whisper",
-            "type": "Person",
-            "summary": "An info broker who operates from the Undercity Markets disguised as a fortune teller. She provided Shade with information about Evo Corporation's Nextstep Project at double her usual rate."
-        },
-        {
             "name": "Undercity Markets",
             "type": "Location",
             "summary": "A bustling marketplace with various stalls including Whisper's fortune teller operation, characterized by the smell of street food mixed with industrial chemicals."
         },
         {
-            "name": "Evo Corporation",
-            "type": "Megacorp",
-            "summary": "A corporation running the Nextstep Project. Their cybernetics division is led by Director Chang and has recently increased security measures."
-        },
-        {
             "name": "Nextstep Project",
             "type": "Project",
             "summary": "A project run by Evo Corporation that Shade was seeking information about, which appears to be sensitive enough to warrant heightened security."
-        },
-        {
-            "name": "Director Chang",
-            "type": "Person",
-            "summary": "The leader of Evo Corporation's cybernetics division who has implemented tighter security and hired ex-military personnel for protection."
         }
     ],
     "updated_entities": [
         {
+            "name": "Info Broker",
+            "updated_name": "Whisper",
+            "type": "Person",
+            "summary": "An info broker who operates from the Undercity Markets disguised as a fortune teller. She provided Shade with information about Evo Corporation's Nextstep Project at double her usual rate."
+        },
+        {
+            "name": "Evo Corporation",
+            "updated_name": "Evo Corporation",
+            "type": "Megacorp",
+            "summary": "A corporation running the Nextstep Project. Their cybernetics division is led by Director Chang and has recently increased security measures."
+        },
+        {
+            "name": "Target",
+            "updated_name": "Director Chang",
+            "type": "Person",
+            "summary": "The leader of Evo Corporation's cybernetics division and the target Shade's supposed to spy on. She has implemented tighter security and hired ex-military personnel for protection."
+        },
+        {
             "name": "Shade",
+            "updated_name": "Shade",
             "type": "Person",
             "summary": "The main character who met with Johnson at the Paradise Club and later visited Whisper at the Undercity Markets to obtain information about Evo Corporation's Nextstep Project."
         }
