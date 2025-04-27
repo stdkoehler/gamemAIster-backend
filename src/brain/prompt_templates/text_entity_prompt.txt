@@ -19,14 +19,16 @@ You are a specialized entity extraction engine designed to identify, categorize,
 - **Entity Comparison**: Compare newly extracted entities against previously known entities
 - **Deduplication Logic**: Prevent duplicate entries while preserving information integrity
 - **Update Mechanism**:
-  - When new information about an existing entity is discovered, update the entity via the `updated_entities` field
+  - When new information about an existing entity is discovered, update the entity via the `updated_entities` field. Never remove previously available information by an update. Only extend it.
   - When an entity's identity is clarified (e.g., "mysterious figure" → "John Smith"), track this through the `updated_name` field
   - Maintain the original entity name for continuity and cross-referencing
+  - Fusion: It may happen that the same entity is represented in multiple entities due to missing information. If duplicate entries are detected, update one of the instances with the fused information. For the other duplicate entities return updated_name: "DELETE"
 
 ### 3. Information Reconciliation
 - **Conflict Resolution**: When information conflicts, prioritize details with stronger textual support
 - **Ambiguity Management**: Apply conservative extraction principles when faced with unclear information
 - **Contextual Consistency**: Ensure information about entities remains consistent throughout processing
+- **Completenes**: When updating entities **NEVER** remove information. You can reformulate but the information of the initial entity may **NEVER** be removed
 
 ## Technical Requirements
 
@@ -369,6 +371,73 @@ All extracted entities must be categorized into one of the following types:
             "type": "Person",
             "summary": "The main character who met with Johnson at the Paradise Club and later visited Whisper at the Undercity Markets to obtain information about Evo Corporation's Nextstep Project."
         }
+    ]
+}
+```
+
+### Example 6: Plain Duplication
+
+The duplication is obvious. We keep the Tatsuo `Bonebreaker` Kurosawa because the highlighted nickname makes the most sense.
+
+**Input:**
+{
+    "text": "After Sari askes for the upfront, Tatsuo looks around in the club for almost a minute without reacting. Then, after taking another sip of his Sake, he nods and transfers 8,000¥ via Shotozumi-gumi-certified credstick to Sari.",
+    "entities": [
+        {"name": "Tatsuo `Bonebreaker` Kurosawa", "type": "Person", "summary": "A Yakuza mob boss who hired Sari for a job."}
+        {"name": "Tatsuo Bonebreaker Kurosawa", "type": "Person", "summary": "A notorious Yakuza figure overseeing the meet at The Bleeding Cherry Blossom, known for violent methods."}
+    ]
+}
+
+**Output:**
+```json
+{
+    "entities": [],
+    "updated_entities": [
+        {
+            "name": "Tatsuo `Bonebreaker` Kurosawa",
+            "type": "Person",
+            "summary": "A notorious Yakuza mob boss overseeing the meet at The Bleeding Cherry Blossom, known for violent methods. He hired Sari for a job and transfered an 8,000¥ retainer via Shotozumi-gumi-certified credstick to Sari."
+        },
+        {
+            "name": "Tatsuo Bonebreaker Kurosawa",
+            "updated_name": "DELETE",
+            "type": "Person",
+            "summary": ""
+        }
+    ]
+}
+```
+
+### Example 7: Subtle Duplication
+
+Fusion should be performed based on importance and specificity. In this case, Jimmy's hideout is more specific and more important than the street name.
+
+**Input:**
+{
+    "text": "Drummer arrived at the Jimmy's Hideout. As described, the entry was hidden behind a food stand, the door safeguarded by a retinal scanning mechanism.",
+    "entities": [
+        {"name": "Jimmy's Hideout", "type": "Location", "summary": "Jimmy's Hideout is a small hidden apartment, where Jimmy keeps a small arsenal for emergiencies."}
+        {"name": "8th Street", "type": "Location", "summary": "The address Jimmy gave Drummer to find his Hideout in case of emergency."}
+    ]
+}
+
+**Output:**
+```json
+{
+    "entities": [],
+    "updated_entities": [
+        {
+            "name": "Jimmy's Hideout",
+            "updated_name": "Jimmy's Hideout",
+            "type": "Location",
+            "summary": "A small appartment located at 8th Street, hidden behind a food stand and safeguarded by a retinal scanning mechanism. Jimmy informed Drummer to go there if any emergency occured, as he keeps a small arsenal there for such cases."
+        },
+        {
+            "name": "8th Street",
+            "updated_name": "DELETE"
+            "type": "Location",
+            "summary": ""
+        },
     ]
 }
 ```
