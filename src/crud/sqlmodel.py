@@ -15,6 +15,7 @@ class Mission(Base):
     )
     name_custom: Mapped[str] = mapped_column(String(50), default="")
     name: Mapped[str] = mapped_column(String(50))
+    game_type: Mapped[str] = mapped_column(String(50))
     persist: Mapped[bool] = mapped_column(Boolean)
 
 

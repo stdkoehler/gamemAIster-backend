@@ -1,6 +1,13 @@
-from pydantic import BaseModel
+from enum import StrEnum
 
+from pydantic import BaseModel
 from src.routers.schema.interaction import InteractionSchema
+
+
+class GameType(StrEnum):
+    SHADOWRUN = "shadowrun"
+    VAMPIRE_THE_MASQUERADE = "vampire_the_masquerade"
+    CALL_OF_CTHULHU = "call_of_cthulhu"
 
 
 class Mission(BaseModel):
@@ -8,6 +15,7 @@ class Mission(BaseModel):
     name_custom: str = ""
     name: str
     description: str
+    game_type: GameType
 
 
 class SaveMission(BaseModel):
@@ -18,3 +26,7 @@ class SaveMission(BaseModel):
 class LoadMission(BaseModel):
     mission: Mission
     interactions: list[InteractionSchema]
+
+
+class NewMissionPayload(BaseModel):
+    game_type: GameType

@@ -13,6 +13,7 @@ from src.utils.logger import configure_logger
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
+from src.routers.schema.mission import NewMissionPayload
 
 log = configure_logger("mission")
 
@@ -24,15 +25,20 @@ router = APIRouter(
 
 
 @router.post("/new-mission")
-def new_mission() -> api_schema_mission.Mission:
+def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
     """
     Generate a new mission via LLM call.
     """
+    game = payload.game_type
+    print(game)
+
     local_llm = os.getenv("LOCAL_LLM")
     if local_llm is not None and local_llm == "1":
         llm_client_local = LLMClient(base_url="http://127.0.0.1:5000")
         gamemaster = Gamemaster(
-            llm_client_chat=llm_client_local, llm_client_reasoning=llm_client_local
+            llm_client_chat=llm_client_local,
+            llm_client_reasoning=llm_client_local,
+            game_type=payload.game_type,
         )
     else:
         api_key = os.getenv("API_KEY_DEEPSEEK")
@@ -43,6 +49,7 @@ def new_mission() -> api_schema_mission.Mission:
             llm_client_reasoning=LLMClientOpenRouter(
                 api_key=api_key, model="deepseek-reasoner"
             ),
+            game_type=payload.game_type,
         )
 
     mission = gamemaster.generate_mission()

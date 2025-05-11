@@ -23,38 +23,36 @@ class Gamemaster:
         self,
         llm_client_reasoning: LLMClientBase,
         llm_client_chat: LLMClientBase,
+        game_type: api_schema_mission.GameType,
     ):
         self._llm_client_reasoning = llm_client_reasoning
         self._llm_client_chat = llm_client_chat
+        self._game_type = game_type
 
-        with open(
-            Path(__file__).parent / "prompt_templates" / "gamemaster_system_prompt.txt",
-            "r",
-            encoding="utf-8",
-        ) as f:
+        prompt_dir = Path(__file__).parent / "prompt_templates"
+
+        if game_type == api_schema_mission.GameType.SHADOWRUN:
+            mission_prompt = prompt_dir / "shadowrun_mission_prompt.txt"
+            system_prompt = prompt_dir / "shadowrun_system_prompt.txt"
+        elif game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
+            mission_prompt = prompt_dir / "vampire_mission_prompt.txt"
+            system_prompt = prompt_dir / "vampire_system_prompt.txt"
+        elif game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
+            mission_prompt = prompt_dir / "cthulhu_mission_prompt.txt"
+            system_prompt = prompt_dir / "cthulhu_system_prompt.txt"
+        else:
+            raise ValueError(f"Unknown game type: {game_type}")
+
+        with open(system_prompt, "r", encoding="utf-8") as f:
             self._role = f.read()
 
-        with open(
-            Path(__file__).parent
-            / "prompt_templates"
-            / "gamemaster_mission_prompt.txt",
-            "r",
-            encoding="utf-8",
-        ) as f:
+        with open(mission_prompt, "r", encoding="utf-8") as f:
             self._mission_template = f.read()
 
-        with open(
-            Path(__file__).parent / "prompt_templates" / "text_summary_prompt.txt",
-            "r",
-            encoding="utf-8",
-        ) as f:
+        with open(prompt_dir / "text_summary_prompt.txt", "r", encoding="utf-8") as f:
             self._summary_template = f.read()
 
-        with open(
-            Path(__file__).parent / "prompt_templates" / "text_entity_prompt.txt",
-            "r",
-            encoding="utf-8",
-        ) as f:
+        with open(prompt_dir / "text_entity_prompt.txt", "r", encoding="utf-8") as f:
             self._entity_template = f.read()
 
     async def stream_interaction_response(
@@ -86,10 +84,12 @@ class Gamemaster:
         """
         Generate a mission using the LLM client.
         """
-
-        oracle_topic = Oracle.mission()
-        print("### Generate Mission")
-        print(oracle_topic)
+        if self._game_type == api_schema_mission.GameType.SHADOWRUN:
+            oracle_topic = Oracle.mission()
+            print("### Generate Mission")
+            print(oracle_topic)
+        else:
+            oracle_topic = ""
 
         # llm_response = self._llm_client.completion(
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
@@ -115,9 +115,14 @@ class Gamemaster:
             data = json.loads(json_string)
             print("### Result")
             print(data)
+            if self._game_type == api_schema_mission.GameType.SHADOWRUN:
+                name = data["mission"]["meta"]["title"]
+            elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
+                name = data["meta"]["title"]
             mission = {
-                "name": data["mission"]["meta"]["title"],
+                "name": name,
                 "description": json_string,
+                "game_type": self._game_type,
             }
             return api_schema_mission.Mission.model_validate(mission)
         except json.decoder.JSONDecodeError as exc:
