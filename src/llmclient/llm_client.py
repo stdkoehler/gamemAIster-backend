@@ -23,9 +23,7 @@ from google.genai.types import (
 )
 import anthropic
 from anthropic.types import (
-    ModelParam,
     MessageParam,
-    ThinkingBlock,
     ThinkingConfigEnabledParam,
     ThinkingConfigDisabledParam,
 )
@@ -51,19 +49,6 @@ class LLMClientBase(ABC):
     def completion_stream(
         self, prompt: str, llm_config: LLMConfig = LLMConfig()
     ) -> Generator[str, None, None]:
-        pass
-
-    @abstractmethod
-    def chat_completion(
-        self,
-        messages: list[dict[str, str]],
-        reasoning: bool = False,
-        llm_config: LLMConfig = LLMConfig(),
-    ) -> str:
-        pass
-
-    @abstractmethod
-    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()) -> str:
         pass
 
     @abstractmethod
@@ -594,12 +579,6 @@ class LLMClientClaude(LLMClientBase):
         ) as stream:
             yield from stream.text_stream
 
-    def completion_stream(
-        self, prompt: str, llm_config: LLMConfig = LLMConfig()
-    ) -> Generator[str, None, None]:
-        for i in range(3):
-            yield (str(i))
-
     def chat_completion(
         self,
         messages: list[dict[str, str]],
@@ -640,9 +619,6 @@ class LLMClientClaude(LLMClientBase):
                 print(reasoning_content.thinking)
 
         return next(c for c in response.content if c.type == "text").text
-
-    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()) -> str:
-        return ""
 
     def count_tokens(self, text: str) -> int:
         # Count tokens using tiktoken for the specified model
