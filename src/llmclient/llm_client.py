@@ -3,7 +3,7 @@
 import json
 import time
 
-from typing import Generator, Any
+from typing import Generator, Any, Literal
 from dataclasses import asdict
 from abc import ABC, abstractmethod
 
@@ -20,6 +20,14 @@ from google.genai.types import (
     UserContent,
     ModelContent,
     ThinkingConfig,
+)
+import anthropic
+from anthropic.types import (
+    ModelParam,
+    MessageParam,
+    ThinkingBlock,
+    ThinkingConfigEnabledParam,
+    ThinkingConfigDisabledParam,
 )
 
 from src.llmclient.llm_parameters import LLMConfig
@@ -497,6 +505,144 @@ class LLMClientGemini(LLMClientBase):
         )
 
         return response.text if response.text is not None else ""
+
+    def count_tokens(self, text: str) -> int:
+        # Count tokens using tiktoken for the specified model
+        try:
+            enc = tiktoken.encoding_for_model(self._model)
+        except KeyError:
+            enc = tiktoken.get_encoding("cl100k_base")
+        return len(enc.encode(text))
+
+    def stop_generation(self) -> None:
+        # No direct stop support in google-genai; implement no-op or track cancellation
+        pass
+
+
+class LLMClientClaude(LLMClientBase):
+    """
+    LLMClient implementation using Google Gemini via the google-genai SDK.
+    """
+
+    def __init__(
+        self, api_key: str, model: str = "claude-3-5-haiku-latest"
+    ):  # adjust default as needed
+        # Initialize the GenAI client with provided API key
+        self._client = anthropic.Anthropic(api_key=api_key)
+        self._model = model
+
+    def _convert_messages(
+        self, messages: list[dict[str, str]]
+    ) -> tuple[str, list[MessageParam]]:
+        """
+        Converts a list of messages to the format required by the Gemini API.
+        Args:
+            messages (list[dict[str, str]]): List of messages to be converted.
+
+        Returns:
+            list[MessageParam]: List of MessageParam objects representing the messages.
+        """
+        messages_converted = []
+        role: Literal["user", "assistant"]
+        for message in messages:
+            content = message["content"]
+            if message["role"] == "user":
+                role = "user"
+            elif message["role"] == "assistant":
+                role = "assistant"
+            else:
+                continue
+            messages_converted.append(MessageParam(content=content, role=role))
+
+        try:
+            system_instruction = next(
+                msg["content"] for msg in messages if msg["role"] == "system"
+            )
+        except StopIteration:
+            system_instruction = "You're an helpful assistant"
+
+        return system_instruction, messages_converted
+
+    def chat_completion_stream(
+        self,
+        messages: list[dict[str, str]],
+        reasoning: bool = False,
+        llm_config: LLMConfig = LLMConfig(),
+    ) -> Generator[str, None, None]:
+
+        system_instruction, messages = self._convert_messages(messages=messages)
+
+        if reasoning and not (
+            self._model == "claude-3-7-sonnet-latest"
+            or self._model == "claude-3-7-sonnet-20250219"
+        ):
+            reasoning = False
+            print(f"Reasoning disabled for {self._model}")
+
+        with self._client.messages.stream(
+            model=self._model,
+            max_tokens=llm_config.max_tokens,
+            thinking=(
+                ThinkingConfigEnabledParam(
+                    type="enabled", budget_tokens=int(llm_config.max_tokens / 2)
+                )
+                if reasoning
+                else ThinkingConfigDisabledParam(type="disabled")
+            ),
+            system=system_instruction,
+            messages=messages,
+        ) as stream:
+            yield from stream.text_stream
+
+    def completion_stream(
+        self, prompt: str, llm_config: LLMConfig = LLMConfig()
+    ) -> Generator[str, None, None]:
+        for i in range(3):
+            yield (str(i))
+
+    def chat_completion(
+        self,
+        messages: list[dict[str, str]],
+        reasoning: bool = False,
+        llm_config: LLMConfig = LLMConfig(),
+    ) -> str:
+
+        system_instruction, messages = self._convert_messages(messages=messages)
+
+        if reasoning and not (
+            self._model == "claude-3-7-sonnet-latest"
+            or self._model == "claude-3-7-sonnet-20250219"
+        ):
+            reasoning = False
+            print(f"Reasoning disabled for {self._model}")
+
+        response = self._client.messages.create(
+            model=self._model,
+            max_tokens=llm_config.max_tokens,
+            thinking=(
+                ThinkingConfigEnabledParam(
+                    type="enabled", budget_tokens=int(llm_config.max_tokens / 2)
+                )
+                if reasoning
+                else ThinkingConfigDisabledParam(type="disabled")
+            ),
+            system=system_instruction,
+            messages=messages,
+        )
+
+        if reasoning:
+            # Extract reasoning content if available
+            reasoning_content = next(
+                c for c in response.content if c.type == "thinking"
+            )
+            if reasoning_content:
+                print("### Reasoning")
+                print(reasoning_content.thinking)
+
+        return next(c for c in response.content if c.type == "text").text
+
+    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()) -> str:
+        return ""
 
     def count_tokens(self, text: str) -> int:
         # Count tokens using tiktoken for the specified model
