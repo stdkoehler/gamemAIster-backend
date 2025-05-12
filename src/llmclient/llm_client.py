@@ -13,6 +13,14 @@ import requests
 from sseclient import SSEClient
 import openai
 import tiktoken
+from google import genai
+from google.genai.types import (
+    GenerateContentConfig,
+    Content,
+    UserContent,
+    ModelContent,
+    ThinkingConfig,
+)
 
 from src.llmclient.llm_parameters import LLMConfig
 
@@ -70,7 +78,7 @@ class LLMClientBase(ABC):
         """
 
 
-class LLMClient(LLMClientBase):
+class LLMClientLocal(LLMClientBase):
     """
     LLMClient is a class that provides methods for interacting with the LLM API.
 
@@ -235,7 +243,7 @@ class LLMClient(LLMClientBase):
         return None
 
 
-class LLMClientOpenRouter(LLMClientBase):
+class LLMClientDeepSeek(LLMClientBase):
     """
     LLMClient is a class that provides methods for interacting with the LLM API.
 
@@ -358,3 +366,146 @@ class LLMClientOpenRouter(LLMClientBase):
         """
         Stops the generation process.
         """
+
+
+class LLMClientGemini(LLMClientBase):
+    """
+    LLMClient implementation using Google Gemini via the google-genai SDK.
+    """
+
+    def __init__(
+        self, api_key: str, model: str = "gemini-2.5-flash-preview-04-17"
+    ):  # adjust default as needed
+        # Initialize the GenAI client with provided API key
+        self._client = genai.Client(api_key=api_key)
+        self._model = model
+
+    def _generate_contents(
+        self, messages: list[dict[str, str]]
+    ) -> tuple[str, list[Content]]:
+        """
+        Generates content using the Google Gemini model.
+        Args:
+            messages (list[dict[str, str]]): List of messages to be sent to the model.
+
+        Returns:
+            str: The system instruction extracted from the messages.
+            list[Content]: List of content objects representing user and model messages.
+        """
+        try:
+            system_instruction = next(
+                message for message in messages if message["role"] == "system"
+            )["content"]
+        except StopIteration:
+            system_instruction = "You're an helpful assistant"
+
+        contents: list[Content] = []
+        for message in messages:
+            if message["role"] == "user":
+                contents.append(UserContent(message["content"]))
+            elif message["role"] == "assistant":
+                contents.append(ModelContent(message["content"]))
+
+        return system_instruction, contents
+
+    def chat_completion_stream(
+        self,
+        messages: list[dict[str, str]],
+        reasoning: bool = False,
+        llm_config: LLMConfig = LLMConfig(),
+    ) -> Generator[str, None, None]:
+
+        system_instruction, contents = self._generate_contents(messages=messages)
+
+        # Reasoning is on by default
+        if reasoning:
+            response = self._client.models.generate_content_stream(
+                model=self._model,
+                contents=contents,
+                config=GenerateContentConfig(system_instruction=system_instruction),
+            )
+        else:
+            response = self._client.models.generate_content_stream(
+                model=self._model,
+                contents=contents,
+                config=GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    thinking_config=ThinkingConfig(
+                        thinking_budget=0,
+                        include_thoughts=False,
+                    ),
+                ),
+            )
+
+        for chunk in response:
+            yield chunk.text or ""
+
+    def completion_stream(
+        self, prompt: str, llm_config: LLMConfig = LLMConfig()
+    ) -> Generator[str, None, None]:
+
+        response = self._client.models.generate_content_stream(
+            model=self._model,
+            contents=[UserContent(prompt)],
+            config=GenerateContentConfig(
+                system_instruction="You're an helpful assistant",
+            ),
+        )
+
+        for chunk in response:
+            yield chunk.text or ""
+
+    def chat_completion(
+        self,
+        messages: list[dict[str, str]],
+        reasoning: bool = False,
+        llm_config: LLMConfig = LLMConfig(),
+    ) -> str:
+
+        system_instruction, contents = self._generate_contents(messages=messages)
+
+        # Reasoning is on by default
+        if reasoning:
+            response = self._client.models.generate_content(
+                model=self._model,
+                contents=contents,
+                config=GenerateContentConfig(system_instruction=system_instruction),
+            )
+        else:
+            response = self._client.models.generate_content(
+                model=self._model,
+                contents=contents,
+                config=GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    thinking_config=ThinkingConfig(
+                        thinking_budget=0,
+                        include_thoughts=False,
+                    ),
+                ),
+            )
+
+        return response.text if response.text is not None else ""
+
+    def completion(self, prompt: str, llm_config: LLMConfig = LLMConfig()) -> str:
+
+        response = self._client.models.generate_content(
+            model=self._model,
+            contents=[UserContent(prompt)],
+            config=GenerateContentConfig(
+                system_instruction="You're an helpful assistant",
+            ),
+        )
+
+        return response.text if response.text is not None else ""
+
+    def count_tokens(self, text: str) -> int:
+        # Count tokens using tiktoken for the specified model
+        try:
+            enc = tiktoken.encoding_for_model(self._model)
+        except KeyError:
+            enc = tiktoken.get_encoding("cl100k_base")
+        return len(enc.encode(text))
+
+    def stop_generation(self) -> None:
+        # No direct stop support in google-genai; implement no-op or track cancellation
+        pass

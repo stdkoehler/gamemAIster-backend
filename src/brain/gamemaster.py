@@ -117,7 +117,7 @@ class Gamemaster:
             print(data)
             if self._game_type == api_schema_mission.GameType.SHADOWRUN:
                 name = data["mission"]["meta"]["title"]
-            elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
+            else:
                 name = data["meta"]["title"]
             mission = {
                 "name": name,
