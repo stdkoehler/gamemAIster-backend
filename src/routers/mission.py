@@ -69,7 +69,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
     else:
         raise ValueError(f"Unknown LLM type: {llm_type}")
 
-    mission = gamemaster.generate_mission()
+    mission = gamemaster.generate_mission(background=payload.background)
     mission = crud_instance.insert_mission(mission=mission)
 
     if mission.mission_id is not None:

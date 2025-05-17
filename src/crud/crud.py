@@ -66,7 +66,9 @@ class CRUD:
             session.add(db_mission)
             session.flush()
             db_mission_description = MissionDescription(
-                mission_id=db_mission.mission_id, description=mission.description
+                mission_id=db_mission.mission_id,
+                description=mission.description,
+                background=mission.background,
             )
             session.add(db_mission_description)
             session.commit()
@@ -105,6 +107,7 @@ class CRUD:
             name_custom=result.Mission.name_custom,
             description=result.MissionDescription.description,
             game_type=api_schema_mission.GameType(result.Mission.game_type),
+            background=result.MissionDescription.background,
         )
 
     def list_missions(self) -> list[api_schema_mission.Mission]:
@@ -128,6 +131,7 @@ class CRUD:
                     name_custom=result.Mission.name_custom,
                     description=result.MissionDescription.description,
                     game_type=api_schema_mission.GameType(result.Mission.game_type),
+                    background=result.MissionDescription.background,
                 )
                 for result in results
             ]

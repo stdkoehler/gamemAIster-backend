@@ -80,9 +80,12 @@ class Gamemaster:
         for chunk in chat.predict(prompt.prompt, interaction):
             yield json.dumps({"text": chunk}) + "\n"
 
-    def generate_mission(self) -> api_schema_mission.Mission:
+    def generate_mission(self, background: str) -> api_schema_mission.Mission:
         """
         Generate a mission using the LLM client.
+
+        Args:
+            background (str): User supplied background information to seed the mission.
         """
         if self._game_type == api_schema_mission.GameType.SHADOWRUN:
             oracle_topic = Oracle.mission()
@@ -123,6 +126,7 @@ class Gamemaster:
                 "name": name,
                 "description": json_string,
                 "game_type": self._game_type,
+                "background": background,
             }
             return api_schema_mission.Mission.model_validate(mission)
         except json.decoder.JSONDecodeError as exc:

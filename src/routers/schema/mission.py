@@ -16,6 +16,7 @@ class Mission(BaseModel):
     name: str
     description: str
     game_type: GameType
+    background: str
 
 
 class SaveMission(BaseModel):
@@ -30,3 +31,4 @@ class LoadMission(BaseModel):
 
 class NewMissionPayload(BaseModel):
     game_type: GameType
+    background: str
