@@ -4,7 +4,12 @@ import os
 
 from fastapi import APIRouter
 
-from src.llmclient.llm_client import LLMClientGemini, LLMClientLocal, LLMClientDeepSeek
+from src.llmclient.llm_client import (
+    LLMClientClaude,
+    LLMClientGemini,
+    LLMClientLocal,
+    LLMClientDeepSeek,
+)
 
 from src.crud.crud import crud_instance
 from src.brain.gamemaster import Gamemaster
@@ -63,6 +68,21 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
             llm_client_reasoning=LLMClientGemini(
                 api_key=api_key,
                 model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
+            ),
+            game_type=payload.game_type,
+        )
+    elif llm_type == "CLAUDE":
+        api_key = os.getenv("API_KEY_CLAUDE")
+        if api_key is None:
+            raise ValueError("Claude API key not set")
+        gamemaster = Gamemaster(
+            llm_client_chat=LLMClientClaude(
+                api_key=api_key,
+                model="claude-3-7-sonnet-latest",
+            ),
+            llm_client_reasoning=LLMClientClaude(
+                api_key=api_key,
+                model="claude-3-7-sonnet-latest",
             ),
             game_type=payload.game_type,
         )
