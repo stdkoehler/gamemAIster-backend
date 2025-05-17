@@ -1,0 +1,504 @@
+{
+    "factions": [
+        {
+            "name": "Camarilla",
+            "probability": 1.0
+        },
+        {
+            "name": "Anarchs",
+            "probability": 1.0
+        },
+        {
+            "name": "Sabbat",
+            "probability": 0.7
+        },
+        {
+            "name": "Venture clan",
+            "probability": 0.9
+        },
+        {
+            "name": "Brujah clan",
+            "probability": 0.9
+        },
+        {
+            "name": "Toreador clan",
+            "probability": 0.9
+        },
+        {
+            "name": "Nosferatu clan",
+            "probability": 0.9
+        },
+        {
+            "name": "Malkavian clan",
+            "probability": 0.8
+        },
+        {
+            "name": "Tremere clan",
+            "probability": 0.8
+        },
+        {
+            "name": "Gangrel clan",
+            "probability": 0.8
+        },
+        {
+            "name": "Banu Haqim (Assamite) clan",
+            "probability": 0.7
+        },
+        {
+            "name": "Ministry (Followers of Set) clan",
+            "probability": 0.7
+        },
+        {
+            "name": "Ravnos clan",
+            "probability": 0.6
+        },
+        {
+            "name": "Lasombra clan",
+            "probability": 0.6
+        },
+        {
+            "name": "Tzimisce clan",
+            "probability": 0.6
+        },
+        {
+            "name": "Hecata (Giovanni) clan",
+            "probability": 0.6
+        },
+        {
+            "name": "Thin-bloods",
+            "probability": 0.7
+        },
+        {
+            "name": "Caitiff",
+            "probability": 0.7
+        },
+        {
+            "name": "Second Inquisition",
+            "probability": 0.7
+        },
+        {
+            "name": "Hunters",
+            "probability": 0.7
+        },
+        {
+            "name": "Mortal authorities",
+            "probability": 0.8
+        },
+        {
+            "name": "Local police",
+            "probability": 0.8
+        },
+        {
+            "name": "FBI/CIA",
+            "probability": 0.5
+        },
+        {
+            "name": "Religious cult",
+            "probability": 0.7
+        },
+        {
+            "name": "Private security firm",
+            "probability": 0.7
+        },
+        {
+            "name": "Corporate interests",
+            "probability": 0.8
+        },
+        {
+            "name": "Criminal organization",
+            "probability": 0.8
+        },
+        {
+            "name": "Street gang",
+            "probability": 0.7
+        },
+        {
+            "name": "Blood cult",
+            "probability": 0.6
+        },
+        {
+            "name": "Ghoul servants",
+            "probability": 0.7
+        },
+        {
+            "name": "Werewolves",
+            "probability": 0.4
+        },
+        {
+            "name": "Mages",
+            "probability": 0.4
+        },
+        {
+            "name": "Autarkis vampires",
+            "probability": 0.6
+        },
+        {
+            "name": "Baron's domain",
+            "probability": 0.6
+        },
+        {
+            "name": "Prince's court",
+            "probability": 0.8
+        },
+        {
+            "name": "Primogen council",
+            "probability": 0.7
+        },
+        {
+            "name": "Elder council",
+            "probability": 0.6
+        },
+        {
+            "name": "Influential Neonate",
+            "probability": 0.6
+        },
+        {
+            "name": "Vampire hunters",
+            "probability": 0.7
+        },
+        {
+            "name": "Anarchist collective",
+            "probability": 0.7
+        },
+        {
+            "name": "The Harbingers (VIII)",
+            "probability": 0.3
+        },
+        {
+            "name": "Society of Leopold",
+            "probability": 0.5
+        },
+        {
+            "name": "Bahari cultists",
+            "probability": 0.4
+        },
+        {
+            "name": "Technocracy agents",
+            "probability": 0.3
+        }
+    ],
+    "inciting_incidents": [
+        {
+            "name": "A prominent vampire is found murdered",
+            "probability": 1.0
+        },
+        {
+            "name": "A Masquerade breach threatens exposure",
+            "probability": 1.0
+        },
+        {
+            "name": "An ancient vampire awakens from torpor",
+            "probability": 0.8
+        },
+        {
+            "name": "A valuable artifact has been stolen",
+            "probability": 0.9
+        },
+        {
+            "name": "A territory dispute erupts into violence",
+            "probability": 0.9
+        },
+        {
+            "name": "A mortal investigator gets too close to the truth",
+            "probability": 0.9
+        },
+        {
+            "name": "A blood cult is performing ritualistic murders",
+            "probability": 0.8
+        },
+        {
+            "name": "A clan elder goes missing under suspicious circumstances",
+            "probability": 0.8
+        },
+        {
+            "name": "A political power vacuum emerges after a leader's fall",
+            "probability": 0.8
+        },
+        {
+            "name": "A vampiric blood bond is mysteriously broken",
+            "probability": 0.7
+        },
+        {
+            "name": "A thinblood discovers a dangerous new ability",
+            "probability": 0.7
+        },
+        {
+            "name": "A supernatural disaster threatens the city",
+            "probability": 0.7
+        },
+        {
+            "name": "A diablerie is suspected among prominent Kindred",
+            "probability": 0.7
+        },
+        {
+            "name": "A mortal celebrity is embraced without permission",
+            "probability": 0.7
+        },
+        {
+            "name": "A hunter cell has captured a vampire for interrogation",
+            "probability": 0.7
+        },
+        {
+            "name": "A ghoul rebellion is brewing",
+            "probability": 0.7
+        },
+        {
+            "name": "An unusual blood shortage is affecting the city",
+            "probability": 0.8
+        },
+        {
+            "name": "A neonate is accused of a crime they didn't commit",
+            "probability": 0.8
+        },
+        {
+            "name": "A seemingly impossible Masquerade breach occurs",
+            "probability": 0.8
+        },
+        {
+            "name": "A coterie member experiences disturbing visions",
+            "probability": 0.7
+        },
+        {
+            "name": "A Sabbat pack infiltrates the city",
+            "probability": 0.7
+        },
+        {
+            "name": "A powerful vampire is approaching the city",
+            "probability": 0.8
+        },
+        {
+            "name": "A mysterious disease affects only Kindred",
+            "probability": 0.6
+        },
+        {
+            "name": "A radical faction calls for revolution",
+            "probability": 0.8
+        },
+        {
+            "name": "A blood ritual goes catastrophically wrong",
+            "probability": 0.7
+        },
+        {
+            "name": "A Methuselah manipulates events from the shadows",
+            "probability": 0.6
+        },
+        {
+            "name": "A Second Inquisition strike team enters the city",
+            "probability": 0.7
+        },
+        {
+            "name": "A vital haven is compromised",
+            "probability": 0.8
+        },
+        {
+            "name": "A high-profile assassination changes the balance of power",
+            "probability": 0.8
+        },
+        {
+            "name": "A mortal bloodline with unusual properties is discovered",
+            "probability": 0.7
+        },
+        {
+            "name": "A secret society unveils an ancient prophecy",
+            "probability": 0.6
+        },
+        {
+            "name": "A powerful artifact resurfaces after centuries",
+            "probability": 0.7
+        },
+        {
+            "name": "A technology threatens vampire secrecy",
+            "probability": 0.8
+        },
+        {
+            "name": "A prized ghoul is kidnapped",
+            "probability": 0.7
+        },
+        {
+            "name": "A controversial Embrace divides the Kindred community",
+            "probability": 0.8
+        },
+        {
+            "name": "A breach in the Masquerade appears on social media",
+            "probability": 0.9
+        },
+        {
+            "name": "A boon is called in at the worst possible time",
+            "probability": 0.8
+        },
+        {
+            "name": "Blood with strange properties is circulating",
+            "probability": 0.7
+        },
+        {
+            "name": "A key vampire ally is betraying the coterie",
+            "probability": 0.8
+        },
+        {
+            "name": "A clan-specific curse intensifies mysteriously",
+            "probability": 0.6
+        }
+    ],
+    "themes": [
+        {
+            "name": "Betrayal",
+            "probability": 1.0
+        },
+        {
+            "name": "Power struggles",
+            "probability": 1.0
+        },
+        {
+            "name": "Moral decay",
+            "probability": 0.9
+        },
+        {
+            "name": "Hunger and addiction",
+            "probability": 0.9
+        },
+        {
+            "name": "Loss of humanity",
+            "probability": 0.9
+        },
+        {
+            "name": "Paranoia",
+            "probability": 0.9
+        },
+        {
+            "name": "Political intrigue",
+            "probability": 0.9
+        },
+        {
+            "name": "Vengeance",
+            "probability": 0.8
+        },
+        {
+            "name": "Manipulation",
+            "probability": 0.8
+        },
+        {
+            "name": "Tradition vs. change",
+            "probability": 0.8
+        },
+        {
+            "name": "Personal horror",
+            "probability": 0.8
+        },
+        {
+            "name": "Forbidden love",
+            "probability": 0.7
+        },
+        {
+            "name": "Secret alliances",
+            "probability": 0.8
+        },
+        {
+            "name": "Existential dread",
+            "probability": 0.7
+        },
+        {
+            "name": "Corruption",
+            "probability": 0.8
+        },
+        {
+            "name": "Redemption",
+            "probability": 0.7
+        },
+        {
+            "name": "Ambition",
+            "probability": 0.8
+        },
+        {
+            "name": "Survival",
+            "probability": 0.8
+        },
+        {
+            "name": "Isolation",
+            "probability": 0.7
+        },
+        {
+            "name": "Conflicting loyalties",
+            "probability": 0.8
+        },
+        {
+            "name": "Religious fervor",
+            "probability": 0.6
+        },
+        {
+            "name": "Identity crisis",
+            "probability": 0.7
+        },
+        {
+            "name": "Fragile alliances",
+            "probability": 0.8
+        },
+        {
+            "name": "Predator and prey",
+            "probability": 0.8
+        },
+        {
+            "name": "Justice and judgment",
+            "probability": 0.7
+        },
+        {
+            "name": "Ancient grudges",
+            "probability": 0.7
+        },
+        {
+            "name": "Sensuality and obsession",
+            "probability": 0.7
+        },
+        {
+            "name": "Generational conflict",
+            "probability": 0.7
+        },
+        {
+            "name": "Sacrifice",
+            "probability": 0.7
+        },
+        {
+            "name": "Descent into madness",
+            "probability": 0.7
+        },
+        {
+            "name": "Resistance against oppression",
+            "probability": 0.7
+        },
+        {
+            "name": "Decadence",
+            "probability": 0.7
+        },
+        {
+            "name": "Hidden truths",
+            "probability": 0.8
+        },
+        {
+            "name": "Nihilism",
+            "probability": 0.6
+        },
+        {
+            "name": "Urban decay",
+            "probability": 0.7
+        },
+        {
+            "name": "Tragic romance",
+            "probability": 0.6
+        },
+        {
+            "name": "Faustian bargains",
+            "probability": 0.6
+        },
+        {
+            "name": "Elitism",
+            "probability": 0.7
+        },
+        {
+            "name": "Rebellion",
+            "probability": 0.7
+        },
+        {
+            "name": "Religious iconography",
+            "probability": 0.6
+        }
+    ]
+}

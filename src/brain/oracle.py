@@ -1,174 +1,224 @@
 from dataclasses import dataclass
 import json
 import random
+from pathlib import Path
 
 
 @dataclass
 class Candidate:
-    """Candidate"""
+    """Represents a selectable candidate with a weight."""
 
     name: str
     probability: float
 
 
-clients = [
-    Candidate(name="Underworld fixer", probability=1.0),
-    Candidate(name="Renraku Corporation", probability=1.0),
-    Candidate(name="Saeder-Krupp Industries", probability=1.0),
-    Candidate(name="Aztechnology", probability=1.0),
-    Candidate(name="Mitsuhama Computer Technologies", probability=1.0),
-    Candidate(name="Ares Macrotechnology", probability=1.0),
-    Candidate(name="Shiawase Corporation", probability=1.0),
-    Candidate(name="Wuxing Incorporated", probability=1.0),
-    Candidate(name="EVO Corporation", probability=1.0),
-    Candidate(name="NeoNET", probability=1.0),
-    Candidate(name="Horizon Group", probability=1.0),
-    Candidate(name="Lone Star Security Services", probability=1.0),
-    Candidate(name="Universal Brotherhood", probability=1.0),
-    Candidate(name="Megacorporation executive", probability=0.8),
-    Candidate(name="Crime lord", probability=0.8),
-    Candidate(name="Reclusive billionaire", probability=0.8),
-    Candidate(name="Hacker collective leader", probability=0.8),
-    Candidate(name="Rogue AI programmer", probability=0.8),
-    Candidate(name="Cross Applied Technologies", probability=0.8),
-    Candidate(name="Fuchi Industrial Electronics", probability=0.8),
-    Candidate(name="High-ranking government official", probability=0.5),
-    Candidate(name="Tir Tairngire government official", probability=0.5),
-    Candidate(name="Aztlan cartel boss", probability=0.5),
-    Candidate(name="Halloweeners gang leader", probability=0.5),
-    Candidate(name="Tech startup CEO", probability=0.5),
-    Candidate(name="Renowned scientist", probability=0.5),
-    Candidate(name="Media mogul", probability=0.5),
-    Candidate(name="Ex-military commander", probability=0.5),
-    Candidate(name="Revolutionary ideologue", probability=0.5),
-    Candidate(name="Yakushima elven leader", probability=0.5),
-    Candidate(name="Wealthy private collector", probability=0.3),
-    Candidate(name="Famous celebrity", probability=0.3),
-    Candidate(name="Humanitarian aid organization", probability=0.3),
-    Candidate(name="Underground resistance leader", probability=0.3),
-    Candidate(name="Corporate security chief", probability=0.8),
-    Candidate(name="Megacorp black-ops handler", probability=0.8),
-    Candidate(name="Cybernetics smuggler", probability=0.5),
-    Candidate(name="Street-level gang boss", probability=0.5),
-    Candidate(name="Corporate espionage specialist", probability=0.8),
-    Candidate(name="Wetwork coordinator", probability=0.8),
-    Candidate(name="Arcano-tech researcher", probability=0.5),
-    Candidate(name="Media blackmailer", probability=0.1),
-    Candidate(name="Elven nationalist operative", probability=0.5),
-    Candidate(name="Drake in disguise", probability=0.3),
-    Candidate(name="Free spirit needing help", probability=0.3),
-    Candidate(name="Yakuza lieutenant", probability=0.5),
-    Candidate(name="Triad negotiator", probability=0.5),
-]
+class BaseOracle:
+    """
+    Generic Oracle engine for weighted random narrative seeds.
+    Supply a config dict mapping pool names to lists of {name, probability} entries.
+    """
 
-mission_types = [
-    Candidate(name="Data Extraction", probability=1.0),
-    Candidate(name="Asset Recovery", probability=0.95),
-    Candidate(name="Infiltration", probability=0.95),
-    Candidate(name="Extraction", probability=0.9),
-    Candidate(name="Surveillance", probability=0.9),
-    Candidate(name="Counterintelligence", probability=0.85),
-    Candidate(name="Assassination", probability=0.85),
-    Candidate(name="Heist", probability=0.85),
-    Candidate(name="Smuggling", probability=0.8),
-    Candidate(name="Rescue", probability=0.8),
-    Candidate(name="Protection", probability=0.8),
-    Candidate(name="Corporate Espionage", probability=0.8),
-    Candidate(name="Bounty Hunting", probability=0.75),
-    Candidate(name="Artifact Retrieval", probability=0.75),
-    Candidate(name="Cyberwarfare", probability=0.75),
-    Candidate(name="Hostage Negotiation", probability=0.7),
-    Candidate(name="Blackmail", probability=0.7),
-    Candidate(name="Sabotage", probability=0.7),
-    Candidate(name="Courier Run", probability=0.7),
-    Candidate(name="Interception", probability=0.7),
-    Candidate(name="Hacking", probability=0.7),
-    Candidate(name="Research and Development Theft", probability=0.65),
-    Candidate(name="Mercenary Contract", probability=0.65),
-    Candidate(name="Urban Exploration", probability=0.6),
-    Candidate(name="Gang Warfare", probability=0.6),
-    Candidate(name="Piracy", probability=0.6),
-    Candidate(name="Illegal Auction", probability=0.6),
-    Candidate(name="Arms Dealing", probability=0.6),
-    Candidate(name="Bodyguarding", probability=0.6),
-    Candidate(name="Undercover Operation", probability=0.6),
-    Candidate(name="Hijacking", probability=0.6),
-    Candidate(name="Media Manipulation", probability=0.6),
-    Candidate(name="Intellectual Property Theft", probability=0.6),
-    Candidate(name="Corporate Raid", probability=0.6),
-    Candidate(name="Heist Planning", probability=0.6),
-    Candidate(name="Political Assassination", probability=0.6),
-    Candidate(name="Clandestine Meeting", probability=0.6),
-    Candidate(name="Defector Extraction", probability=0.6),
-    Candidate(name="Underworld Negotiation", probability=0.6),
-    Candidate(name="Bribery", probability=0.6),
-    Candidate(name="Extortion", probability=0.6),
-    Candidate(name="Witness Protection", probability=0.6),
-    Candidate(name="Spirit Negotiation", probability=0.6),
-    Candidate(name="Toxic Cleanup", probability=0.6),
-    Candidate(name="Reality Show Sabotage", probability=0.6),
-    Candidate(name="Virtual Reality Hacking", probability=0.6),
-    Candidate(name="Genetic Engineering Sabotage", probability=0.6),
-    Candidate(name="Mind Control Disruption", probability=0.6),
-    Candidate(name="Bioweapon Containment", probability=0.6),
-    Candidate(name="Society Infiltration", probability=0.6),
-    Candidate(name="High-Stakes Gambling", probability=0.6),
-    Candidate(name="Threat Neutralization", probability=0.6),
-    Candidate(name="Criminal Syndicate Takedown", probability=0.6),
-    Candidate(name="Mafia Turf War", probability=0.6),
-    Candidate(name="Corporate Cover-Up", probability=0.6),
-    Candidate(name="Identity Theft", probability=0.6),
-    Candidate(name="Digital Assassination", probability=0.6),
-    Candidate(name="Psychological Warfare", probability=0.6),
-    Candidate(name="Time-Sensitive Courier Delivery", probability=0.6),
-    Candidate(name="Body Part Retrieval", probability=0.6),
-    Candidate(name="Archaeological Excavation", probability=0.6),
-    Candidate(name="Astral Rift Closure", probability=0.6),
-    Candidate(name="Rogue AI Containment", probability=0.6),
-    Candidate(name="Shadow Spirit Banishment", probability=0.6),
-    Candidate(name="Matrix Dive", probability=0.6),
-    Candidate(name="Quantum Encryption Cracking", probability=0.6),
-    Candidate(name="Secret Society Initiation", probability=0.6),
-    Candidate(name="Museum Heist", probability=0.6),
-    Candidate(name="Underground Fighting Ring", probability=0.6),
-    Candidate(name="VIP Extraction", probability=0.6),
-    Candidate(name="Body Disposal", probability=0.6),
-    Candidate(name="Paranormal Investigation", probability=0.6),
-    Candidate(name="Rogue Nanite Swarm Destruction", probability=0.6),
-    Candidate(name="Urban Legend Debunking", probability=0.6),
-    Candidate(name="Corporate Retreat Infiltration", probability=0.6),
-    Candidate(name="Mysterious Disappearance Investigation", probability=0.6),
-    Candidate(name="Disinformation Campaign", probability=0.6),
-    Candidate(name="Illegal Drug Manufacturing Facility Destruction", probability=0.6),
-    Candidate(name="Criminal Mastermind Capture", probability=0.6),
-    Candidate(name="Organ Harvesting Ring Dismantling", probability=0.5),
-]
+    def __init__(self, config: dict):
+        self.pools = {
+            pool_name: [Candidate(**entry) for entry in entries]
+            for pool_name, entries in config.items()
+        }
 
-
-class Oracle:
     @staticmethod
     def weighted_choice(items: list[Candidate]) -> str:
-        """Selects an item based on its probability."""
         names = [item.name for item in items]
         weights = [item.probability for item in items]
         return random.choices(names, weights=weights, k=1)[0]
 
-    @staticmethod
-    def mission() -> str:
-        # Step 1: Draw a client
-        client = Oracle.weighted_choice(clients)
+    def roll(self) -> dict:
+        return {
+            pool_name: self.weighted_choice(candidates)
+            for pool_name, candidates in self.pools.items()
+        }
 
-        # Step 2: Draw a mission type
-        mission = Oracle.weighted_choice(mission_types)
 
-        # Step 3: Draw a target (different from client)
-        eligible_targets = [c for c in clients if c.name != client]
-        target = Oracle.weighted_choice(eligible_targets)
+class ShadowrunOracle(BaseOracle):
+    """
+    Oracle for Shadowrun missions, using external JSON definitions.
+    Generates { client, mission, target } with target != client.
+    """
 
+    def __init__(self) -> None:
+        json_path = Path(__file__).parent / "oracle" / "shadowrun.json"
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        # rename mission_types key to mission for consistency
+        config = {
+            "client": data["clients"],
+            "mission": data["mission_types"],
+            # keep clients for target selection
+            "targets": data["clients"],
+        }
+        super().__init__(config)
+
+    def mission(self, background: str) -> str:
+        client = self.weighted_choice(self.pools["client"])
+        mission = self.weighted_choice(self.pools["mission"])
+        # select target different from client
+        eligible = [c for c in self.pools["targets"] if c.name != client]
+        target = self.weighted_choice(eligible)
         return json.dumps(
             {
                 "client": client,
                 "target": target,
                 "mission": mission,
-            }
+                "background": background,
+            },
+            ensure_ascii=False,
+            indent=2,
         )
+
+
+class VampireOracle(BaseOracle):
+    def __init__(self) -> None:
+        json_path = Path(__file__).parent / "oracle" / "vampire_the_masquerade.json"
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        config = {
+            "factions": data["factions"],
+            "incitingIncidents": data["inciting_incidents"],
+            "themes": data["themes"],
+        }
+        super().__init__(config)
+
+    def mission(self, background: str) -> str:
+        seed = self.roll()
+        # pick two unique factions
+        seed["factions"] = random.sample([c.name for c in self.pools["factions"]], k=2)
+        seed["background"] = background
+        # wrap inciting incident and themes in lists as needed
+        return json.dumps(seed, ensure_ascii=False)
+
+
+class CthulhuOracle:
+    """
+    Simplified Cthulhu Oracle that uses short, generic elements and combines them
+    with minimal logic to create varied and consistent narrative seeds.
+    Includes weighted probability for each element.
+    """
+
+    def __init__(self) -> None:
+        json_path = Path(__file__).parent / "oracle" / "call_of_cthulhu.json"
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        # Convert to candidates with probability weights
+        self.location_types = [Candidate(**item) for item in data["location_types"]]
+        self.location_modifiers = [
+            Candidate(**item) for item in data["location_modifiers"]
+        ]
+        self.location_places = [Candidate(**item) for item in data["location_places"]]
+        self.mythos_entities = [Candidate(**item) for item in data["mythos_entities"]]
+        self.mythos_phenomena = [Candidate(**item) for item in data["mythos_phenomena"]]
+        self.hook_subjects = [Candidate(**item) for item in data["hook_subjects"]]
+        self.hook_events = [Candidate(**item) for item in data["hook_events"]]
+
+    def weighted_choice(self, items: list[Candidate]) -> str:
+        """Select an item based on its probability weight."""
+        names = [item.name for item in items]
+        weights = [item.probability for item in items]
+        return random.choices(names, weights=weights, k=1)[0]
+
+    def generate_location(self) -> str:
+        """Generate a location by combining modifiers and types with probability weights."""
+        # 70% chance to include a modifier
+        if random.random() < 0.7:
+            modifier = self.weighted_choice(self.location_modifiers)
+            location_type = self.weighted_choice(self.location_types)
+
+            # 50% chance to add a place
+            if random.random() < 0.5:
+                place = self.weighted_choice(self.location_places)
+                return f"{modifier} {location_type} in {place}"
+            else:
+                return f"{modifier} {location_type}"
+        else:
+            location_type = self.weighted_choice(self.location_types)
+            place = self.weighted_choice(self.location_places)
+            return f"{location_type} in {place}"
+
+    def generate_mythos_elements(self) -> list[str]:
+        """Generate 2-3 mythos elements combining entities and phenomena, respecting probabilities."""
+        num_elements = random.randint(2, 3)
+        elements = []
+
+        # Always include at least one entity and one phenomenon
+        elements.append(self.weighted_choice(self.mythos_entities))
+        elements.append(self.weighted_choice(self.mythos_phenomena))
+
+        # Add one more random element if needed
+        if num_elements > 2:
+            # Choose from either category
+            if random.random() < 0.5:
+                additional = self.weighted_choice(self.mythos_entities)
+            else:
+                additional = self.weighted_choice(self.mythos_phenomena)
+
+            # Avoid duplicates
+            if additional not in elements:
+                elements.append(additional)
+
+        return elements
+
+    def generate_hook(self) -> str:
+        """Generate a hook by combining a subject and an event with probability weights."""
+        subject = self.weighted_choice(self.hook_subjects)
+        event = self.weighted_choice(self.hook_events)
+
+        # Different hook formats
+        formats = [
+            f"A {subject}'s mysterious {event}",
+            f"The {event} of a {subject}",
+            f"A strange {event} involving a {subject}",
+            f"A {subject} requests help with a {event}",
+            # New, simpler CoC Hook Formats:
+            f"Rumors of a {subject} and an {event}",
+            f"An investigation into a {subject}'s {event}",
+            f"The curious {event} affecting a {subject}",
+            f"A {subject} is linked to an unusual {event}",
+            f"Concern over a {subject} following an {event}",
+            f"The unexplained {event} and its connection to a {subject}",
+            f"A report about a {subject} and a recent {event}",
+            f"The peculiar case of a {subject} and the {event}",
+            f"Seeking answers about a {subject} after an {event}",
+            f"A {subject} witnesses a disturbing {event}",
+        ]
+
+        return random.choice(formats)
+
+    def mission(self, background: str) -> str:
+        """Generate a complete mission seed."""
+        seed = {
+            "location": self.generate_location(),
+            "mythosElements": self.generate_mythos_elements(),
+            "hook": self.generate_hook(),
+            "background": background,
+        }
+
+        return json.dumps(seed, ensure_ascii=False, indent=2)
+
+
+# Example usage
+def main() -> None:
+    # Shadowrun
+    sr = ShadowrunOracle()
+    print("Shadowrun Seed:", sr.mission(""))
+    # Vampire
+    vt = VampireOracle()
+    print("VtM Seed:", vt.mission(""))
+    # Cthulhu
+    ct = CthulhuOracle()
+    print("Cthulhu Seed:", ct.mission(""))
+
+    ct = CthulhuOracle()
+    print("Cthulhu Seed:", ct.mission(""))
+
+
+if __name__ == "__main__":
+    main()

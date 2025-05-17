@@ -1,0 +1,514 @@
+{
+    "clients": [
+        {
+            "name": "Underworld fixer",
+            "probability": 1.0
+        },
+        {
+            "name": "Renraku Corporation",
+            "probability": 1.0
+        },
+        {
+            "name": "Saeder-Krupp Industries",
+            "probability": 1.0
+        },
+        {
+            "name": "Aztechnology",
+            "probability": 1.0
+        },
+        {
+            "name": "Mitsuhama Computer Technologies",
+            "probability": 1.0
+        },
+        {
+            "name": "Ares Macrotechnology",
+            "probability": 1.0
+        },
+        {
+            "name": "Shiawase Corporation",
+            "probability": 1.0
+        },
+        {
+            "name": "Wuxing Incorporated",
+            "probability": 1.0
+        },
+        {
+            "name": "EVO Corporation",
+            "probability": 1.0
+        },
+        {
+            "name": "NeoNET",
+            "probability": 1.0
+        },
+        {
+            "name": "Horizon Group",
+            "probability": 1.0
+        },
+        {
+            "name": "Lone Star Security Services",
+            "probability": 1.0
+        },
+        {
+            "name": "Universal Brotherhood",
+            "probability": 1.0
+        },
+        {
+            "name": "Megacorporation executive",
+            "probability": 0.8
+        },
+        {
+            "name": "Crime lord",
+            "probability": 0.8
+        },
+        {
+            "name": "Reclusive billionaire",
+            "probability": 0.8
+        },
+        {
+            "name": "Hacker collective leader",
+            "probability": 0.8
+        },
+        {
+            "name": "Rogue AI programmer",
+            "probability": 0.8
+        },
+        {
+            "name": "Cross Applied Technologies",
+            "probability": 0.8
+        },
+        {
+            "name": "Fuchi Industrial Electronics",
+            "probability": 0.8
+        },
+        {
+            "name": "High-ranking government official",
+            "probability": 0.5
+        },
+        {
+            "name": "Tir Tairngire government official",
+            "probability": 0.5
+        },
+        {
+            "name": "Aztlan cartel boss",
+            "probability": 0.5
+        },
+        {
+            "name": "Halloweeners gang leader",
+            "probability": 0.5
+        },
+        {
+            "name": "Tech startup CEO",
+            "probability": 0.5
+        },
+        {
+            "name": "Renowned scientist",
+            "probability": 0.5
+        },
+        {
+            "name": "Media mogul",
+            "probability": 0.5
+        },
+        {
+            "name": "Ex-military commander",
+            "probability": 0.5
+        },
+        {
+            "name": "Revolutionary ideologue",
+            "probability": 0.5
+        },
+        {
+            "name": "Yakushima elven leader",
+            "probability": 0.5
+        },
+        {
+            "name": "Wealthy private collector",
+            "probability": 0.3
+        },
+        {
+            "name": "Famous celebrity",
+            "probability": 0.3
+        },
+        {
+            "name": "Humanitarian aid organization",
+            "probability": 0.3
+        },
+        {
+            "name": "Underground resistance leader",
+            "probability": 0.3
+        },
+        {
+            "name": "Corporate security chief",
+            "probability": 0.8
+        },
+        {
+            "name": "Megacorp black-ops handler",
+            "probability": 0.8
+        },
+        {
+            "name": "Cybernetics smuggler",
+            "probability": 0.5
+        },
+        {
+            "name": "Street-level gang boss",
+            "probability": 0.5
+        },
+        {
+            "name": "Corporate espionage specialist",
+            "probability": 0.8
+        },
+        {
+            "name": "Wetwork coordinator",
+            "probability": 0.8
+        },
+        {
+            "name": "Arcano-tech researcher",
+            "probability": 0.5
+        },
+        {
+            "name": "Media blackmailer",
+            "probability": 0.1
+        },
+        {
+            "name": "Elven nationalist operative",
+            "probability": 0.5
+        },
+        {
+            "name": "Drake in disguise",
+            "probability": 0.3
+        },
+        {
+            "name": "Free spirit needing help",
+            "probability": 0.3
+        },
+        {
+            "name": "Yakuza lieutenant",
+            "probability": 0.5
+        },
+        {
+            "name": "Triad negotiator",
+            "probability": 0.5
+        }
+    ],
+    "mission_types": [
+        {
+            "name": "Data Extraction",
+            "probability": 1.0
+        },
+        {
+            "name": "Asset Recovery",
+            "probability": 0.95
+        },
+        {
+            "name": "Infiltration",
+            "probability": 0.95
+        },
+        {
+            "name": "Extraction",
+            "probability": 0.9
+        },
+        {
+            "name": "Surveillance",
+            "probability": 0.9
+        },
+        {
+            "name": "Counterintelligence",
+            "probability": 0.85
+        },
+        {
+            "name": "Assassination",
+            "probability": 0.85
+        },
+        {
+            "name": "Heist",
+            "probability": 0.85
+        },
+        {
+            "name": "Smuggling",
+            "probability": 0.8
+        },
+        {
+            "name": "Rescue",
+            "probability": 0.8
+        },
+        {
+            "name": "Protection",
+            "probability": 0.8
+        },
+        {
+            "name": "Corporate Espionage",
+            "probability": 0.8
+        },
+        {
+            "name": "Bounty Hunting",
+            "probability": 0.75
+        },
+        {
+            "name": "Artifact Retrieval",
+            "probability": 0.75
+        },
+        {
+            "name": "Cyberwarfare",
+            "probability": 0.75
+        },
+        {
+            "name": "Hostage Negotiation",
+            "probability": 0.7
+        },
+        {
+            "name": "Blackmail",
+            "probability": 0.7
+        },
+        {
+            "name": "Sabotage",
+            "probability": 0.7
+        },
+        {
+            "name": "Courier Run",
+            "probability": 0.7
+        },
+        {
+            "name": "Interception",
+            "probability": 0.7
+        },
+        {
+            "name": "Hacking",
+            "probability": 0.7
+        },
+        {
+            "name": "Research and Development Theft",
+            "probability": 0.65
+        },
+        {
+            "name": "Mercenary Contract",
+            "probability": 0.65
+        },
+        {
+            "name": "Urban Exploration",
+            "probability": 0.6
+        },
+        {
+            "name": "Gang Warfare",
+            "probability": 0.6
+        },
+        {
+            "name": "Piracy",
+            "probability": 0.6
+        },
+        {
+            "name": "Illegal Auction",
+            "probability": 0.6
+        },
+        {
+            "name": "Arms Dealing",
+            "probability": 0.6
+        },
+        {
+            "name": "Bodyguarding",
+            "probability": 0.6
+        },
+        {
+            "name": "Undercover Operation",
+            "probability": 0.6
+        },
+        {
+            "name": "Hijacking",
+            "probability": 0.6
+        },
+        {
+            "name": "Media Manipulation",
+            "probability": 0.6
+        },
+        {
+            "name": "Intellectual Property Theft",
+            "probability": 0.6
+        },
+        {
+            "name": "Corporate Raid",
+            "probability": 0.6
+        },
+        {
+            "name": "Heist Planning",
+            "probability": 0.6
+        },
+        {
+            "name": "Political Assassination",
+            "probability": 0.6
+        },
+        {
+            "name": "Clandestine Meeting",
+            "probability": 0.6
+        },
+        {
+            "name": "Defector Extraction",
+            "probability": 0.6
+        },
+        {
+            "name": "Underworld Negotiation",
+            "probability": 0.6
+        },
+        {
+            "name": "Bribery",
+            "probability": 0.6
+        },
+        {
+            "name": "Extortion",
+            "probability": 0.6
+        },
+        {
+            "name": "Witness Protection",
+            "probability": 0.6
+        },
+        {
+            "name": "Spirit Negotiation",
+            "probability": 0.6
+        },
+        {
+            "name": "Toxic Cleanup",
+            "probability": 0.6
+        },
+        {
+            "name": "Reality Show Sabotage",
+            "probability": 0.6
+        },
+        {
+            "name": "Virtual Reality Hacking",
+            "probability": 0.6
+        },
+        {
+            "name": "Genetic Engineering Sabotage",
+            "probability": 0.6
+        },
+        {
+            "name": "Mind Control Disruption",
+            "probability": 0.6
+        },
+        {
+            "name": "Bioweapon Containment",
+            "probability": 0.6
+        },
+        {
+            "name": "Society Infiltration",
+            "probability": 0.6
+        },
+        {
+            "name": "High-Stakes Gambling",
+            "probability": 0.6
+        },
+        {
+            "name": "Threat Neutralization",
+            "probability": 0.6
+        },
+        {
+            "name": "Criminal Syndicate Takedown",
+            "probability": 0.6
+        },
+        {
+            "name": "Mafia Turf War",
+            "probability": 0.6
+        },
+        {
+            "name": "Corporate Cover-Up",
+            "probability": 0.6
+        },
+        {
+            "name": "Identity Theft",
+            "probability": 0.6
+        },
+        {
+            "name": "Digital Assassination",
+            "probability": 0.6
+        },
+        {
+            "name": "Psychological Warfare",
+            "probability": 0.6
+        },
+        {
+            "name": "Time-Sensitive Courier Delivery",
+            "probability": 0.6
+        },
+        {
+            "name": "Body Part Retrieval",
+            "probability": 0.6
+        },
+        {
+            "name": "Archaeological Excavation",
+            "probability": 0.6
+        },
+        {
+            "name": "Astral Rift Closure",
+            "probability": 0.6
+        },
+        {
+            "name": "Rogue AI Containment",
+            "probability": 0.6
+        },
+        {
+            "name": "Shadow Spirit Banishment",
+            "probability": 0.6
+        },
+        {
+            "name": "Matrix Dive",
+            "probability": 0.6
+        },
+        {
+            "name": "Quantum Encryption Cracking",
+            "probability": 0.6
+        },
+        {
+            "name": "Secret Society Initiation",
+            "probability": 0.6
+        },
+        {
+            "name": "Museum Heist",
+            "probability": 0.6
+        },
+        {
+            "name": "Underground Fighting Ring",
+            "probability": 0.6
+        },
+        {
+            "name": "VIP Extraction",
+            "probability": 0.6
+        },
+        {
+            "name": "Body Disposal",
+            "probability": 0.6
+        },
+        {
+            "name": "Paranormal Investigation",
+            "probability": 0.6
+        },
+        {
+            "name": "Rogue Nanite Swarm Destruction",
+            "probability": 0.6
+        },
+        {
+            "name": "Urban Legend Debunking",
+            "probability": 0.6
+        },
+        {
+            "name": "Corporate Retreat Infiltration",
+            "probability": 0.6
+        },
+        {
+            "name": "Mysterious Disappearance Investigation",
+            "probability": 0.6
+        },
+        {
+            "name": "Disinformation Campaign",
+            "probability": 0.6
+        },
+        {
+            "name": "Illegal Drug Manufacturing Facility Destruction",
+            "probability": 0.6
+        },
+        {
+            "name": "Criminal Mastermind Capture",
+            "probability": 0.6
+        },
+        {
+            "name": "Organ Harvesting Ring Dismantling",
+            "probability": 0.5
+        }
+    ]
+}

@@ -1,0 +1,792 @@
+{
+    "location_types": [
+        {
+            "name": "university",
+            "probability": 0.8
+        },
+        {
+            "name": "library",
+            "probability": 0.8
+        },
+        {
+            "name": "museum",
+            "probability": 0.8
+        },
+        {
+            "name": "mansion",
+            "probability": 0.9
+        },
+        {
+            "name": "village",
+            "probability": 0.9
+        },
+        {
+            "name": "lighthouse",
+            "probability": 0.7
+        },
+        {
+            "name": "asylum",
+            "probability": 0.7
+        },
+        {
+            "name": "ruins",
+            "probability": 0.7
+        },
+        {
+            "name": "island",
+            "probability": 0.7
+        },
+        {
+            "name": "mountain",
+            "probability": 0.6
+        },
+        {
+            "name": "forest",
+            "probability": 0.7
+        },
+        {
+            "name": "cave",
+            "probability": 0.7
+        },
+        {
+            "name": "town",
+            "probability": 0.9
+        },
+        {
+            "name": "city",
+            "probability": 0.8
+        },
+        {
+            "name": "ship",
+            "probability": 0.6
+        },
+        {
+            "name": "laboratory",
+            "probability": 0.7
+        },
+        {
+            "name": "castle",
+            "probability": 0.6
+        },
+        {
+            "name": "temple",
+            "probability": 0.6
+        },
+        {
+            "name": "swamp",
+            "probability": 0.6
+        },
+        {
+            "name": "desert",
+            "probability": 0.5
+        },
+        {
+            "name": "cemetery",
+            "probability": 0.8
+        },
+        {
+            "name": "hospital",
+            "probability": 0.7
+        },
+        {
+            "name": "theater",
+            "probability": 0.7
+        },
+        {
+            "name": "church",
+            "probability": 0.7
+        },
+        {
+            "name": "hotel",
+            "probability": 0.7
+        },
+        {
+            "name": "factory",
+            "probability": 0.6
+        },
+        {
+            "name": "subway",
+            "probability": 0.6
+        },
+        {
+            "name": "school",
+            "probability": 0.7
+        },
+        {
+            "name": "bookstore",
+            "probability": 0.7
+        },
+        {
+            "name": "observatory",
+            "probability": 0.6
+        }
+    ],
+    "location_modifiers": [
+        {
+            "name": "abandoned",
+            "probability": 0.9
+        },
+        {
+            "name": "ancient",
+            "probability": 0.8
+        },
+        {
+            "name": "cursed",
+            "probability": 0.7
+        },
+        {
+            "name": "forgotten",
+            "probability": 0.8
+        },
+        {
+            "name": "hidden",
+            "probability": 0.8
+        },
+        {
+            "name": "isolated",
+            "probability": 0.9
+        },
+        {
+            "name": "mysterious",
+            "probability": 0.9
+        },
+        {
+            "name": "remote",
+            "probability": 0.9
+        },
+        {
+            "name": "secret",
+            "probability": 0.8
+        },
+        {
+            "name": "underground",
+            "probability": 0.7
+        },
+        {
+            "name": "decrepit",
+            "probability": 0.8
+        },
+        {
+            "name": "flooded",
+            "probability": 0.6
+        },
+        {
+            "name": "burning",
+            "probability": 0.5
+        },
+        {
+            "name": "misty",
+            "probability": 0.7
+        },
+        {
+            "name": "overgrown",
+            "probability": 0.7
+        },
+        {
+            "name": "crumbling",
+            "probability": 0.8
+        },
+        {
+            "name": "haunted",
+            "probability": 0.8
+        },
+        {
+            "name": "condemned",
+            "probability": 0.7
+        },
+        {
+            "name": "historic",
+            "probability": 0.8
+        },
+        {
+            "name": "frozen",
+            "probability": 0.6
+        }
+    ],
+    "location_places": [
+        {
+            "name": "New England",
+            "probability": 1.0
+        },
+        {
+            "name": "Massachusetts",
+            "probability": 0.9
+        },
+        {
+            "name": "London",
+            "probability": 0.8
+        },
+        {
+            "name": "Paris",
+            "probability": 0.7
+        },
+        {
+            "name": "Egypt",
+            "probability": 0.7
+        },
+        {
+            "name": "Antarctica",
+            "probability": 0.5
+        },
+        {
+            "name": "Pacific",
+            "probability": 0.6
+        },
+        {
+            "name": "Arctic",
+            "probability": 0.5
+        },
+        {
+            "name": "Louisiana",
+            "probability": 0.7
+        },
+        {
+            "name": "Amazon",
+            "probability": 0.6
+        },
+        {
+            "name": "Atlantic",
+            "probability": 0.6
+        },
+        {
+            "name": "Vermont",
+            "probability": 0.9
+        },
+        {
+            "name": "Maine",
+            "probability": 0.9
+        },
+        {
+            "name": "Appalachia",
+            "probability": 0.7
+        },
+        {
+            "name": "Scotland",
+            "probability": 0.7
+        },
+        {
+            "name": "Wales",
+            "probability": 0.7
+        },
+        {
+            "name": "Norway",
+            "probability": 0.6
+        },
+        {
+            "name": "China",
+            "probability": 0.6
+        },
+        {
+            "name": "Australia",
+            "probability": 0.6
+        },
+        {
+            "name": "Morocco",
+            "probability": 0.6
+        },
+        {
+            "name": "Siberia",
+            "probability": 0.5
+        },
+        {
+            "name": "Mexico",
+            "probability": 0.6
+        },
+        {
+            "name": "India",
+            "probability": 0.6
+        },
+        {
+            "name": "Canada",
+            "probability": 0.7
+        }
+    ],
+    "mythos_entities": [
+        {
+            "name": "Cthulhu",
+            "probability": 0.3
+        },
+        {
+            "name": "Nyarlathotep",
+            "probability": 0.4
+        },
+        {
+            "name": "Yog-Sothoth",
+            "probability": 0.3
+        },
+        {
+            "name": "Azathoth",
+            "probability": 0.2
+        },
+        {
+            "name": "Deep Ones",
+            "probability": 0.8
+        },
+        {
+            "name": "Mi-Go",
+            "probability": 0.7
+        },
+        {
+            "name": "Shoggoth",
+            "probability": 0.6
+        },
+        {
+            "name": "Elder Things",
+            "probability": 0.6
+        },
+        {
+            "name": "Ghouls",
+            "probability": 0.8
+        },
+        {
+            "name": "Byakhee",
+            "probability": 0.5
+        },
+        {
+            "name": "cultists",
+            "probability": 1.0
+        },
+        {
+            "name": "entity",
+            "probability": 0.9
+        },
+        {
+            "name": "gods",
+            "probability": 0.6
+        },
+        {
+            "name": "beast",
+            "probability": 0.8
+        },
+        {
+            "name": "parasites",
+            "probability": 0.7
+        },
+        {
+            "name": "Dagon",
+            "probability": 0.6
+        },
+        {
+            "name": "Hastur",
+            "probability": 0.4
+        },
+        {
+            "name": "Shub-Niggurath",
+            "probability": 0.3
+        },
+        {
+            "name": "Night Gaunts",
+            "probability": 0.5
+        },
+        {
+            "name": "Dark Young",
+            "probability": 0.5
+        },
+        {
+            "name": "shapeshifter",
+            "probability": 0.7
+        },
+        {
+            "name": "hybrid",
+            "probability": 0.7
+        },
+        {
+            "name": "Hound of Tindalos",
+            "probability": 0.5
+        },
+        {
+            "name": "sleeper",
+            "probability": 0.6
+        },
+        {
+            "name": "abomination",
+            "probability": 0.8
+        },
+        {
+            "name": "serpent people",
+            "probability": 0.6
+        },
+        {
+            "name": "possessed",
+            "probability": 0.8
+        },
+        {
+            "name": "ghosts",
+            "probability": 0.7
+        },
+        {
+            "name": "dimensional being",
+            "probability": 0.6
+        }
+    ],
+    "mythos_phenomena": [
+        {
+            "name": "portal",
+            "probability": 0.7
+        },
+        {
+            "name": "ritual",
+            "probability": 0.9
+        },
+        {
+            "name": "tome",
+            "probability": 0.9
+        },
+        {
+            "name": "artifact",
+            "probability": 0.9
+        },
+        {
+            "name": "mutation",
+            "probability": 0.8
+        },
+        {
+            "name": "dreams",
+            "probability": 0.9
+        },
+        {
+            "name": "resurrection",
+            "probability": 0.7
+        },
+        {
+            "name": "summoning",
+            "probability": 0.8
+        },
+        {
+            "name": "gateway",
+            "probability": 0.7
+        },
+        {
+            "name": "meteorite",
+            "probability": 0.7
+        },
+        {
+            "name": "plague",
+            "probability": 0.7
+        },
+        {
+            "name": "curse",
+            "probability": 0.8
+        },
+        {
+            "name": "cult",
+            "probability": 1.0
+        },
+        {
+            "name": "prophecy",
+            "probability": 0.8
+        },
+        {
+            "name": "madness",
+            "probability": 0.9
+        },
+        {
+            "name": "transformation",
+            "probability": 0.8
+        },
+        {
+            "name": "sacrifice",
+            "probability": 0.8
+        },
+        {
+            "name": "ancient text",
+            "probability": 0.9
+        },
+        {
+            "name": "strange sound",
+            "probability": 0.8
+        },
+        {
+            "name": "forbidden knowledge",
+            "probability": 0.9
+        },
+        {
+            "name": "glyphs",
+            "probability": 0.8
+        },
+        {
+            "name": "disappearances",
+            "probability": 0.9
+        },
+        {
+            "name": "hallucinations",
+            "probability": 0.8
+        },
+        {
+            "name": "unusual device",
+            "probability": 0.8
+        },
+        {
+            "name": "time distortion",
+            "probability": 0.7
+        },
+        {
+            "name": "necromancy",
+            "probability": 0.7
+        },
+        {
+            "name": "genetic experiment",
+            "probability": 0.7
+        },
+        {
+            "name": "unexplained lights",
+            "probability": 0.7
+        },
+        {
+            "name": "underground network",
+            "probability": 0.8
+        },
+        {
+            "name": "ancient ceremony",
+            "probability": 0.8
+        },
+        {
+            "name": "memory alteration",
+            "probability": 0.7
+        },
+        {
+            "name": "alternate dimension",
+            "probability": 0.6
+        },
+        {
+            "name": "corrupted water",
+            "probability": 0.7
+        },
+        {
+            "name": "strange growth",
+            "probability": 0.8
+        },
+        {
+            "name": "whispering voices",
+            "probability": 0.8
+        }
+    ],
+    "hook_subjects": [
+        {
+            "name": "friend",
+            "probability": 0.9
+        },
+        {
+            "name": "relative",
+            "probability": 0.9
+        },
+        {
+            "name": "colleague",
+            "probability": 0.9
+        },
+        {
+            "name": "stranger",
+            "probability": 0.8
+        },
+        {
+            "name": "professor",
+            "probability": 0.9
+        },
+        {
+            "name": "collector",
+            "probability": 0.8
+        },
+        {
+            "name": "researcher",
+            "probability": 0.9
+        },
+        {
+            "name": "detective",
+            "probability": 0.8
+        },
+        {
+            "name": "reporter",
+            "probability": 0.8
+        },
+        {
+            "name": "doctor",
+            "probability": 0.8
+        },
+        {
+            "name": "explorer",
+            "probability": 0.7
+        },
+        {
+            "name": "cultist",
+            "probability": 0.7
+        },
+        {
+            "name": "librarian",
+            "probability": 0.8
+        },
+        {
+            "name": "antiquarian",
+            "probability": 0.8
+        },
+        {
+            "name": "student",
+            "probability": 0.8
+        },
+        {
+            "name": "archaeologist",
+            "probability": 0.8
+        },
+        {
+            "name": "local",
+            "probability": 0.8
+        },
+        {
+            "name": "artist",
+            "probability": 0.7
+        },
+        {
+            "name": "wealthy patron",
+            "probability": 0.8
+        },
+        {
+            "name": "priest",
+            "probability": 0.7
+        },
+        {
+            "name": "police officer",
+            "probability": 0.8
+        },
+        {
+            "name": "historian",
+            "probability": 0.8
+        },
+        {
+            "name": "child",
+            "probability": 0.7
+        },
+        {
+            "name": "fisherman",
+            "probability": 0.7
+        },
+        {
+            "name": "musician",
+            "probability": 0.6
+        },
+        {
+            "name": "sailor",
+            "probability": 0.7
+        }
+    ],
+    "hook_events": [
+        {
+            "name": "disappearance",
+            "probability": 0.9
+        },
+        {
+            "name": "discovery",
+            "probability": 0.9
+        },
+        {
+            "name": "inheritance",
+            "probability": 0.8
+        },
+        {
+            "name": "invitation",
+            "probability": 0.8
+        },
+        {
+            "name": "letter",
+            "probability": 0.9
+        },
+        {
+            "name": "nightmare",
+            "probability": 0.8
+        },
+        {
+            "name": "research",
+            "probability": 0.9
+        },
+        {
+            "name": "expedition",
+            "probability": 0.8
+        },
+        {
+            "name": "accident",
+            "probability": 0.8
+        },
+        {
+            "name": "artifact",
+            "probability": 0.8
+        },
+        {
+            "name": "illness",
+            "probability": 0.8
+        },
+        {
+            "name": "visions",
+            "probability": 0.8
+        },
+        {
+            "name": "sounds",
+            "probability": 0.7
+        },
+        {
+            "name": "manuscript",
+            "probability": 0.8
+        },
+        {
+            "name": "ritual",
+            "probability": 0.7
+        },
+        {
+            "name": "transformation",
+            "probability": 0.7
+        },
+        {
+            "name": "newspaper article",
+            "probability": 0.8
+        },
+        {
+            "name": "strange behavior",
+            "probability": 0.9
+        },
+        {
+            "name": "family secret",
+            "probability": 0.8
+        },
+        {
+            "name": "coded message",
+            "probability": 0.7
+        },
+        {
+            "name": "unusual purchase",
+            "probability": 0.7
+        },
+        {
+            "name": "unexpected visit",
+            "probability": 0.8
+        },
+        {
+            "name": "mysterious death",
+            "probability": 0.9
+        },
+        {
+            "name": "ancient map",
+            "probability": 0.7
+        },
+        {
+            "name": "journal entries",
+            "probability": 0.8
+        },
+        {
+            "name": "unexplained phenomenon",
+            "probability": 0.8
+        },
+        {
+            "name": "disturbing photographs",
+            "probability": 0.8
+        },
+        {
+            "name": "forbidden collection",
+            "probability": 0.7
+        },
+        {
+            "name": "strange markings",
+            "probability": 0.8
+        },
+        {
+            "name": "missing pages",
+            "probability": 0.7
+        }
+    ]
+}

@@ -10,7 +10,7 @@ from src.brain.chat import SummaryChat
 from src.llmclient.llm_client import LLMClientBase
 from src.llmclient.llm_parameters import LLMConfig
 
-from src.brain.oracle import Oracle
+from src.brain.oracle import BaseOracle, ShadowrunOracle, VampireOracle, CthulhuOracle
 from src.brain.json_tools import extract_json_schema
 
 import src.routers.schema.mission as api_schema_mission
@@ -87,12 +87,21 @@ class Gamemaster:
         Args:
             background (str): User supplied background information to seed the mission.
         """
+        oracle: BaseOracle
         if self._game_type == api_schema_mission.GameType.SHADOWRUN:
-            oracle_topic = Oracle.mission()
-            print("### Generate Mission")
-            print(oracle_topic)
+            oracle = ShadowrunOracle()
+            oracle_topic = oracle.mission(background)
+        elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
+            oracle = VampireOracle()
+            oracle_topic = oracle.mission(background)
+        elif self._game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
+            oracle = CthulhuOracle()
+            oracle_topic = oracle.mission(background)
         else:
             oracle_topic = ""
+
+        print("### GenerateMission")
+        print(oracle_topic)
 
         # llm_response = self._llm_client.completion(
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
