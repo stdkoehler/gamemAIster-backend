@@ -89,6 +89,8 @@ After defining the scenario please acknowledge that you will be subtle with the 
 Out of character will be denoted with brackets []. You my provide non-story information to the player. E.g. ask skill checks: [Roll a Spot Hidden].
 When the player writes something also consider it be Out of Character, asking you as a gamemaster. E.g. for the current situation, whether he can perform a certain skill check etc.
 
-# Scenario
+# Background and previous events
+{BACKGROUND}
 
+# Scenario
 {MISSION}

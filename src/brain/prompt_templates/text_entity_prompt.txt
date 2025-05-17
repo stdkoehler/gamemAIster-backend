@@ -448,6 +448,9 @@ Fusion should be performed based on importance and specificity. In this case, Ji
 - Return only the specified JSON structure without additional commentary
 - Maintain consistent naming conventions across all entity references
 
+## Important
+Make sure to **never** mix in any of the entities of the examples given above into your output. You *only* extract entities from the text below.
+
 # Current Task
 
 Begin processing the inputs and output the entities described. You may use <think></think> to structure your approach

@@ -308,6 +308,8 @@ Interpret and apply the fields as follows:
 - magicalElements: Guide mages and shamans through astral perception, wards, and magical clues.
 - outcomes: Use these to resolve the story based on player actions.
 
-Below is the mission you will run for the players. Follow the structure, adapting to the narrative flow as needed:
+This is the background of the shadowrunners:
+{BACKGROUND}
 
+Below is the mission you will run for the players. Follow the structure, adapting to the narrative flow as needed:
 {MISSION}
