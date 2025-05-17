@@ -56,7 +56,7 @@ def tts_stream(request: TtsRequest) -> StreamingResponse:
         text = request.text.split("---")[0]
         with requests.post(
             "http://127.0.0.1:8001/inference/text-to-speech-stream-webm",
-            json={"model": "CaraGee", "text": text},
+            json={"model": "f5", "voice": "LeonardNimoy", "text": text},
             timeout=360,
             stream=True,
         ) as r:
