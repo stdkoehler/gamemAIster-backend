@@ -311,6 +311,7 @@ class SummaryChat:
         if mission is None:
             raise ValueError("No mission could be loaded from database.")
         self._mission = mission.description
+        self._background = mission.background
         self._memory = SummaryMemory(
             llm_client=llm_client_reasoning,
             summary_template=summary_template,
@@ -353,7 +354,9 @@ class SummaryChat:
 
         # print("Current Summary:")
         # print(self._memory.summary)
-        system_prompt = self._role.format(MISSION=self._mission)
+        system_prompt = self._role.format(
+            MISSION=self._mission, BACKGROUND=self._background
+        )
         messages = [{"role": "system", "content": system_prompt}]
 
         messages += self._memory.chat()
