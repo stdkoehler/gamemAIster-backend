@@ -46,9 +46,12 @@ class LLMClientBase(ABC):
         pass
 
     @abstractmethod
-    def completion_stream(
-        self, prompt: str, llm_config: LLMConfig = LLMConfig()
-    ) -> Generator[str, None, None]:
+    def chat_completion(
+        self,
+        messages: list[dict[str, str]],
+        reasoning: bool = False,
+        llm_config: LLMConfig = LLMConfig(),
+    ) -> str:
         pass
 
     @abstractmethod
