@@ -49,6 +49,7 @@ Your task is to align the input parameters (**Factions Involved**, **Inciting In
      - For fledglings: breach of domain, tasks by their sire, unusual Kindred behavior.
      - For ancillae or elders: high-stakes politics, resurging old threats, lost artifacts.
    - Must serve as an **entry point**, not an exposition dump.
+   - If the player is a mortal provide a hook for a possible embrace.
 
 3. **Themes**:
    - Reframe or enhance to resonate with the background and potential character arcs.
