@@ -32,14 +32,14 @@ class Gamemaster:
         prompt_dir = Path(__file__).parent / "prompt_templates"
 
         if game_type == api_schema_mission.GameType.SHADOWRUN:
-            mission_prompt = prompt_dir / "shadowrun_mission_prompt.txt"
-            system_prompt = prompt_dir / "shadowrun_system_prompt.txt"
+            mission_prompt = prompt_dir / "shadowrun" / "shadowrun_mission_prompt.txt"
+            system_prompt = prompt_dir / "shadowrun" / "shadowrun_system_prompt.txt"
         elif game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
-            mission_prompt = prompt_dir / "vampire_mission_prompt.txt"
-            system_prompt = prompt_dir / "vampire_system_prompt.txt"
+            mission_prompt = prompt_dir / "vampire" / "vampire_mission_prompt.txt"
+            system_prompt = prompt_dir / "vampire" / "vampire_system_prompt.txt"
         elif game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
-            mission_prompt = prompt_dir / "cthulhu_mission_prompt.txt"
-            system_prompt = prompt_dir / "cthulhu_system_prompt.txt"
+            mission_prompt = prompt_dir / "cthulhu" / "cthulhu_mission_prompt.txt"
+            system_prompt = prompt_dir / "cthulhu" / "cthulhu_system_prompt.txt"
         else:
             raise ValueError(f"Unknown game type: {game_type}")
 
@@ -89,13 +89,13 @@ class Gamemaster:
         """
         oracle: BaseOracle
         if self._game_type == api_schema_mission.GameType.SHADOWRUN:
-            oracle = ShadowrunOracle()
+            oracle = ShadowrunOracle(llm_client=self._llm_client_reasoning)
             oracle_topic = oracle.mission(background)
         elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
-            oracle = VampireOracle()
+            oracle = VampireOracle(llm_client=self._llm_client_reasoning)
             oracle_topic = oracle.mission(background)
         elif self._game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
-            oracle = CthulhuOracle()
+            oracle = CthulhuOracle(llm_client=self._llm_client_reasoning)
             oracle_topic = oracle.mission(background)
         else:
             oracle_topic = ""
@@ -113,7 +113,7 @@ class Gamemaster:
                     "role": "system",
                     "content": self._mission_template,
                 },
-                {"role": "user", "content": "Create scenario around:\n" + oracle_topic},
+                {"role": "user", "content": oracle_topic},
             ],
             reasoning=True,
             llm_config=LLMConfig(max_tokens=4096),
