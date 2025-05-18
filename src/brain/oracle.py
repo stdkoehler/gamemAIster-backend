@@ -1,19 +1,33 @@
-from dataclasses import dataclass
 import json
 import random
+from typing import TypeAlias
 from pathlib import Path
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+
+from pydantic import BaseModel, RootModel
 
 from src.llmclient.llm_client import LLMClientBase
 
+MissionInput: TypeAlias = dict[str, str | list[str]]
 
-@dataclass
-class Candidate:
-    """Represents a selectable candidate with a weight."""
 
+class Candidate(BaseModel):
     name: str
     probability: float
+
+
+class OracleConfig(RootModel[dict[str, list[Candidate]]]):
+    """
+    Pydantic RootModel for validating and parsing the entire oracle config JSON as a
+    root-level dictionary.
+
+    This allows us to accept any pool name (e.g., 'clients', 'factions', 'location_types'),
+    each mapping to a list of Candidate objects, regardless of the specific field names
+    in the JSON.
+
+    Using RootModel is required in Pydantic v2+ for root-level (non-object) JSON
+    structures, and provides type safety and validation for all pools in a generic way.
+    """
 
 
 class BaseOracle(ABC):
@@ -35,24 +49,14 @@ class BaseOracle(ABC):
         # Load config
         json_path = base_path / config_dir / config_filename
         with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        self._raw_data = data  # for use in subclasses if needed
+            data = f.read()
+        config = OracleConfig.model_validate_json(data)
+        self._pools = config.root
         self._llm_client = llm_client
-        self._pools = self._build_pools(data)
-        # Load prompt
+
         prompt_path = base_path / prompt_dir / prompt_filename
         with open(prompt_path, "r", encoding="utf-8") as f:
             self._alignment_prompt = f.read()
-
-    @staticmethod
-    def _build_pools(
-        data: dict[str, list[dict[str, str | float]]],
-    ) -> dict[str, list[Candidate]]:
-        # Subclasses may override if needed
-        return {
-            pool_name: [Candidate(**entry) for entry in entries]
-            for pool_name, entries in data.items()
-        }
 
     @staticmethod
     def _weighted_choice(items: list[Candidate]) -> str:
@@ -60,28 +64,26 @@ class BaseOracle(ABC):
         weights = [item.probability for item in items]
         return random.choices(names, weights=weights, k=1)[0]
 
-    def _roll(self) -> Dict[str, str | list[str]]:
+    def _roll(self) -> MissionInput:
         return {
             pool_name: self._weighted_choice(candidates)
             for pool_name, candidates in self._pools.items()
         }
 
-    def _align(
-        self, candidate: dict[str, str | list[str]], background: str
-    ) -> dict[str, str | list[str]]:
-        candidate["background"] = background
+    def _align(self, proposal: MissionInput, background: str) -> MissionInput:
+        proposal["background"] = background
         messages: list[dict[str, str]] = [
             {"role": "system", "content": self._alignment_prompt},
-            {"role": "user", "content": json.dumps(candidate)},
+            {"role": "user", "content": json.dumps(proposal)},
         ]
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
         print("### LLM Alignment")
         print(messages)
         print(response)
-        return candidate
+        return proposal
 
     @abstractmethod
-    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
+    def _assemble_candidate(self, background: str) -> MissionInput:
         pass
 
     def mission(self, background: str) -> str:
@@ -106,7 +108,7 @@ class ShadowrunOracle(BaseOracle):
         # For target selection, keep clients pool as 'targets'
         self._pools["targets"] = self._pools["clients"]
 
-    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
+    def _assemble_candidate(self, background: str) -> MissionInput:
         client = self._weighted_choice(self._pools["clients"])
         mission = self._weighted_choice(self._pools["mission_types"])
         eligible = [c for c in self._pools["targets"] if c.name != client]
@@ -131,7 +133,7 @@ class VampireOracle(BaseOracle):
             prompt_filename="vampire/vampire_background_mission_aligner.txt",
         )
 
-    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
+    def _assemble_candidate(self, background: str) -> MissionInput:
         candidate = self._roll()
         # pick one or two unique factions
         k = random.randint(1, 2)
@@ -205,7 +207,7 @@ class CthulhuOracle(BaseOracle):
         ]
         return random.choice(formats)
 
-    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
+    def _assemble_candidate(self, background: str) -> MissionInput:
         return {
             "location": self.generate_location(),
             "mythosElements": self.generate_mythos_elements(),
