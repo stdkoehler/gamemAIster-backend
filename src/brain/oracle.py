@@ -19,20 +19,40 @@ class Candidate:
 class BaseOracle(ABC):
     """
     Generic Oracle engine for weighted random narrative seeds.
-    Supply a config dict mapping pool names to lists of {name, probability} entries.
+    Handles config/prompt loading, weighted selection, and mission alignment.
+    Subclasses must implement _assemble_candidate.
     """
 
-    @property
-    @abstractmethod
-    def _alignment_prompt(self) -> str:
-        pass
-
-    def __init__(self, config: Dict[str, Any], llm_client: LLMClientBase):
-        self._pools = {
-            pool_name: [Candidate(**entry) for entry in entries]
-            for pool_name, entries in config.items()
-        }
+    def __init__(
+        self,
+        llm_client: LLMClientBase,
+        config_filename: str,
+        prompt_filename: str,
+        config_dir: str = "oracle",
+        prompt_dir: str = "prompt_templates",
+    ):
+        base_path = Path(__file__).parent
+        # Load config
+        json_path = base_path / config_dir / config_filename
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self._raw_data = data  # for use in subclasses if needed
         self._llm_client = llm_client
+        self._pools = self._build_pools(data)
+        # Load prompt
+        prompt_path = base_path / prompt_dir / prompt_filename
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            self._alignment_prompt = f.read()
+
+    @staticmethod
+    def _build_pools(
+        data: dict[str, list[dict[str, str | float]]],
+    ) -> dict[str, list[Candidate]]:
+        # Subclasses may override if needed
+        return {
+            pool_name: [Candidate(**entry) for entry in entries]
+            for pool_name, entries in data.items()
+        }
 
     @staticmethod
     def _weighted_choice(items: list[Candidate]) -> str:
@@ -49,26 +69,26 @@ class BaseOracle(ABC):
     def _align(
         self, candidate: dict[str, str | list[str]], background: str
     ) -> dict[str, str | list[str]]:
-
         candidate["background"] = background
         messages: list[dict[str, str]] = [
-            {
-                "role": "system",
-                "content": self._alignment_prompt,
-            },
-            {
-                "role": "user",
-                "content": json.dumps(candidate),
-            },
+            {"role": "system", "content": self._alignment_prompt},
+            {"role": "user", "content": json.dumps(candidate)},
         ]
-        # Optionally, you can capture the LLM response here if needed
-        # response = self._llm_client.chat_completion(messages=messages, reasoning=True)
-        # return response
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
         print("### LLM Alignment")
         print(messages)
         print(response)
         return candidate
+
+    @abstractmethod
+    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
+        pass
+
+    def mission(self, background: str) -> str:
+        candidate = self._assemble_candidate(background)
+        aligned = self._align(candidate, background)
+        aligned["background"] = background
+        return json.dumps(aligned, ensure_ascii=False, indent=2)
 
 
 class ShadowrunOracle(BaseOracle):
@@ -77,94 +97,48 @@ class ShadowrunOracle(BaseOracle):
     Generates { client, mission, target } with target != client.
     """
 
-    @property
-    def _alignment_prompt(self) -> str:
-        return self.__alignment_prompt
-
     def __init__(self, llm_client: LLMClientBase) -> None:
-        json_path = Path(__file__).parent / "oracle" / "shadowrun.json"
-        with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        config = {
-            "client": data["clients"],
-            "mission": data["mission_types"],
-            # keep clients for target selection
-            "targets": data["clients"],
-        }
-
-        prompt_path = (
-            Path(__file__).parent
-            / "prompt_templates/shadowrun"
-            / "shadowrun_background_mission_aligner.txt"
+        super().__init__(
+            llm_client=llm_client,
+            config_filename="shadowrun.json",
+            prompt_filename="shadowrun/shadowrun_background_mission_aligner.txt",
         )
-        with open(prompt_path, "r", encoding="utf-8") as f:
-            self.__alignment_prompt = f.read()
+        # For target selection, keep clients pool as 'targets'
+        self._pools["targets"] = self._pools["clients"]
 
-        super().__init__(config=config, llm_client=llm_client)
-
-    def mission(self, background: str) -> str:
-        client = self._weighted_choice(self._pools["client"])
-        mission = self._weighted_choice(self._pools["mission"])
-        # select target different from client
+    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
+        client = self._weighted_choice(self._pools["clients"])
+        mission = self._weighted_choice(self._pools["mission_types"])
         eligible = [c for c in self._pools["targets"] if c.name != client]
         target = self._weighted_choice(eligible)
-
-        candidate: dict[str, str | list[str]] = {
+        return {
             "client": client,
             "mission": mission,
             "target": target,
         }
 
-        aligned = self._align(candidate, background)
-        aligned["background"] = background
-
-        return json.dumps(
-            aligned,
-            ensure_ascii=False,
-            indent=2,
-        )
-
 
 class VampireOracle(BaseOracle):
-
-    @property
-    def _alignment_prompt(self) -> str:
-        return self.__alignment_prompt
+    """
+    Oracle for Vampire: The Masquerade missions, using external JSON definitions.
+    Generates { factions, incitingIncidents, themes } with 1-2 unique factions.
+    """
 
     def __init__(self, llm_client: LLMClientBase) -> None:
-        json_path = Path(__file__).parent / "oracle" / "vampire_the_masquerade.json"
-        with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        config = {
-            "factions": data["factions"],
-            "incitingIncidents": data["inciting_incidents"],
-            "themes": data["themes"],
-        }
-
-        prompt_path = (
-            Path(__file__).parent
-            / "prompt_templates/vampire"
-            / "vampire_background_mission_aligner.txt"
+        super().__init__(
+            llm_client=llm_client,
+            config_filename="vampire_the_masquerade.json",
+            prompt_filename="vampire/vampire_background_mission_aligner.txt",
         )
-        with open(prompt_path, "r", encoding="utf-8") as f:
-            self.__alignment_prompt = f.read()
 
-        super().__init__(config=config, llm_client=llm_client)
-
-    def mission(self, background: str) -> str:
+    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
         candidate = self._roll()
         # pick one or two unique factions
         k = random.randint(1, 2)
         candidate["factions"] = random.sample(
             [c.name for c in self._pools["factions"]], k=k
         )
-
-        aligned = self._align(candidate, background)
-        aligned["background"] = background
-
-        # wrap inciting incident and themes in lists as needed
-        return json.dumps(aligned, ensure_ascii=False, indent=2)
+        return candidate
 
 
 class CthulhuOracle(BaseOracle):
@@ -173,31 +147,12 @@ class CthulhuOracle(BaseOracle):
     Generates narrative seeds with location, mythos elements, and hooks.
     """
 
-    @property
-    def _alignment_prompt(self) -> str:
-        return self.__alignment_prompt
-
     def __init__(self, llm_client: LLMClientBase) -> None:
-        json_path = Path(__file__).parent / "oracle" / "call_of_cthulhu.json"
-        with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        config = {
-            "location_types": data["location_types"],
-            "location_modifiers": data["location_modifiers"],
-            "location_places": data["location_places"],
-            "mythos_entities": data["mythos_entities"],
-            "mythos_phenomena": data["mythos_phenomena"],
-            "hook_subjects": data["hook_subjects"],
-            "hook_events": data["hook_events"],
-        }
-        prompt_path = (
-            Path(__file__).parent
-            / "prompt_templates/cthulhu"
-            / "cthulhu_background_mission_aligner.txt"
+        super().__init__(
+            llm_client=llm_client,
+            config_filename="call_of_cthulhu.json",
+            prompt_filename="cthulhu/cthulhu_background_mission_aligner.txt",
         )
-        with open(prompt_path, "r", encoding="utf-8") as f:
-            self.__alignment_prompt = f.read()
-        super().__init__(config=config, llm_client=llm_client)
 
     def generate_location(self) -> str:
         # 70% chance to include a modifier
@@ -250,15 +205,12 @@ class CthulhuOracle(BaseOracle):
         ]
         return random.choice(formats)
 
-    def mission(self, background: str) -> str:
-        candidate: dict[str, str | list[str]] = {
+    def _assemble_candidate(self, background: str) -> dict[str, str | list[str]]:
+        return {
             "location": self.generate_location(),
             "mythosElements": self.generate_mythos_elements(),
             "hook": self.generate_hook(),
         }
-        aligned = self._align(candidate, background)
-        aligned["background"] = background
-        return json.dumps(aligned, ensure_ascii=False, indent=2)
 
 
 # Example usage
