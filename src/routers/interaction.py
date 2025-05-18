@@ -91,7 +91,7 @@ async def post_gamemaster_send(
                 api_key=api_key,
                 model="claude-3-7-sonnet-latest",
             ),
-            game_type=payload.game_type,
+            game_type=game_type,
         )
     else:
         raise ValueError(f"Unknown LLM type: {llm_type}")
