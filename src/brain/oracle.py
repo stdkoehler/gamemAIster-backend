@@ -7,8 +7,9 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, RootModel
 
 from src.llmclient.llm_client import LLMClientBase
+from src.brain.json_tools import extract_json_schema
 
-MissionInput: TypeAlias = dict[str, str | list[str]]
+MissionSeed: TypeAlias = dict[str, str | list[str]]
 
 
 class Candidate(BaseModel):
@@ -64,13 +65,13 @@ class BaseOracle(ABC):
         weights = [item.probability for item in items]
         return random.choices(names, weights=weights, k=1)[0]
 
-    def _roll(self) -> MissionInput:
+    def _roll(self) -> MissionSeed:
         return {
             pool_name: self._weighted_choice(candidates)
             for pool_name, candidates in self._pools.items()
         }
 
-    def _align(self, proposal: MissionInput, background: str) -> MissionInput:
+    def _align(self, proposal: MissionSeed, background: str) -> MissionSeed:
         proposal["background"] = background
         messages: list[dict[str, str]] = [
             {"role": "system", "content": self._alignment_prompt},
@@ -78,16 +79,21 @@ class BaseOracle(ABC):
         ]
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
         print("### LLM Alignment")
-        print(messages)
+        print(proposal)
         print(response)
-        return proposal
+        try:
+            adjusted: MissionSeed = json.loads(extract_json_schema(response))
+        except json.decoder.JSONDecodeError as exc:
+            raise ValueError(f"LLM response is not valid JSON: {response}") from exc
+
+        return adjusted
 
     @abstractmethod
-    def _assemble_candidate(self, background: str) -> MissionInput:
+    def _assemble_proposal_seed(self) -> MissionSeed:
         pass
 
     def mission(self, background: str) -> str:
-        candidate = self._assemble_candidate(background)
+        candidate = self._assemble_proposal_seed()
         aligned = self._align(candidate, background)
         aligned["background"] = background
         return json.dumps(aligned, ensure_ascii=False, indent=2)
@@ -108,7 +114,7 @@ class ShadowrunOracle(BaseOracle):
         # For target selection, keep clients pool as 'targets'
         self._pools["targets"] = self._pools["clients"]
 
-    def _assemble_candidate(self, background: str) -> MissionInput:
+    def _assemble_proposal_seed(self) -> MissionSeed:
         client = self._weighted_choice(self._pools["clients"])
         mission = self._weighted_choice(self._pools["mission_types"])
         eligible = [c for c in self._pools["targets"] if c.name != client]
@@ -133,7 +139,7 @@ class VampireOracle(BaseOracle):
             prompt_filename="vampire/vampire_background_mission_aligner.txt",
         )
 
-    def _assemble_candidate(self, background: str) -> MissionInput:
+    def _assemble_proposal_seed(self) -> MissionSeed:
         candidate = self._roll()
         # pick one or two unique factions
         k = random.randint(1, 2)
@@ -207,7 +213,7 @@ class CthulhuOracle(BaseOracle):
         ]
         return random.choice(formats)
 
-    def _assemble_candidate(self, background: str) -> MissionInput:
+    def _assemble_proposal_seed(self) -> MissionSeed:
         return {
             "location": self.generate_location(),
             "mythosElements": self.generate_mythos_elements(),
