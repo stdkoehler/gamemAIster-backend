@@ -43,6 +43,7 @@ You will receive an input in json format
   "client": "Client",
   "target": "Target",
   "mission": "Mission"
+  "background: "Background"
 }
 ```
 
