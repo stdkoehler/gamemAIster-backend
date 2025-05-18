@@ -2,6 +2,10 @@ from dataclasses import dataclass
 import json
 import random
 from pathlib import Path
+from abc import ABC, abstractmethod
+from typing import Dict, Any
+
+from src.llmclient.llm_client import LLMClientBase
 
 
 @dataclass
@@ -12,29 +16,59 @@ class Candidate:
     probability: float
 
 
-class BaseOracle:
+class BaseOracle(ABC):
     """
     Generic Oracle engine for weighted random narrative seeds.
     Supply a config dict mapping pool names to lists of {name, probability} entries.
     """
 
-    def __init__(self, config: dict):
-        self.pools = {
+    @property
+    @abstractmethod
+    def _alignment_prompt(self) -> str:
+        pass
+
+    def __init__(self, config: Dict[str, Any], llm_client: LLMClientBase):
+        self._pools = {
             pool_name: [Candidate(**entry) for entry in entries]
             for pool_name, entries in config.items()
         }
+        self._llm_client = llm_client
 
     @staticmethod
-    def weighted_choice(items: list[Candidate]) -> str:
+    def _weighted_choice(items: list[Candidate]) -> str:
         names = [item.name for item in items]
         weights = [item.probability for item in items]
         return random.choices(names, weights=weights, k=1)[0]
 
-    def roll(self) -> dict:
+    def _roll(self) -> Dict[str, str | list[str]]:
         return {
-            pool_name: self.weighted_choice(candidates)
-            for pool_name, candidates in self.pools.items()
+            pool_name: self._weighted_choice(candidates)
+            for pool_name, candidates in self._pools.items()
         }
+
+    def _align(
+        self, candidate: dict[str, str | list[str]], background: str
+    ) -> dict[str, str | list[str]]:
+
+        candidate["background"] = background
+        messages: list[dict[str, str]] = [
+            {
+                "role": "system",
+                "content": self._alignment_prompt,
+            },
+            {
+                "role": "user",
+                "content": json.dumps(candidate),
+            },
+        ]
+        # Optionally, you can capture the LLM response here if needed
+        # response = self._llm_client.chat_completion(messages=messages, reasoning=True)
+        # return response
+        response = self._llm_client.chat_completion(messages=messages, reasoning=True)
+        print("### LLM Alignment")
+        print(messages)
+        print(response)
+        return candidate
 
 
 class ShadowrunOracle(BaseOracle):
@@ -43,39 +77,61 @@ class ShadowrunOracle(BaseOracle):
     Generates { client, mission, target } with target != client.
     """
 
-    def __init__(self) -> None:
+    @property
+    def _alignment_prompt(self) -> str:
+        return self.__alignment_prompt
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
         json_path = Path(__file__).parent / "oracle" / "shadowrun.json"
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        # rename mission_types key to mission for consistency
         config = {
             "client": data["clients"],
             "mission": data["mission_types"],
             # keep clients for target selection
             "targets": data["clients"],
         }
-        super().__init__(config)
+
+        prompt_path = (
+            Path(__file__).parent
+            / "prompt_templates/shadowrun"
+            / "shadowrun_background_mission_aligner.txt"
+        )
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            self.__alignment_prompt = f.read()
+
+        super().__init__(config=config, llm_client=llm_client)
 
     def mission(self, background: str) -> str:
-        client = self.weighted_choice(self.pools["client"])
-        mission = self.weighted_choice(self.pools["mission"])
+        client = self._weighted_choice(self._pools["client"])
+        mission = self._weighted_choice(self._pools["mission"])
         # select target different from client
-        eligible = [c for c in self.pools["targets"] if c.name != client]
-        target = self.weighted_choice(eligible)
+        eligible = [c for c in self._pools["targets"] if c.name != client]
+        target = self._weighted_choice(eligible)
+
+        candidate: dict[str, str | list[str]] = {
+            "client": client,
+            "mission": mission,
+            "target": target,
+        }
+
+        aligned = self._align(candidate, background)
+        aligned["background"] = background
+
         return json.dumps(
-            {
-                "client": client,
-                "target": target,
-                "mission": mission,
-                "background": background,
-            },
+            aligned,
             ensure_ascii=False,
             indent=2,
         )
 
 
 class VampireOracle(BaseOracle):
-    def __init__(self) -> None:
+
+    @property
+    def _alignment_prompt(self) -> str:
+        return self.__alignment_prompt
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
         json_path = Path(__file__).parent / "oracle" / "vampire_the_masquerade.json"
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -85,99 +141,102 @@ class VampireOracle(BaseOracle):
             "incitingIncidents": data["inciting_incidents"],
             "themes": data["themes"],
         }
-        super().__init__(config)
+
+        prompt_path = (
+            Path(__file__).parent
+            / "prompt_templates/vampire"
+            / "vampire_background_mission_aligner.txt"
+        )
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            self.__alignment_prompt = f.read()
+
+        super().__init__(config=config, llm_client=llm_client)
 
     def mission(self, background: str) -> str:
-        seed = self.roll()
-        # pick two unique factions
-        seed["factions"] = random.sample([c.name for c in self.pools["factions"]], k=2)
-        seed["background"] = background
+        candidate = self._roll()
+        # pick one or two unique factions
+        k = random.randint(1, 2)
+        candidate["factions"] = random.sample(
+            [c.name for c in self._pools["factions"]], k=k
+        )
+
+        aligned = self._align(candidate, background)
+        aligned["background"] = background
+
         # wrap inciting incident and themes in lists as needed
-        return json.dumps(seed, ensure_ascii=False)
+        return json.dumps(aligned, ensure_ascii=False, indent=2)
 
 
-class CthulhuOracle:
+class CthulhuOracle(BaseOracle):
     """
-    Simplified Cthulhu Oracle that uses short, generic elements and combines them
-    with minimal logic to create varied and consistent narrative seeds.
-    Includes weighted probability for each element.
+    Cthulhu Oracle using BaseOracle for weighted random selection.
+    Generates narrative seeds with location, mythos elements, and hooks.
     """
 
-    def __init__(self) -> None:
+    @property
+    def _alignment_prompt(self) -> str:
+        return self.__alignment_prompt
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
         json_path = Path(__file__).parent / "oracle" / "call_of_cthulhu.json"
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-
-        # Convert to candidates with probability weights
-        self.location_types = [Candidate(**item) for item in data["location_types"]]
-        self.location_modifiers = [
-            Candidate(**item) for item in data["location_modifiers"]
-        ]
-        self.location_places = [Candidate(**item) for item in data["location_places"]]
-        self.mythos_entities = [Candidate(**item) for item in data["mythos_entities"]]
-        self.mythos_phenomena = [Candidate(**item) for item in data["mythos_phenomena"]]
-        self.hook_subjects = [Candidate(**item) for item in data["hook_subjects"]]
-        self.hook_events = [Candidate(**item) for item in data["hook_events"]]
-
-    def weighted_choice(self, items: list[Candidate]) -> str:
-        """Select an item based on its probability weight."""
-        names = [item.name for item in items]
-        weights = [item.probability for item in items]
-        return random.choices(names, weights=weights, k=1)[0]
+        config = {
+            "location_types": data["location_types"],
+            "location_modifiers": data["location_modifiers"],
+            "location_places": data["location_places"],
+            "mythos_entities": data["mythos_entities"],
+            "mythos_phenomena": data["mythos_phenomena"],
+            "hook_subjects": data["hook_subjects"],
+            "hook_events": data["hook_events"],
+        }
+        prompt_path = (
+            Path(__file__).parent
+            / "prompt_templates/cthulhu"
+            / "cthulhu_background_mission_aligner.txt"
+        )
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            self.__alignment_prompt = f.read()
+        super().__init__(config=config, llm_client=llm_client)
 
     def generate_location(self) -> str:
-        """Generate a location by combining modifiers and types with probability weights."""
         # 70% chance to include a modifier
         if random.random() < 0.7:
-            modifier = self.weighted_choice(self.location_modifiers)
-            location_type = self.weighted_choice(self.location_types)
-
+            modifier = self._weighted_choice(self._pools["location_modifiers"])
+            location_type = self._weighted_choice(self._pools["location_types"])
             # 50% chance to add a place
             if random.random() < 0.5:
-                place = self.weighted_choice(self.location_places)
+                place = self._weighted_choice(self._pools["location_places"])
                 return f"{modifier} {location_type} in {place}"
             else:
                 return f"{modifier} {location_type}"
         else:
-            location_type = self.weighted_choice(self.location_types)
-            place = self.weighted_choice(self.location_places)
+            location_type = self._weighted_choice(self._pools["location_types"])
+            place = self._weighted_choice(self._pools["location_places"])
             return f"{location_type} in {place}"
 
     def generate_mythos_elements(self) -> list[str]:
-        """Generate 2-3 mythos elements combining entities and phenomena, respecting probabilities."""
         num_elements = random.randint(2, 3)
         elements = []
-
-        # Always include at least one entity and one phenomenon
-        elements.append(self.weighted_choice(self.mythos_entities))
-        elements.append(self.weighted_choice(self.mythos_phenomena))
-
-        # Add one more random element if needed
+        elements.append(self._weighted_choice(self._pools["mythos_entities"]))
+        elements.append(self._weighted_choice(self._pools["mythos_phenomena"]))
         if num_elements > 2:
-            # Choose from either category
             if random.random() < 0.5:
-                additional = self.weighted_choice(self.mythos_entities)
+                additional = self._weighted_choice(self._pools["mythos_entities"])
             else:
-                additional = self.weighted_choice(self.mythos_phenomena)
-
-            # Avoid duplicates
+                additional = self._weighted_choice(self._pools["mythos_phenomena"])
             if additional not in elements:
                 elements.append(additional)
-
         return elements
 
     def generate_hook(self) -> str:
-        """Generate a hook by combining a subject and an event with probability weights."""
-        subject = self.weighted_choice(self.hook_subjects)
-        event = self.weighted_choice(self.hook_events)
-
-        # Different hook formats
+        subject = self._weighted_choice(self._pools["hook_subjects"])
+        event = self._weighted_choice(self._pools["hook_events"])
         formats = [
             f"A {subject}'s mysterious {event}",
             f"The {event} of a {subject}",
             f"A strange {event} involving a {subject}",
             f"A {subject} requests help with a {event}",
-            # New, simpler CoC Hook Formats:
             f"Rumors of a {subject} and an {event}",
             f"An investigation into a {subject}'s {event}",
             f"The curious {event} affecting a {subject}",
@@ -189,35 +248,49 @@ class CthulhuOracle:
             f"Seeking answers about a {subject} after an {event}",
             f"A {subject} witnesses a disturbing {event}",
         ]
-
         return random.choice(formats)
 
     def mission(self, background: str) -> str:
-        """Generate a complete mission seed."""
-        seed = {
+        candidate: dict[str, str | list[str]] = {
             "location": self.generate_location(),
             "mythosElements": self.generate_mythos_elements(),
             "hook": self.generate_hook(),
-            "background": background,
         }
-
-        return json.dumps(seed, ensure_ascii=False, indent=2)
+        aligned = self._align(candidate, background)
+        aligned["background"] = background
+        return json.dumps(aligned, ensure_ascii=False, indent=2)
 
 
 # Example usage
 def main() -> None:
-    # Shadowrun
-    sr = ShadowrunOracle()
-    print("Shadowrun Seed:", sr.mission(""))
-    # Vampire
-    vt = VampireOracle()
-    print("VtM Seed:", vt.mission(""))
-    # Cthulhu
-    ct = CthulhuOracle()
-    print("Cthulhu Seed:", ct.mission(""))
+    # set pythonpath to src
+    from src.llmclient.llm_client import LLMClientLocal
 
-    ct = CthulhuOracle()
-    print("Cthulhu Seed:", ct.mission(""))
+    llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
+    # Shadowrun
+    sr = ShadowrunOracle(llm_client=llm_client_local)
+    print(
+        "Shadowrun Seed:",
+        sr.mission(
+            "Bayonie is a orc street samurai, living in a rugged appartment in the squatter of Stockholm. She's currently waiting for a call from her fixer Bert."
+        ),
+    )
+    # Vampire
+    vt = VampireOracle(llm_client=llm_client_local)
+    print(
+        "VtM Seed:",
+        vt.mission(
+            "It is 1885, Egypt. Khaled al'Sadid, a mortal, joins a German archaeological expedition led by the enthusiastic Dr. Schmidt. Due to his german skills he is the foreman of the local workforce."
+        ),
+    )
+    # Cthulhu
+    ct = CthulhuOracle(llm_client=llm_client_local)
+    print(
+        "Cthulhu Seed:",
+        ct.mission(
+            "Elias Ellinghouse is a antiquarian owning a small shop in Lafayette, Lousisiana. He has not yet had contact with any unnatural phenomenon, but is a dedicated collector of peculiar items."
+        ),
+    )
 
 
 if __name__ == "__main__":
