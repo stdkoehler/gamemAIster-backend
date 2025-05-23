@@ -5,8 +5,8 @@ import requests
 import io
 
 from pydantic import BaseModel
-from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, UploadFile, File
+from fastapi.responses import StreamingResponse, PlainTextResponse
 
 from src.utils.logger import configure_logger
 
@@ -56,7 +56,7 @@ def tts_stream(request: TtsRequest) -> StreamingResponse:
         text = request.text.split("---")[0]
         with requests.post(
             "http://127.0.0.1:8001/inference/text-to-speech-stream-webm",
-            json={"model": "f5", "voice": "LeonardNimoy", "text": text},
+            json={"model": "f5", "voice": "MelHudson", "text": text},
             timeout=360,
             stream=True,
         ) as r:
@@ -70,3 +70,24 @@ def tts_stream(request: TtsRequest) -> StreamingResponse:
         media_type="audio/webm;codecs=opus",
         headers={"Content-Disposition": "attachment; filename=inference.webm"},
     )
+
+
+class SttResponse(BaseModel):
+    text: str
+
+
+@router.post("/stt-upload")
+async def stt_upload(file: UploadFile = File(...)) -> SttResponse:
+    """
+    Upload the audio file to the upstream STT service and return the transcribed text.
+    """
+    # Read the file content
+    file_bytes = await file.read()
+    files = {"file": (file.filename, file_bytes, file.content_type)}
+    response = requests.post(
+        "http://127.0.0.1:8001/transcribe/speech-to-text",
+        files=files,
+        timeout=360,
+    )
+    response.raise_for_status()
+    return SttResponse(text=response.text)
