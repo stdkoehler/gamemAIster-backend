@@ -39,6 +39,7 @@ class SummaryMemory:
         llm_client: LLMClientBase,
         summary_template: str,
         entity_template: str,
+        game_name: str,
         last_k: int,
         mission_id: int,
         min_summary_tokens: int = 1024,
@@ -46,6 +47,7 @@ class SummaryMemory:
         self._llm_client = llm_client
         self._summary_template = summary_template
         self._entity_template = entity_template
+        self._game_name = game_name
         self._last_k = last_k
         self._n_summarized = 0
         self._mission_id = mission_id
@@ -78,7 +80,10 @@ class SummaryMemory:
 
         entity_input = '**Input:**{{"text": {text},"entities": {entities}}}'
         messages = [
-            {"role": "system", "content": self._entity_template},
+            {
+                "role": "system",
+                "content": self._entity_template.format(RPG=self._game_name),
+            },
             {
                 "role": "user",
                 "content": entity_input.format(
@@ -302,6 +307,7 @@ class SummaryChat:
         role: str,
         summary_template: str,
         entity_template: str,
+        game_name: str,
         mission_id: int,
         last_k: int = 2,
     ):
@@ -316,6 +322,7 @@ class SummaryChat:
             llm_client=llm_client_reasoning,
             summary_template=summary_template,
             entity_template=entity_template,
+            game_name=game_name,
             last_k=last_k,
             mission_id=mission_id,
         )

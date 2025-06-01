@@ -34,12 +34,15 @@ class Gamemaster:
         if game_type == api_schema_mission.GameType.SHADOWRUN:
             mission_prompt = prompt_dir / "shadowrun" / "shadowrun_mission_prompt.txt"
             system_prompt = prompt_dir / "shadowrun" / "shadowrun_system_prompt.txt"
+            self._game_name = "Shadowrun 6th Edition"
         elif game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
             mission_prompt = prompt_dir / "vampire" / "vampire_mission_prompt.txt"
             system_prompt = prompt_dir / "vampire" / "vampire_system_prompt.txt"
+            self._game_name = "Vampire the Masquerade 5th Edition"
         elif game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
             mission_prompt = prompt_dir / "cthulhu" / "cthulhu_mission_prompt.txt"
             system_prompt = prompt_dir / "cthulhu" / "cthulhu_system_prompt.txt"
+            self._game_name = "Call of Cthulhu 7th Edition"
         else:
             raise ValueError(f"Unknown game type: {game_type}")
 
@@ -61,12 +64,14 @@ class Gamemaster:
         """
         Provide summary chat
         """
+
         chat = SummaryChat(
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,
+            game_name=self._game_name,
             mission_id=prompt.mission_id,
         )
 
@@ -119,6 +124,7 @@ class Gamemaster:
             llm_config=LLMConfig(max_tokens=4096),
         )
 
+        print("### LLM Response")
         print(llm_response)
 
         json_string = extract_json_schema(llm_response)

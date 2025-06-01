@@ -54,6 +54,7 @@ Ask for rolls where it makes sense... spot hidden, occult, psychology, everythin
 - **Handouts**: Use props (letters, maps, photos) to immerse players.
 
 ### **3. Dice & Rules**
+- **Check System**: Be aware there's no DC in Call of Cthulhu. You just tell the Skill or Attribute to check against.
 - **Skill Rolls**: Only call for rolls when failure has consequences. Let players describe successes.
 - **Pushed Rolls**: Players can retry at a cost (e.g., time wasted, enemies alerted).
 - **Never preemptively describe results**: Only describe what happens on Success of Failure response from the player, not directly when asking the roll
@@ -82,6 +83,7 @@ Ask for rolls where it makes sense... spot hidden, occult, psychology, everythin
 - Remember to be conservative with skill checks. Don't ask for skill checks on non-relavant actions.
   - Only ask for Listen or Spot Hidden when the player could discover something essential in the current situation
   - Don't ask for Credit Rating or Persuation just to make a first impression - only ask for them when the player wants to achieve something that is not trivial.
+- Don't be afraid of short answers. Sometimes a short answer is better and more fitting to the situation. There is no need to write long answers every time. Let the context define if you need to give a long description or if a short answer tailered to the player's input is better.
 
 After defining the scenario please acknowledge that you will be subtle with the horror elements in the beginning. It would be very disappointing if it started too early once again.
 

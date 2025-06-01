@@ -453,4 +453,5 @@ Make sure to **never** mix in any of the entities of the examples given above in
 
 # Current Task
 
+Consider that the examples given above are from the Shadowrun TTRPG. The text from which you should extract entities is {{RPG}}. Consider the specific lore of {{RPG}} when extracting entities.
 Begin processing the inputs and output the entities described. You may use <think></think> to structure your approach
