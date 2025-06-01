@@ -510,9 +510,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "A ledger noting unauthorized late-night entries",
-          "discoveryMethod": "Search desk with Library Science (50%)",
+          "discoveryMethod": "Search desk with Library Use",
           "information": "Identifies cult members among faculty",
-          "skillCheck": "Library Science DC 50",
+          "skillCheck": "Library Use",
           "phase": "mundane"
         }
       ],
@@ -545,9 +545,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "Dr. Harcourt’s private journal entry",
-          "discoveryMethod": "Pick the desk drawer lock (Hand Lockpicking DC 40)",
+          "discoveryMethod": "Pick the desk drawer lock (Locksmith)",
           "information": "Harcourt’s doubts about the fragment—and a ritual sketch",
-          "skillCheck": "Hand Lockpicking DC 40",
+          "skillCheck": "Locksmith",
           "phase": "doubt"
         }
       ],
@@ -580,9 +580,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "Crate label matching the shipping manifest",
-          "discoveryMethod": "Spot Hidden (DC 30)",
+          "discoveryMethod": "Spot Hidden",
           "information": "Connects the manifest to the cult’s smuggling ring",
-          "skillCheck": "Spot Hidden DC 30",
+          "skillCheck": "Spot Hidden",
           "phase": "mundane"
         }
       ],
@@ -678,8 +678,8 @@ Your output must strictly follow this JSON structure:
     {
       "name": "Arkham Gazette archives",
       "information": "Articles on past unexplained disappearances",
-      "accessDifficulty": "Easy (Library Science DC 30)",
-      "skillChecks": "Library Science DC 30"
+      "accessDifficulty": "Easy (Library Use)",
+      "skillChecks": "Library Use"
     }
   ],
   "mythosThreats": [
@@ -778,7 +778,7 @@ Your output must strictly follow this JSON structure:
         "Reveal warding symbol locations earlier"
       ],
       "harder": [
-        "Increase DCs for stealth in tunnels"
+        "Increase detection for stealth in tunnels"
       ]
     },
     "sanityThresholds": [
@@ -896,9 +896,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "Driftwood arranged in occult patterns",
-          "discoveryMethod": "Spot Hidden (DC 40)",
+          "discoveryMethod": "Spot Hidden",
           "information": "Points to ritual site downstream",
-          "skillCheck": "Spot Hidden DC 40",
+          "skillCheck": "Spot Hidden",
           "phase": "mundane"
         }
       ],
@@ -930,10 +930,10 @@ Your output must strictly follow this JSON structure:
       },
       "clues": [
         {
-          "description": "Pocket watch engraved with hoodoo symbols",
-          "discoveryMethod": "Pickpocket (Sleight of Hand DC 45)",
+          "description": "Pocket watch engraved with voodoo symbols",
+          "discoveryMethod": "Pickpocket (Sleight of Hand)",
           "information": "Timestamp matches a recent drowning",
-          "skillCheck": "Sleight of Hand DC 45",
+          "skillCheck": "Sleight of Hand",
           "phase": "doubt"
         }
       ],
@@ -990,7 +990,7 @@ Your output must strictly follow this JSON structure:
         "description": "Waterlogged page from Marie Laveau’s grimoire",
         "location": "Submerged altar",
         "significance": "Contains invocation to the Drowned One",
-        "difficultyToObtain": "Very Hard (Dive DC 60)",
+        "difficultyToObtain": "Very Hard (Swim)",
         "fallbackPaths": [
           "Find a transcription fragment at Madame Boudreaux’s cottage",
           "Obtain a summarized version from cultist’s stolen notes"
@@ -1019,9 +1019,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "Driftwood arranged in occult patterns",
-          "discoveryMethod": "Spot Hidden (DC 40)",
+          "discoveryMethod": "Spot Hidden",
           "information": "Points to ritual site downstream",
-          "skillCheck": "Spot Hidden DC 40",
+          "skillCheck": "Spot Hidden",
           "phase": "mundane",
           "fallbackPaths": [
             "Madame Boudreaux describes similar driftwood patterns",
@@ -1058,9 +1058,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "Pocket watch engraved with hoodoo symbols",
-          "discoveryMethod": "Pickpocket (Sleight of Hand DC 45)",
+          "discoveryMethod": "Pickpocket (Sleight of Hand)",
           "information": "Timestamp matches a recent drowning",
-          "skillCheck": "Sleight of Hand DC 45",
+          "skillCheck": "Sleight of Hand",
           "phase": "doubt",
           "fallbackPaths": [
             "Madame Boudreaux identifies watchmaker’s insignia linking to cultist",
@@ -1089,8 +1089,8 @@ Your output must strictly follow this JSON structure:
     {
       "name": "New Orleans Public Library Archives",
       "information": "Old newspapers and death records.",
-      "accessDifficulty": "Moderate (Library Science DC 30)",
-      "skillChecks": "Library Science DC 30",
+      "accessDifficulty": "Moderate (Library Use)",
+      "skillChecks": "Library Use",
       "fallbackPaths": [
         "Interview with elderly librarian familiar with 1875 disappearances",
         "Private collection at Tulane University archive contains duplicate materials"
@@ -1294,9 +1294,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "A hidden ledger marking cult-related deliveries",
-          "discoveryMethod": "Investigate secret panel with Locksmith DC 45",
+          "discoveryMethod": "Investigate secret panel with Locksmith",
           "information": "Identifies lead cult operative",
-          "skillCheck": "Locksmith DC 45",
+          "skillCheck": "Locksmith",
           "phase": "doubt"
         }
       ],
@@ -1349,7 +1349,7 @@ Your output must strictly follow this JSON structure:
         "description": "Blood-soaked concert program detailing ritual verses",
         "location": "Submerged chamber beneath the club",
         "significance": "Contains the incantation to awaken cultists",
-        "difficultyToObtain": "Hard (Dive DC 55)"
+        "difficultyToObtain": "Hard (Swim)"
       }
     ],
     "redHerrings": [
@@ -1364,8 +1364,8 @@ Your output must strictly follow this JSON structure:
     {
       "name": "Chicago Tribune Archives",
       "information": "Articles on missing persons and occult rumors.",
-      "accessDifficulty": "Moderate (Library Science DC 30)",
-      "skillChecks": "Library Science DC 30"
+      "accessDifficulty": "Moderate (Library Use)",
+      "skillChecks": "Library Use"
     }
   ],
   "mythosThreats": [
@@ -1581,9 +1581,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "Logbook entry in a drowned sailor’s handwriting",
-          "discoveryMethod": "Forensics DC 50",
+          "discoveryMethod": "Library Use",
           "information": "Describes a voice calling from beneath the waves",
-          "skillCheck": "Forensics DC 50",
+          "skillCheck": "Library Use",
           "phase": "mundane"
         }
       ],
@@ -1616,9 +1616,9 @@ Your output must strictly follow this JSON structure:
       "clues": [
         {
           "description": "A soaked telegram from an anonymous sender",
-          "discoveryMethod": "Decipher DC 45",
+          "discoveryMethod": "Occult",
           "information": "Coordinates for a ritual beneath the Embankment",
-          "skillCheck": "Cryptography DC 45",
+          "skillCheck": "Occult",
           "phase": "doubt"
         }
       ],
@@ -1671,7 +1671,7 @@ Your output must strictly follow this JSON structure:
         "description": "Drowned Latin manuscript fragment",
         "location": "HMS Dauntless hold",
         "significance": "Contains ritual invocation",
-        "difficultyToObtain": "Moderate (Spot Hidden DC 40)"
+        "difficultyToObtain": "Moderate (Spot Hidden)"
       }
     ],
     "redHerrings": [
@@ -1686,8 +1686,8 @@ Your output must strictly follow this JSON structure:
     {
       "name": "British Museum Archives",
       "information": "Scholarly tomes on maritime instruments and runic lore.",
-      "accessDifficulty": "Hard (Academic DC 55)",
-      "skillChecks": "Library Use DC 50"
+      "accessDifficulty": "Hard (Library Use)",
+      "skillChecks": "Library Use"
     }
   ],
   "mythosThreats": [
