@@ -82,7 +82,7 @@ class SummaryMemory:
         messages = [
             {
                 "role": "system",
-                "content": self._entity_template.format(RPG=self._game_name),
+                "content": self._entity_template.replace("__RPG__", self._game_name),
             },
             {
                 "role": "user",
