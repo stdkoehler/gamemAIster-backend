@@ -10,7 +10,13 @@ from src.brain.chat import SummaryChat
 from src.llmclient.llm_client import LLMClientBase
 from src.llmclient.llm_parameters import LLMConfig
 
-from src.brain.oracle import BaseOracle, ShadowrunOracle, VampireOracle, CthulhuOracle
+from src.brain.oracle import (
+    BaseOracle,
+    SeventhSeaOracle,
+    ShadowrunOracle,
+    VampireOracle,
+    CthulhuOracle,
+)
 from src.brain.json_tools import extract_json_schema
 
 import src.routers.schema.mission as api_schema_mission
@@ -43,6 +49,12 @@ class Gamemaster:
             mission_prompt = prompt_dir / "cthulhu" / "cthulhu_mission_prompt.txt"
             system_prompt = prompt_dir / "cthulhu" / "cthulhu_system_prompt.txt"
             self._game_name = "Call of Cthulhu 7th Edition"
+        elif game_type == api_schema_mission.GameType.SEVENTH_SEA:
+            mission_prompt = (
+                prompt_dir / "seventh_sea" / "seventh_sea_mission_prompt.txt"
+            )
+            system_prompt = prompt_dir / "seventh_sea" / "seventh_sea_system_prompt.txt"
+            self._game_name = "Seventh Sea 2nd Edition"
         else:
             raise ValueError(f"Unknown game type: {game_type}")
 
@@ -101,6 +113,9 @@ class Gamemaster:
             oracle_topic = oracle.mission(background)
         elif self._game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
             oracle = CthulhuOracle(llm_client=self._llm_client_reasoning)
+            oracle_topic = oracle.mission(background)
+        elif self._game_type == api_schema_mission.GameType.SEVENTH_SEA:
+            oracle = SeventhSeaOracle(llm_client=self._llm_client_reasoning)
             oracle_topic = oracle.mission(background)
         else:
             oracle_topic = ""

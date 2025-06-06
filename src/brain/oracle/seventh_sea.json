@@ -1,0 +1,360 @@
+{
+    "factions": [
+        {
+            "name": "Spanish Empire",
+            "probability": 1.0
+        },
+        {
+            "name": "British Crown",
+            "probability": 1.0
+        },
+        {
+            "name": "French Navy",
+            "probability": 1.0
+        },
+        {
+            "name": "Dutch East India Company",
+            "probability": 0.9
+        },
+        {
+            "name": "Portuguese Colonial Authority",
+            "probability": 0.8
+        },
+        {
+            "name": "Ottoman Corsairs",
+            "probability": 0.7
+        },
+        {
+            "name": "Moorish Rebels",
+            "probability": 0.6
+        },
+        {
+            "name": "Independent Pirate Fleet",
+            "probability": 1.0
+        },
+        {
+            "name": "Privateer Captain",
+            "probability": 0.9
+        },
+        {
+            "name": "Smuggler Network",
+            "probability": 0.8
+        },
+        {
+            "name": "Merchant Guild",
+            "probability": 0.9
+        },
+        {
+            "name": "Jesuit Missionaries",
+            "probability": 0.8
+        },
+        {
+            "name": "Inquisition",
+            "probability": 0.7
+        },
+        {
+            "name": "Royal Court Intriguer",
+            "probability": 0.8
+        },
+        {
+            "name": "Revolutionary Cell",
+            "probability": 0.6
+        },
+        {
+            "name": "Local Governor's Office",
+            "probability": 0.9
+        },
+        {
+            "name": "Noble House",
+            "probability": 0.8
+        },
+        {
+            "name": "Corrupt Naval Officer",
+            "probability": 0.7
+        },
+        {
+            "name": "Slave Traders",
+            "probability": 0.6
+        },
+        {
+            "name": "Escaped Slaves' Resistance",
+            "probability": 0.5
+        },
+        {
+            "name": "Catholic Church Authorities",
+            "probability": 0.7
+        },
+        {
+            "name": "Protestant Reformists",
+            "probability": 0.6
+        },
+        {
+            "name": "Masonic Order",
+            "probability": 0.5
+        },
+        {
+            "name": "Local Militia",
+            "probability": 0.7
+        },
+        {
+            "name": "Foreign Spies",
+            "probability": 0.6
+        },
+        {
+            "name": "Mercenary Company",
+            "probability": 0.7
+        },
+        {
+            "name": "Island Colonists",
+            "probability": 0.8
+        },
+        {
+            "name": "Peasant Rebels",
+            "probability": 0.6
+        },
+        {
+            "name": "Maritime Insurance Syndicate",
+            "probability": 0.6
+        },
+        {
+            "name": "Shipbuilders' Guild",
+            "probability": 0.6
+        }
+    ],
+    "inciting_incidents": [
+        {
+            "name": "A prized ship disappears in hostile waters",
+            "probability": 1.0
+        },
+        {
+            "name": "A governor is assassinated at a masked ball",
+            "probability": 1.0
+        },
+        {
+            "name": "A shipment of gold vanishes en route to Europe",
+            "probability": 0.9
+        },
+        {
+            "name": "A duel ends with scandalous consequences",
+            "probability": 0.9
+        },
+        {
+            "name": "A port city is blockaded by foreign forces",
+            "probability": 0.9
+        },
+        {
+            "name": "A noble's heir is kidnapped by pirates",
+            "probability": 0.8
+        },
+        {
+            "name": "A secret treaty threatens regional balance",
+            "probability": 0.8
+        },
+        {
+            "name": "A spy ring is discovered in the court",
+            "probability": 0.8
+        },
+        {
+            "name": "A mutiny brews aboard a military ship",
+            "probability": 0.8
+        },
+        {
+            "name": "A local uprising disrupts colonial control",
+            "probability": 0.8
+        },
+        {
+            "name": "A smuggling route is exposed",
+            "probability": 0.8
+        },
+        {
+            "name": "A treasure map is found in an old sailor’s chest",
+            "probability": 0.7
+        },
+        {
+            "name": "A prominent trader is accused of treason",
+            "probability": 0.8
+        },
+        {
+            "name": "A forbidden love causes diplomatic crisis",
+            "probability": 0.7
+        },
+        {
+            "name": "A naval hero is being framed for piracy",
+            "probability": 0.8
+        },
+        {
+            "name": "A ship carrying plague arrives in harbor",
+            "probability": 0.7
+        },
+        {
+            "name": "A prisoner with critical intel escapes",
+            "probability": 0.8
+        },
+        {
+            "name": "A covert expedition goes missing",
+            "probability": 0.8
+        },
+        {
+            "name": "A local artifact is stolen from a church",
+            "probability": 0.7
+        },
+        {
+            "name": "A disgraced noble seeks redemption",
+            "probability": 0.6
+        },
+        {
+            "name": "A secret armistice is being negotiated",
+            "probability": 0.7
+        },
+        {
+            "name": "A harbor town is suddenly overrun by brigands",
+            "probability": 0.7
+        },
+        {
+            "name": "A shipwreck survivor carries a terrible secret",
+            "probability": 0.7
+        },
+        {
+            "name": "A foreign ambassador goes missing",
+            "probability": 0.6
+        },
+        {
+            "name": "A famous pirate returns from presumed death",
+            "probability": 0.7
+        },
+        {
+            "name": "A disputed inheritance sparks a feud",
+            "probability": 0.7
+        },
+        {
+            "name": "A priest accuses the local governor of heresy",
+            "probability": 0.6
+        },
+        {
+            "name": "A powerful noblewoman is being blackmailed",
+            "probability": 0.7
+        },
+        {
+            "name": "A secret cargo changes hands at sea",
+            "probability": 0.8
+        },
+        {
+            "name": "A warship goes rogue after a diplomatic incident",
+            "probability": 0.8
+        }
+    ],
+    "themes": [
+        {
+            "name": "Betrayal",
+            "probability": 1.0
+        },
+        {
+            "name": "Honor vs duty",
+            "probability": 0.9
+        },
+        {
+            "name": "Greed and corruption",
+            "probability": 1.0
+        },
+        {
+            "name": "Colonial exploitation",
+            "probability": 0.8
+        },
+        {
+            "name": "Espionage and secrets",
+            "probability": 0.9
+        },
+        {
+            "name": "Class struggle",
+            "probability": 0.8
+        },
+        {
+            "name": "National pride",
+            "probability": 0.7
+        },
+        {
+            "name": "Forbidden romance",
+            "probability": 0.7
+        },
+        {
+            "name": "Reputation and legacy",
+            "probability": 0.8
+        },
+        {
+            "name": "Vengeance",
+            "probability": 0.8
+        },
+        {
+            "name": "Religious conflict",
+            "probability": 0.7
+        },
+        {
+            "name": "Freedom vs order",
+            "probability": 0.8
+        },
+        {
+            "name": "Loyalty and betrayal",
+            "probability": 0.9
+        },
+        {
+            "name": "Political intrigue",
+            "probability": 1.0
+        },
+        {
+            "name": "Survival at sea",
+            "probability": 0.8
+        },
+        {
+            "name": "Secrets of the past",
+            "probability": 0.8
+        },
+        {
+            "name": "Dueling honor",
+            "probability": 0.7
+        },
+        {
+            "name": "Justice and injustice",
+            "probability": 0.8
+        },
+        {
+            "name": "Family duty",
+            "probability": 0.7
+        },
+        {
+            "name": "Corruption in power",
+            "probability": 0.9
+        },
+        {
+            "name": "Exile and redemption",
+            "probability": 0.7
+        },
+        {
+            "name": "Mercantile ambition",
+            "probability": 0.7
+        },
+        {
+            "name": "Resistance to tyranny",
+            "probability": 0.8
+        },
+        {
+            "name": "Atonement",
+            "probability": 0.6
+        },
+        {
+            "name": "Revolution",
+            "probability": 0.7
+        },
+        {
+            "name": "Slavery and resistance",
+            "probability": 0.7
+        },
+        {
+            "name": "Moral ambiguity",
+            "probability": 0.9
+        },
+        {
+            "name": "Identity and disguise",
+            "probability": 0.8
+        }
+    ]
+}

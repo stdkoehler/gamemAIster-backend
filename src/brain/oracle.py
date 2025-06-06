@@ -149,6 +149,29 @@ class VampireOracle(BaseOracle):
         return candidate
 
 
+class SeventhSeaOracle(BaseOracle):
+    """
+    Oracle for Seventh Sea missions, using external JSON definitions.
+    Generates { factions, incitingIncidents, themes } with 1-2 unique factions.
+    """
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            config_filename="seventh_sea.json",
+            prompt_filename="seventh_sea/seventh_sea_background_mission_aligner.txt",
+        )
+
+    def _assemble_proposal_seed(self) -> MissionSeed:
+        candidate = self._roll()
+        # pick one or two unique factions
+        k = random.randint(1, 2)
+        candidate["factions"] = random.sample(
+            [c.name for c in self._pools["factions"]], k=k
+        )
+        return candidate
+
+
 class CthulhuOracle(BaseOracle):
     """
     Cthulhu Oracle using BaseOracle for weighted random selection.
@@ -241,6 +264,14 @@ def main() -> None:
         "VtM Seed:",
         vt.mission(
             "It is 1885, Egypt. Khaled al'Sadid, a mortal, joins a German archaeological expedition led by the enthusiastic Dr. Schmidt. Due to his german skills he is the foreman of the local workforce."
+        ),
+    )
+    # Seventh Sea
+    vt = SeventhSeaOracle(llm_client=llm_client_local)
+    print(
+        "Seventh Sea Seed:",
+        vt.mission(
+            "It is 1668 somewhere in the Caribbean. I am Adjoua Mbah a slave who went overboard and is stranded on a small island near an archipelago. I need to find a way to escape this island."
         ),
     )
     # Cthulhu
