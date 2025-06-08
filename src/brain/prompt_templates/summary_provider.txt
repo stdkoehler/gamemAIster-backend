@@ -1,0 +1,10 @@
+# Summary
+This is the summary of the prior events:
+{SUMMARY}
+
+# Story Entities
+The following entities and their connections to the previous events are known:
+{ENTITIES}
+
+# Task
+Consider these for the continuation of the TTRPG session.

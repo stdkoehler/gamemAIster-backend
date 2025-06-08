@@ -54,6 +54,7 @@ class SummaryMemory:
         self._min_summary_tokens = min_summary_tokens
 
         self._summary, self._n_summarized = crud_instance.get_summary(self._mission_id)
+        self._entities = crud_instance.get_entities(self._mission_id)
         self._history = crud_instance.get_interactions(self._mission_id)
 
     def __len__(self) -> int:
@@ -184,6 +185,7 @@ class SummaryMemory:
                 self._mission_id, self._summary, self._n_summarized
             )
             crud_instance.update_entities(self._mission_id, entity_response)
+            self._entities = crud_instance.get_entities(self._mission_id)
 
     def append(self, interaction: Interaction) -> None:
         """
@@ -287,6 +289,41 @@ class SummaryMemory:
             messages.append({"role": "assistant", "content": interaction.llm_output})
         return messages
 
+    def chat_unsummarized(self) -> list[dict[str, str]]:
+        messages = []
+        for interaction in self.interactions_unsummarized():
+            messages.append({"role": "user", "content": interaction.user_input})
+            messages.append({"role": "assistant", "content": interaction.llm_output})
+        return messages
+
+    def get_summary(self) -> str:
+        """
+        Returns the current summary of the chat conversation.
+
+        Returns:
+            str: The current summary of the chat conversation.
+        """
+        return self._summary
+
+    def get_entities_json(self) -> str:
+        """
+        Returns the current entities in JSON format.
+
+        Returns:
+            str: The current entities in JSON format.
+        """
+        return json.dumps([entity.model_dump() for entity in self._entities])
+
+    @property
+    def n_summarized(self) -> int:
+        """
+        Returns the number of interactions that have been summarized.
+
+        Returns:
+            int: The number of interactions that have been summarized.
+        """
+        return self._n_summarized
+
 
 class SummaryChat:
     """
@@ -305,9 +342,11 @@ class SummaryChat:
         role: str,
         summary_template: str,
         entity_template: str,
+        summary_provider_template: str,
         game_name: str,
         mission_id: int,
         last_k: int = 2,
+        min_summary_tokens: int = 1024,
     ):
         self._llm_client_chat = llm_client_chat
         self._role = role
@@ -316,12 +355,14 @@ class SummaryChat:
             raise ValueError("No mission could be loaded from database.")
         self._mission = mission.description
         self._background = mission.background
+        self._summary_provider_template = summary_provider_template
         self._memory = SummaryMemory(
             llm_client=llm_client_reasoning,
             summary_template=summary_template,
             entity_template=entity_template,
             game_name=game_name,
             last_k=last_k,
+            min_summary_tokens=min_summary_tokens,
             mission_id=mission_id,
         )
 
@@ -364,7 +405,29 @@ class SummaryChat:
         )
         messages = [{"role": "system", "content": system_prompt}]
 
-        messages += self._memory.chat()
+        if self._memory.n_summarized > 0:
+
+            # we have summarized interactions, we add summary, entities and the
+            # unsummarized interactions
+            messages.append(
+                {
+                    "role": "user",
+                    "content": self._summary_provider_template.format(
+                        SUMMARY=self._memory.summary,
+                        ENTITIES=self._memory.get_entities_json(),
+                    ),
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "[OOC: Thank you for the summary and entities. I will use them to continue the story.]",
+                }
+            )
+
+            messages += self._memory.chat_unsummarized()
+        else:
+            messages += self._memory.chat()
 
         if is_regenerate:
             # we want to regenerate the last LLM answer, delete it from messages
