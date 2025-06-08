@@ -1,0 +1,448 @@
+{
+    "factions": [
+        {
+            "name": "Earth UN Navy",
+            "probability": 1.0
+        },
+        {
+            "name": "Mars Congressional Republic",
+            "probability": 1.0
+        },
+        {
+            "name": "OPA (Outer Planets Alliance)",
+            "probability": 1.0
+        },
+        {
+            "name": "Ceres Security",
+            "probability": 0.9
+        },
+        {
+            "name": "Star Helix Security",
+            "probability": 0.9
+        },
+        {
+            "name": "Independent Traders",
+            "probability": 1.0
+        },
+        {
+            "name": "Belter Mining Consortium",
+            "probability": 0.9
+        },
+        {
+            "name": "Transport Union",
+            "probability": 0.8
+        },
+        {
+            "name": "Tycho Station",
+            "probability": 0.8
+        },
+        {
+            "name": "Eros Station Authority",
+            "probability": 0.7
+        },
+        {
+            "name": "Ganymede Agricultural Union",
+            "probability": 0.8
+        },
+        {
+            "name": "Corporate Syndicate",
+            "probability": 0.9
+        },
+        {
+            "name": "Protogen Corporation",
+            "probability": 0.4
+        },
+        {
+            "name": "Blue Sun Corporation",
+            "probability": 0.6
+        },
+        {
+            "name": "Mao-Kwikowski Mercantile",
+            "probability": 0.7
+        },
+        {
+            "name": "Free Navy",
+            "probability": 0.6
+        },
+        {
+            "name": "Laconian Empire",
+            "probability": 0.3
+        },
+        {
+            "name": "Pirate Fleet",
+            "probability": 0.8
+        },
+        {
+            "name": "Smuggler Network",
+            "probability": 0.9
+        },
+        {
+            "name": "Ice Hauler Guild",
+            "probability": 0.8
+        },
+        {
+            "name": "Salvage Crew",
+            "probability": 0.8
+        },
+        {
+            "name": "Station Security",
+            "probability": 0.9
+        },
+        {
+            "name": "Medical Consortium",
+            "probability": 0.8
+        },
+        {
+            "name": "Refugee Settlement",
+            "probability": 0.7
+        },
+        {
+            "name": "Colonial Administration",
+            "probability": 0.7
+        },
+        {
+            "name": "Religious Movement",
+            "probability": 0.6
+        },
+        {
+            "name": "Scientific Expedition",
+            "probability": 0.7
+        },
+        {
+            "name": "Mercenary Company",
+            "probability": 0.8
+        },
+        {
+            "name": "Black Market Syndicate",
+            "probability": 0.8
+        },
+        {
+            "name": "Asteroid Mining Operation",
+            "probability": 0.9
+        },
+        {
+            "name": "Shipping Magnate",
+            "probability": 0.8
+        },
+        {
+            "name": "Local Militia",
+            "probability": 0.8
+        },
+        {
+            "name": "Intelligence Agency",
+            "probability": 0.7
+        },
+        {
+            "name": "Diplomatic Corps",
+            "probability": 0.7
+        },
+        {
+            "name": "Environmental Activists",
+            "probability": 0.6
+        },
+        {
+            "name": "Media Corporation",
+            "probability": 0.7
+        },
+        {
+            "name": "Tech Syndicate",
+            "probability": 0.7
+        },
+        {
+            "name": "Water Reclamation Authority",
+            "probability": 0.8
+        },
+        {
+            "name": "Space Traffic Control",
+            "probability": 0.8
+        },
+        {
+            "name": "Gambling Syndicate",
+            "probability": 0.7
+        }
+    ],
+    "inciting_incidents": [
+        {
+            "name": "A cargo ship goes missing on a routine run",
+            "probability": 1.0
+        },
+        {
+            "name": "A water shipment is hijacked near Ceres",
+            "probability": 1.0
+        },
+        {
+            "name": "A diplomatic courier disappears between stations",
+            "probability": 0.9
+        },
+        {
+            "name": "A mining operation stops responding to communications",
+            "probability": 0.9
+        },
+        {
+            "name": "A corporate executive is found murdered on their yacht",
+            "probability": 0.9
+        },
+        {
+            "name": "A refugee ship requests emergency assistance",
+            "probability": 0.9
+        },
+        {
+            "name": "A station's life support systems begin failing mysteriously",
+            "probability": 0.8
+        },
+        {
+            "name": "A shipment of medical supplies is stolen",
+            "probability": 0.9
+        },
+        {
+            "name": "A corporate whistleblower seeks protection",
+            "probability": 0.8
+        },
+        {
+            "name": "A salvage claim is disputed by multiple parties",
+            "probability": 0.8
+        },
+        {
+            "name": "A trade route is disrupted by pirate activity",
+            "probability": 0.9
+        },
+        {
+            "name": "A prominent politician's child goes missing",
+            "probability": 0.8
+        },
+        {
+            "name": "A research station requests evacuation",
+            "probability": 0.7
+        },
+        {
+            "name": "A black market deal goes wrong",
+            "probability": 0.8
+        },
+        {
+            "name": "A labor strike turns violent",
+            "probability": 0.8
+        },
+        {
+            "name": "A ship's crew mutinies over dangerous orders",
+            "probability": 0.8
+        },
+        {
+            "name": "A gambling debt leads to kidnapping",
+            "probability": 0.7
+        },
+        {
+            "name": "A corporate merger triggers industrial espionage",
+            "probability": 0.8
+        },
+        {
+            "name": "A journalist uncovers a conspiracy",
+            "probability": 0.7
+        },
+        {
+            "name": "A peace negotiation is sabotaged",
+            "probability": 0.7
+        },
+        {
+            "name": "A shipyard worker discovers hidden modifications",
+            "probability": 0.7
+        },
+        {
+            "name": "A distress beacon leads to an empty ship",
+            "probability": 0.8
+        },
+        {
+            "name": "A corporate security team goes rogue",
+            "probability": 0.7
+        },
+        {
+            "name": "A family feud erupts over mining rights",
+            "probability": 0.8
+        },
+        {
+            "name": "A transport ship is quarantined",
+            "probability": 0.7
+        },
+        {
+            "name": "A military prototype is stolen",
+            "probability": 0.6
+        },
+        {
+            "name": "A station administrator is accused of corruption",
+            "probability": 0.8
+        },
+        {
+            "name": "A religious pilgrimage turns dangerous",
+            "probability": 0.6
+        },
+        {
+            "name": "A scientific discovery is covered up",
+            "probability": 0.5
+        },
+        {
+            "name": "A protomolecule sample is discovered",
+            "probability": 0.3
+        },
+        {
+            "name": "An alien artifact is unearthed",
+            "probability": 0.4
+        },
+        {
+            "name": "A Ring Gate malfunctions",
+            "probability": 0.4
+        },
+        {
+            "name": "A terraforming project goes wrong",
+            "probability": 0.5
+        },
+        {
+            "name": "A corporate facility conducts illegal experiments",
+            "probability": 0.4
+        },
+        {
+            "name": "A war criminal resurfaces",
+            "probability": 0.6
+        }
+    ],
+    "themes": [
+        {
+            "name": "Resource scarcity",
+            "probability": 1.0
+        },
+        {
+            "name": "Political conspiracy",
+            "probability": 1.0
+        },
+        {
+            "name": "Corporate greed",
+            "probability": 1.0
+        },
+        {
+            "name": "Survival in space",
+            "probability": 0.9
+        },
+        {
+            "name": "Class struggle",
+            "probability": 0.9
+        },
+        {
+            "name": "Unity vs division",
+            "probability": 0.9
+        },
+        {
+            "name": "Loyalty and betrayal",
+            "probability": 0.9
+        },
+        {
+            "name": "Justice vs order",
+            "probability": 0.8
+        },
+        {
+            "name": "Family duty",
+            "probability": 0.8
+        },
+        {
+            "name": "Moral ambiguity",
+            "probability": 0.9
+        },
+        {
+            "name": "Technological dependence",
+            "probability": 0.8
+        },
+        {
+            "name": "Environmental destruction",
+            "probability": 0.8
+        },
+        {
+            "name": "Immigration and displacement",
+            "probability": 0.8
+        },
+        {
+            "name": "Power and corruption",
+            "probability": 0.9
+        },
+        {
+            "name": "Identity and belonging",
+            "probability": 0.8
+        },
+        {
+            "name": "Sacrifice for the greater good",
+            "probability": 0.8
+        },
+        {
+            "name": "Espionage and secrets",
+            "probability": 0.8
+        },
+        {
+            "name": "Revenge and justice",
+            "probability": 0.8
+        },
+        {
+            "name": "Hope vs despair",
+            "probability": 0.8
+        },
+        {
+            "name": "Scientific ethics",
+            "probability": 0.7
+        },
+        {
+            "name": "Cultural clash",
+            "probability": 0.7
+        },
+        {
+            "name": "War and peace",
+            "probability": 0.8
+        },
+        {
+            "name": "Freedom vs security",
+            "probability": 0.8
+        },
+        {
+            "name": "Legacy and reputation",
+            "probability": 0.7
+        },
+        {
+            "name": "Forbidden knowledge",
+            "probability": 0.6
+        },
+        {
+            "name": "Redemption",
+            "probability": 0.7
+        },
+        {
+            "name": "Isolation and community",
+            "probability": 0.8
+        },
+        {
+            "name": "Progress vs tradition",
+            "probability": 0.7
+        },
+        {
+            "name": "Trust and paranoia",
+            "probability": 0.8
+        },
+        {
+            "name": "Colonial exploitation",
+            "probability": 0.8
+        },
+        {
+            "name": "Alien contact",
+            "probability": 0.4
+        },
+        {
+            "name": "Existential threat",
+            "probability": 0.5
+        },
+        {
+            "name": "Cosmic horror",
+            "probability": 0.3
+        },
+        {
+            "name": "Transcendence",
+            "probability": 0.4
+        },
+        {
+            "name": "Evolution vs extinction",
+            "probability": 0.4
+        }
+    ]
+}

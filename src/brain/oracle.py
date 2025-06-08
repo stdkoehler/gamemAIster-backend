@@ -172,6 +172,29 @@ class SeventhSeaOracle(BaseOracle):
         return candidate
 
 
+class ExpanseOracle(BaseOracle):
+    """
+    Oracle for Seventh Sea missions, using external JSON definitions.
+    Generates { factions, incitingIncidents, themes } with 1-2 unique factions.
+    """
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            config_filename="expanse.json",
+            prompt_filename="expanse/expanse_background_mission_aligner.txt",
+        )
+
+    def _assemble_proposal_seed(self) -> MissionSeed:
+        candidate = self._roll()
+        # pick one or two unique factions
+        k = random.randint(1, 2)
+        candidate["factions"] = random.sample(
+            [c.name for c in self._pools["factions"]], k=k
+        )
+        return candidate
+
+
 class CthulhuOracle(BaseOracle):
     """
     Cthulhu Oracle using BaseOracle for weighted random selection.
@@ -250,38 +273,46 @@ def main() -> None:
     from src.llmclient.llm_client import LLMClientLocal
 
     llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
-    # Shadowrun
-    sr = ShadowrunOracle(llm_client=llm_client_local)
+    # # Shadowrun
+    # sr = ShadowrunOracle(llm_client=llm_client_local)
+    # print(
+    #     "Shadowrun Seed:",
+    #     sr.mission(
+    #         "Bayonie is a orc street samurai, living in a rugged appartment in the squatter of Stockholm. She's currently waiting for a call from her fixer Bert."
+    #     ),
+    # )
+    # # Vampire
+    # vt = VampireOracle(llm_client=llm_client_local)
+    # print(
+    #     "VtM Seed:",
+    #     vt.mission(
+    #         "It is 1885, Egypt. Khaled al'Sadid, a mortal, joins a German archaeological expedition led by the enthusiastic Dr. Schmidt. Due to his german skills he is the foreman of the local workforce."
+    #     ),
+    # )
+    # # Seventh Sea
+    # vt = SeventhSeaOracle(llm_client=llm_client_local)
+    # print(
+    #     "Seventh Sea Seed:",
+    #     vt.mission(
+    #         "It is 1668 somewhere in the Caribbean. I am Adjoua Mbah a slave who went overboard and is stranded on a small island near an archipelago. I need to find a way to escape this island."
+    #     ),
+    # )
+    # Expanse
+    sr = ExpanseOracle(llm_client=llm_client_local)
     print(
-        "Shadowrun Seed:",
+        "Expanse Seed:",
         sr.mission(
-            "Bayonie is a orc street samurai, living in a rugged appartment in the squatter of Stockholm. She's currently waiting for a call from her fixer Bert."
+            "Luna City, Laconia Era. The crew operates a small freight hauler called the Meridian Runner, struggling to make ends meet under the strict regulations of the Laconian Empire. After the Ring Gates reopened, they've been running legitimate cargo between Sol system stations, but their mixed crew of former Belters and Inner Planet refugees has made them targets of suspicion from Laconian authorities who view any non-Imperial crew as potential insurgents."
         ),
     )
-    # Vampire
-    vt = VampireOracle(llm_client=llm_client_local)
-    print(
-        "VtM Seed:",
-        vt.mission(
-            "It is 1885, Egypt. Khaled al'Sadid, a mortal, joins a German archaeological expedition led by the enthusiastic Dr. Schmidt. Due to his german skills he is the foreman of the local workforce."
-        ),
-    )
-    # Seventh Sea
-    vt = SeventhSeaOracle(llm_client=llm_client_local)
-    print(
-        "Seventh Sea Seed:",
-        vt.mission(
-            "It is 1668 somewhere in the Caribbean. I am Adjoua Mbah a slave who went overboard and is stranded on a small island near an archipelago. I need to find a way to escape this island."
-        ),
-    )
-    # Cthulhu
-    ct = CthulhuOracle(llm_client=llm_client_local)
-    print(
-        "Cthulhu Seed:",
-        ct.mission(
-            "Elias Ellinghouse is a antiquarian owning a small shop in Lafayette, Lousisiana. He has not yet had contact with any unnatural phenomenon, but is a dedicated collector of peculiar items."
-        ),
-    )
+    # # Cthulhu
+    # ct = CthulhuOracle(llm_client=llm_client_local)
+    # print(
+    #     "Cthulhu Seed:",
+    #     ct.mission(
+    #         "Elias Ellinghouse is a antiquarian owning a small shop in Lafayette, Lousisiana. He has not yet had contact with any unnatural phenomenon, but is a dedicated collector of peculiar items."
+    #     ),
+    # )
 
 
 if __name__ == "__main__":
