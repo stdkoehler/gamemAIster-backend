@@ -78,7 +78,7 @@ class SummaryMemory:
             ]
         )
 
-        entity_input = '**Input:**{{"text": {text},"entities": {entities}}}'
+        entity_input = 'Extract entities from the following text and update the given entities:\n{{"text": {text},"entities": {entities}}}'
         messages = [
             {
                 "role": "system",
@@ -127,9 +127,7 @@ class SummaryMemory:
 
         summary = self.summary if len(self.summary) > 0 else ""
 
-        summary_input = (
-            '**Input:**{{"previous_summary": {prev}, "current_events": {current}}}'
-        )
+        summary_input = 'Summarize the following text:\n{{"previous_summary": {prev}, "current_events": {current}}}'
         messages = [
             {
                 "role": "system",

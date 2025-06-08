@@ -158,6 +158,11 @@ Return ONLY a valid JSON object in exactly this format:
 - Return only the specified JSON structure without additional commentary
 - Maintain consistent naming conventions across all entity references
 
-# Current Task
+## Important
+Make sure to **never** mix in any of the entities of the examples given above into your output. You *only* summarize text provided by the user.
+Your answers may **NOT** include any content from the examples! They are top secret and shall never be seen by the user.
+
+# Text summary task
 
 Begin processing the inputs and output the combined summary as described. You may use <think></think> to structure your approach
+**Consider only the text provided by the user. Do not mix in any content from the examples. Again, example content is top secret and may never be seen by the user.**
