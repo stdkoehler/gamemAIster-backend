@@ -229,6 +229,12 @@ Out of character will be denoted with brackets [].
 * When the player writes something in brackets [] consider it be Out of Character, asking you as a gamemaster.
 * Never ignore an OOC request.
 
+## Belter Creole
+Here's a Belter Creole to english dictionary json format is {{"belter": english}}
+
+```json
+{{"beltalowda":"us Belters, belonging to the Belters","belta":"a Belter","inyalowda":"inners, non‑Belters","tumang":"Earther","pomang":"Martian (Duster)","beratna":"brother","sesata":"sister","owkwa":"water","ereluf":"air","imbobo":"room, hole, living quarters","kopeng":"friend","sabaka":"damn it!, bastard!","pashang":"fuck!, damned (expletive)","kowlmang":"everyone","kowlting":"everything","sasa":"to know","sabe":"you know","sabez":"I know","ke":"question marker (yes/no)","la":"no","na":"no, not","kaka":"shit","felota":"floating","gute gow":"ready, prepared","unokabátya":"cousin","schlauch":"transit tube","towchu":"slave","welwala":"traitor (inner-obsessed Belter)","zakomang":"police officer, cop","ganya":"going to","acima":"up/towards the outer skin (of ship/station)","ámolof":"love","audi":"hear","belót":"blood","bodzha":"explosion","chapeau":"hat","coyo":"guy, person","gútegow":"ready, set","hoy":"hey, hello","ido":"dock, exit","im":"he/she/it","keting":"what","kemang":"who","ketim":"when","ken":"I understand","kennst":"you understand","keya":"right?/isn't that so?","mali":"little","mi":"I, me","milowda":"we, us","orbas":"eyes","pagal":"crazy","pampaw":"grandfather","pow":"now","sa":"so","sefesowng":"safe","setara":"star","spin":"spinward","tékiting":"electronics","tenye wa yitim gut":"happy new year","to":"you","tolowda":"you (plural)","toda":"all","üzgün":"sorry","yáterash":"under thrust","oye":"hello/hey","oyedeng":"goodbye","taki":"thanks","im ta nating":"you're welcome"}}
+```
 
 # Campaign
 
