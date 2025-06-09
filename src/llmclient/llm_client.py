@@ -146,7 +146,7 @@ class LLMClientLocal(LLMClientBase):
             headers=self._headers,
             json=data,
             stream=True,
-            timeout=10,
+            timeout=360,
         )
         client = SSEClient(stream_response)  # type: ignore
 
@@ -166,7 +166,7 @@ class LLMClientLocal(LLMClientBase):
             headers=self._headers,
             json=data,
             stream=True,
-            timeout=10,
+            timeout=360,
         )
         client = SSEClient(stream_response)  # type: ignore
 
