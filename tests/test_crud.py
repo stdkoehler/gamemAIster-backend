@@ -22,12 +22,14 @@ def test_get_entities(crud_instance):
 
 def test_update_entities(crud_instance):
     crud_instance._cleanse_unpersisted()
-    mission_id = 14
+    mission_id = 27
     crud_instance.insert_mission(
         mission=Mission(
             mission_id=mission_id,
             name="Test Mission",
             description="This is a test mission.",
+            game_type="shadowrun",
+            background="Test background",
         )
     )
 
@@ -86,12 +88,14 @@ def test_update_entities(crud_instance):
 
 def test_update_entities_with_deletion(crud_instance):
     crud_instance._cleanse_unpersisted()
-    mission_id = 14
+    mission_id = 27
     crud_instance.insert_mission(
         mission=Mission(
             mission_id=mission_id,
             name="Deletion Test Mission",
             description="This mission tests entity deletion.",
+            game_type="shadowrun",
+            background="Test background",
         )
     )
 
