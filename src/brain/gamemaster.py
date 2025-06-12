@@ -75,6 +75,11 @@ class Gamemaster:
         with open(prompt_dir / "text_entity_prompt.txt", "r", encoding="utf-8") as f:
             self._entity_template = f.read()
 
+        with open(
+            prompt_dir / "text_scene_prompt_examples.txt", "r", encoding="utf-8"
+        ) as f:
+            self._scene_template = f.read()
+
         with open(prompt_dir / "summary_provider.txt", "r", encoding="utf-8") as f:
             self._summary_provider_template = f.read()
 
@@ -93,6 +98,7 @@ class Gamemaster:
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,
+            scene_template=self._scene_template,
             summary_provider_template=self._summary_provider_template,
             game_name=self._game_name,
             mission_id=prompt.mission_id,

@@ -1,22 +1,28 @@
 """CRUD operations for the mission database."""
 
+import json
 from typing import Any
 
 import sqlalchemy
 from sqlalchemy import event, select, update, delete, and_
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import sessionmaker
 
 from src.crud.sqlmodel import (
     Mission,
     MissionDescription,
     ConversationMemory,
+    SceneMemory,
     SummaryMemory,
     EntityMemory,
 )
 
-from src.brain.data_types import Interaction, Entity, EntityResponse
+from src.brain.data_types import (
+    Interaction,
+    Entity,
+    EntityResponse,
+    Scene,
+)
 
 import src.routers.schema.mission as api_schema_mission
 
@@ -281,6 +287,55 @@ class CRUD:
                     session.commit()
                 except IntegrityError:
                     session.rollback()
+
+    def get_scenes(self, mission_id: int) -> list[Scene]:
+        with self._sessionmaker() as session:
+            stmt = (
+                select(SceneMemory)
+                .where(SceneMemory.mission_id == mission_id)
+                .order_by(SceneMemory.scene_id.asc())
+            )
+            result = session.execute(stmt).scalars().all()
+            return [
+                Scene(
+                    id=memory.scene_id,
+                    title=memory.title,
+                    location=memory.location,
+                    characters=json.loads(memory.characters),
+                    summary=memory.summary,
+                    completed=memory.completed,
+                )
+                for memory in result
+            ]
+
+    def update_scenes(self, mission_id: int, scenes: list[Scene]) -> None:
+        with self._sessionmaker() as session:
+            for scene in scenes:
+                stmt = select(SceneMemory).where(
+                    SceneMemory.mission_id == mission_id,
+                    SceneMemory.scene_id == scene.id,
+                )
+                existing_scene = session.execute(stmt).scalar_one_or_none()
+
+                if existing_scene is not None:
+                    existing_scene.title = scene.title
+                    existing_scene.location = scene.location
+                    existing_scene.characters = json.dumps(scene.characters)
+                    existing_scene.summary = scene.summary
+                    existing_scene.completed = scene.completed
+                else:
+                    new_scene = SceneMemory(
+                        mission_id=mission_id,
+                        scene_id=scene.id,
+                        title=scene.title,
+                        location=scene.location,
+                        characters=json.dumps(scene.characters),
+                        summary=scene.summary,
+                        completed=scene.completed,
+                    )
+                    session.add(new_scene)
+
+            session.commit()
 
 
 crud_instance = CRUD(dbase="sqlite:///memory.db")
