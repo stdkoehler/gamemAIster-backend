@@ -14,6 +14,10 @@ from src.crud.crud import crud_instance
 from src.brain.data_types import Interaction, EntityResponse, Scene
 from src.brain.json_tools import extract_json_schema
 
+from src.utils.sqllogger import SQLLogger
+
+logger = SQLLogger()  # Defaults to SQLite in current directory
+
 # strip beginning linebreaks, spaces, GM, :
 strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
 
@@ -97,10 +101,9 @@ class SummaryMemory:
                 ),
             },
         ]
-        print("### Scene Prompt")
-        for msg in messages:
-            print(msg)
-            print("-------------")
+
+        ### Scene Prompt
+        log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
         llm_config = LLMConfig()
         llm_config.temperature = 0.7
@@ -110,8 +113,6 @@ class SummaryMemory:
             messages=messages, reasoning=True, llm_config=llm_config
         )
 
-        print("### Scene Response")
-        print(response)
         # remove content between <think>  tags
         response_wo_think = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
         json_string = extract_json_schema(response_wo_think)
@@ -126,14 +127,18 @@ class SummaryMemory:
                 scene for scene in scene_response if scene.id >= last_scene_id
             ]
         except json.decoder.JSONDecodeError as exc:
+            logger.log_scene(llm_input=log_prompt, raw_output=response)
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
 
-        print("### Scene Summary")
-        print(scene_response)
+        logger.log_scene(
+            llm_input=log_prompt,
+            raw_output=response,
+            processed_output=json_string,
+        )
 
         return scene_response
 
@@ -160,31 +165,28 @@ class SummaryMemory:
             },
         ]
 
-        print("### Entity Prompt")
-        for msg in messages:
-            print(msg)
-            print("-------------")
+        ### Entity Prompt
+        log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
-
-        print("### Entity Response")
-        print(response)
 
         json_string = extract_json_schema(response)
 
         try:
             entity_response = EntityResponse.model_validate_json(json_string)
         except json.decoder.JSONDecodeError as exc:
+            logger.log_entity(llm_input=log_prompt, raw_output=response)
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
 
-        # TODO: consider updated entities
-        print("--- Extract entity")
-        print("Entities: ", entity_response.entities)
-        print("Updated entities: ", entity_response.updated_entities)
+        logger.log_entity(
+            llm_input=log_prompt,
+            raw_output=response,
+            processed_output=json_string,
+        )
 
         return entity_response
 
@@ -207,15 +209,10 @@ class SummaryMemory:
             },
         ]
 
-        print("### Summary Prompt")
-        for msg in messages:
-            print(msg)
-            print("-------------")
+        ### Summary Prompt
+        log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
-
-        print("### Summary Response")
-        print(response)
 
         json_string = extract_json_schema(response)
 
@@ -223,14 +220,19 @@ class SummaryMemory:
             summary_obj: dict[str, str] = json.loads(json_string)
             new_summary = summary_obj["summary"]
         except json.decoder.JSONDecodeError as exc:
+            logger.log_summary(llm_input=log_prompt, raw_output=response)
+
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
 
-        print("### Summary")
-        print(new_summary)
+        logger.log_summary(
+            llm_input=log_prompt,
+            raw_output=response,
+            processed_output=json_string,
+        )
 
         return new_summary
 

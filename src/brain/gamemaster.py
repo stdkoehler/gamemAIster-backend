@@ -94,7 +94,7 @@ class Gamemaster:
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
             last_k=5,
-            min_summary_tokens=4096,
+            min_summary_tokens=1024,
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,
