@@ -11,8 +11,12 @@ from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_client import LLMClientBase
 from src.crud.crud import crud_instance
 
-from src.brain.data_types import Interaction, EntityResponse
+from src.brain.data_types import Interaction, EntityResponse, Scene
 from src.brain.json_tools import extract_json_schema
+
+from src.utils.sqllogger import SQLLogger
+
+logger = SQLLogger()  # Defaults to SQLite in current directory
 
 # strip beginning linebreaks, spaces, GM, :
 strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
@@ -39,6 +43,7 @@ class SummaryMemory:
         llm_client: LLMClientBase,
         summary_template: str,
         entity_template: str,
+        scene_template: str,
         game_name: str,
         last_k: int,
         mission_id: int,
@@ -47,6 +52,7 @@ class SummaryMemory:
         self._llm_client = llm_client
         self._summary_template = summary_template
         self._entity_template = entity_template
+        self._scene_template = scene_template
         self._game_name = game_name
         self._last_k = last_k
         self._n_summarized = 0
@@ -55,6 +61,7 @@ class SummaryMemory:
 
         self._summary, self._n_summarized = crud_instance.get_summary(self._mission_id)
         self._entities = crud_instance.get_entities(self._mission_id)
+        self._scenes = crud_instance.get_scenes(self._mission_id)
         self._history = crud_instance.get_interactions(self._mission_id)
 
     def __len__(self) -> int:
@@ -69,6 +76,71 @@ class SummaryMemory:
             str: The summary of the chat conversation.
         """
         return self._summary
+
+    def scene_summary(self, text_interaction: str) -> list[Scene]:
+        """
+        Returns the scene summary of the chat conversation.
+
+        Returns:
+            str: The scene summary of the chat conversation.
+        """
+        scenes = crud_instance.get_scenes(self._mission_id)
+        last_scene_id = max([scene.id for scene in scenes], default=0)
+        scenes_json = json.dumps([scene.model_dump() for scene in scenes])
+
+        scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text}}}\n```'
+        messages = [
+            {
+                "role": "system",
+                "content": self._scene_template.replace("__RPG__", self._game_name),
+            },
+            {
+                "role": "user",
+                "content": scene_input.format(
+                    scenes=scenes_json, text=text_interaction
+                ),
+            },
+        ]
+
+        ### Scene Prompt
+        log_prompt = "\n\n".join(msg["content"] for msg in messages)
+
+        llm_config = LLMConfig()
+        llm_config.temperature = 0.7
+        llm_config.max_tokens = 8192
+
+        response = self._llm_client.chat_completion(
+            messages=messages, reasoning=True, llm_config=llm_config
+        )
+
+        # remove content between <think>  tags
+        response_wo_think = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
+        json_string = extract_json_schema(response_wo_think)
+
+        try:
+            data = json.loads(json_string)
+            scene_response: list[Scene] = [
+                Scene.model_validate(scene) for scene in data["scenes"]
+            ]
+            # only update last scene and newly created scenes
+            scene_response = [
+                scene for scene in scene_response if scene.id >= last_scene_id
+            ]
+        except json.decoder.JSONDecodeError as exc:
+            logger.log_scene(llm_input=log_prompt, raw_output=response)
+            raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
+        except KeyError as exc:
+            raise ValueError(
+                f"LLM response is missing required keys: {json_string}"
+            ) from exc
+
+        logger.log_scene(
+            llm_input=log_prompt,
+            raw_output=response,
+            processed_output=json_string,
+        )
+
+        return scene_response
 
     def extract_entities(self, text_interaction: str) -> EntityResponse:
 
@@ -93,31 +165,28 @@ class SummaryMemory:
             },
         ]
 
-        print("### Entity Prompt")
-        for msg in messages:
-            print(msg)
-            print("-------------")
+        ### Entity Prompt
+        log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
-
-        print("### Entity Response")
-        print(response)
 
         json_string = extract_json_schema(response)
 
         try:
             entity_response = EntityResponse.model_validate_json(json_string)
         except json.decoder.JSONDecodeError as exc:
+            logger.log_entity(llm_input=log_prompt, raw_output=response)
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
 
-        # TODO: consider updated entities
-        print("--- Extract entity")
-        print("Entities: ", entity_response.entities)
-        print("Updated entities: ", entity_response.updated_entities)
+        logger.log_entity(
+            llm_input=log_prompt,
+            raw_output=response,
+            processed_output=json_string,
+        )
 
         return entity_response
 
@@ -140,15 +209,10 @@ class SummaryMemory:
             },
         ]
 
-        print("### Summary Prompt")
-        for msg in messages:
-            print(msg)
-            print("-------------")
+        ### Summary Prompt
+        log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
-
-        print("### Summary Response")
-        print(response)
 
         json_string = extract_json_schema(response)
 
@@ -156,14 +220,19 @@ class SummaryMemory:
             summary_obj: dict[str, str] = json.loads(json_string)
             new_summary = summary_obj["summary"]
         except json.decoder.JSONDecodeError as exc:
+            logger.log_summary(llm_input=log_prompt, raw_output=response)
+
             raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
 
-        print("### Summary")
-        print(new_summary)
+        logger.log_summary(
+            llm_input=log_prompt,
+            raw_output=response,
+            processed_output=json_string,
+        )
 
         return new_summary
 
@@ -178,6 +247,7 @@ class SummaryMemory:
         )
         if self._llm_client.count_tokens(text) > self._min_summary_tokens:
             entity_response = self.extract_entities(text)
+            scene_response = self.scene_summary(text)
             self._summary = self.summarize(text)
 
             self._n_summarized += len(interaction_candidates)
@@ -185,7 +255,9 @@ class SummaryMemory:
                 self._mission_id, self._summary, self._n_summarized
             )
             crud_instance.update_entities(self._mission_id, entity_response)
+            crud_instance.update_scenes(self._mission_id, scene_response)
             self._entities = crud_instance.get_entities(self._mission_id)
+            self._scenes = crud_instance.get_scenes(self._mission_id)
 
     def append(self, interaction: Interaction) -> None:
         """
@@ -314,6 +386,20 @@ class SummaryMemory:
         """
         return json.dumps([entity.model_dump() for entity in self._entities])
 
+    def get_scenes_json(self) -> str:
+        """
+        Returns the current scenes in JSON format.
+
+        Returns:
+            str: The current scenes in JSON format.
+        """
+        return json.dumps(
+            [
+                scene.model_dump(exclude={"characters", "completed"})
+                for scene in self._scenes
+            ]
+        )
+
     @property
     def n_summarized(self) -> int:
         """
@@ -342,6 +428,7 @@ class SummaryChat:
         role: str,
         summary_template: str,
         entity_template: str,
+        scene_template: str,
         summary_provider_template: str,
         game_name: str,
         mission_id: int,
@@ -360,6 +447,7 @@ class SummaryChat:
             llm_client=llm_client_reasoning,
             summary_template=summary_template,
             entity_template=entity_template,
+            scene_template=scene_template,
             game_name=game_name,
             last_k=last_k,
             min_summary_tokens=min_summary_tokens,
@@ -414,6 +502,7 @@ class SummaryChat:
                     "role": "user",
                     "content": self._summary_provider_template.format(
                         SUMMARY=self._memory.summary,
+                        SCENES=self._memory.get_scenes_json(),
                         ENTITIES=self._memory.get_entities_json(),
                     ),
                 }
@@ -466,7 +555,3 @@ class SummaryChat:
         for mi in messages:
             print(mi)
             print("-------------")
-        print("### Summary:")
-        print(self._memory.summary)
-        print("#### History:")
-        print(self._memory.text_interactions_complete())

@@ -1,6 +1,10 @@
 # Summary
-This is the summary of the prior events:
+This is a general the summary of the prior events:
 {SUMMARY}
+
+# Scene Summary
+This is a summary of the prior events structured in scenes:
+{SCENES}
 
 # Story Entities
 The following entities and their connections to the previous events are known:

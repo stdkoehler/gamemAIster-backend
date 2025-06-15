@@ -28,15 +28,6 @@ class MissionDescription(Base):
     description: Mapped[str] = mapped_column(Text)
 
 
-class MissionScene(Base):
-    __tablename__ = "MissionScene"
-    scene_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    mission_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE"), primary_key=True
-    )
-    summary: Mapped[str] = mapped_column(Text)
-
-
 class ConversationMemory(Base):
     __tablename__ = "ConversationMemory"
     conversation_memory_id: Mapped[int] = mapped_column(
@@ -72,3 +63,37 @@ class EntityMemory(Base):
     name: Mapped[str] = mapped_column(Text, primary_key=True)
     type: Mapped[str] = mapped_column(Text)
     summary: Mapped[str] = mapped_column(Text)
+
+
+class SceneMemory(Base):
+    """
+    Let the LLM create Summary of Scenes in the Mission.
+    """
+
+    __tablename__ = "SceneMemory"
+    scene_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    mission_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE"), primary_key=True
+    )
+    title: Mapped[str] = mapped_column(Text)
+    location: Mapped[str] = mapped_column(Text)
+    characters: Mapped[str] = mapped_column(Text)
+    summary: Mapped[str] = mapped_column(Text)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class ConversationSummaryMemory(Base):
+    """
+    Let the LLM create a Summary of the Conversation Memory:
+    Each user input and LLM output is to be stored as a one-senctence summary
+    We can keep k complete interactions and n summerized interactions
+    """
+
+    __tablename__ = "ConversationSummaryMemory"
+    conversation_memory_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("ConversationMemory.conversation_memory_id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    user_input: Mapped[str] = mapped_column(Text)
+    llm_output: Mapped[str] = mapped_column(Text)

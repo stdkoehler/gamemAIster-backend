@@ -1,6 +1,6 @@
 import pytest
 
-from src.brain.data_types import Entity, EntityResponse, UpdatedEntity
+from src.brain.data_types import Entity, EntityResponse, UpdatedEntity, Scene
 from src.crud.crud import CRUD
 import io
 import sys
@@ -22,12 +22,14 @@ def test_get_entities(crud_instance):
 
 def test_update_entities(crud_instance):
     crud_instance._cleanse_unpersisted()
-    mission_id = 14
+    mission_id = 27
     crud_instance.insert_mission(
         mission=Mission(
             mission_id=mission_id,
             name="Test Mission",
             description="This is a test mission.",
+            game_type="shadowrun",
+            background="Test background",
         )
     )
 
@@ -86,12 +88,14 @@ def test_update_entities(crud_instance):
 
 def test_update_entities_with_deletion(crud_instance):
     crud_instance._cleanse_unpersisted()
-    mission_id = 14
+    mission_id = 27
     crud_instance.insert_mission(
         mission=Mission(
             mission_id=mission_id,
             name="Deletion Test Mission",
             description="This mission tests entity deletion.",
+            game_type="shadowrun",
+            background="Test background",
         )
     )
 
@@ -128,5 +132,65 @@ def test_update_entities_with_deletion(crud_instance):
     # Ensure EntityA is deleted
     with pytest.raises(StopIteration):
         next(e for e in entities if e.name == "EntityA")
+
+    crud_instance._cleanse_unpersisted()
+
+
+def test_update_scenes(crud_instance):
+    crud_instance._cleanse_unpersisted()
+    mission_id = 27
+    crud_instance.insert_mission(
+        mission=Mission(
+            mission_id=mission_id,
+            name="Scene Test Mission",
+            description="This mission tests scene CRUD.",
+            game_type="shadowrun",
+            background="Test background",
+        )
+    )
+
+    # Insert initial scenes
+    scenes = [
+        Scene(
+            id=1,
+            title="Scene One",
+            location="test",
+            characters=["A", "B"],
+            summary="Summary One",
+            completed=False,
+        ),
+        Scene(
+            id=2,
+            title="Scene Two",
+            location="test",
+            characters=["A", "B"],
+            summary="Summary Two",
+            completed=False,
+        ),
+    ]
+    crud_instance.update_scenes(mission_id, scenes)
+    db_scenes = crud_instance.get_scenes(mission_id)
+    assert len(db_scenes) == 2
+    assert any(s.title == "Scene One" for s in db_scenes)
+    assert any(s.title == "Scene Two" for s in db_scenes)
+
+    # Update Scene One and remove Scene Two
+    updated_scenes = [
+        Scene(
+            id=1,
+            title="Scene One Updated",
+            location="test2",
+            characters=["A", "B", "C"],
+            summary="Updated Summary",
+            completed=True,
+        ),
+    ]
+    crud_instance.update_scenes(mission_id, updated_scenes)
+    db_scenes = crud_instance.get_scenes(mission_id)
+    assert len(db_scenes) == 2
+    assert db_scenes[0].title == "Scene One Updated"
+    assert db_scenes[0].completed is True
+    assert db_scenes[0].location == "test2"
+    assert db_scenes[0].characters == ["A", "B", "C"]
 
     crud_instance._cleanse_unpersisted()

@@ -111,6 +111,19 @@ class Entity(BaseModel):
     summary: str
 
 
+class Scene(BaseModel):
+    """
+    A class representing a scene in a mission.
+    """
+
+    id: int
+    title: str
+    location: str
+    characters: list[str]
+    summary: str
+    completed: bool
+
+
 class UpdatedEntity(Entity):
     """
     A class representing an entity extracted from a text.
