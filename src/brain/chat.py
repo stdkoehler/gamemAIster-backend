@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Generator
 import threading
 
+from pydantic import ValidationError
+
 
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_client import LLMClientBase
@@ -126,9 +128,11 @@ class SummaryMemory:
             scene_response = [
                 scene for scene in scene_response if scene.id >= last_scene_id
             ]
-        except json.decoder.JSONDecodeError as exc:
+        except (json.decoder.JSONDecodeError, ValidationError) as exc:
             logger.log_scene(llm_input=log_prompt, raw_output=response)
-            raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
+            raise ValueError(
+                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+            ) from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
@@ -174,9 +178,11 @@ class SummaryMemory:
 
         try:
             entity_response = EntityResponse.model_validate_json(json_string)
-        except json.decoder.JSONDecodeError as exc:
+        except (json.decoder.JSONDecodeError, ValidationError) as exc:
             logger.log_entity(llm_input=log_prompt, raw_output=response)
-            raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
+            raise ValueError(
+                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+            ) from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
@@ -219,10 +225,11 @@ class SummaryMemory:
         try:
             summary_obj: dict[str, str] = json.loads(json_string)
             new_summary = summary_obj["summary"]
-        except json.decoder.JSONDecodeError as exc:
+        except (json.decoder.JSONDecodeError, ValidationError) as exc:
             logger.log_summary(llm_input=log_prompt, raw_output=response)
-
-            raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
+            raise ValueError(
+                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+            ) from exc
         except KeyError as exc:
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
