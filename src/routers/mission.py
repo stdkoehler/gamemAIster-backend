@@ -34,8 +34,8 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
     """
     Generate a new mission via LLM call.
     """
-    game = payload.game_type
-    print(game)
+    print(payload.game_type)
+    print("non_hero_mode:", payload.non_hero_mode)
 
     llm_type = os.getenv("LLM")
     if llm_type == "LOCAL":
@@ -44,6 +44,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
             llm_client_chat=llm_client_local,
             llm_client_reasoning=llm_client_local,
             game_type=payload.game_type,
+            non_hero_mode=payload.non_hero_mode,
         )
     elif llm_type == "DEEPSEEK":
         api_key = os.getenv("API_KEY_DEEPSEEK")
@@ -55,6 +56,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
                 api_key=api_key, model="deepseek-reasoner"
             ),
             game_type=payload.game_type,
+            non_hero_mode=payload.non_hero_mode,
         )
     elif llm_type == "GEMINI":
         api_key = os.getenv("API_KEY_GEMINI")
@@ -70,6 +72,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
                 model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
             ),
             game_type=payload.game_type,
+            non_hero_mode=payload.non_hero_mode,
         )
     elif llm_type == "CLAUDE":
         api_key = os.getenv("API_KEY_CLAUDE")
@@ -85,6 +88,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
                 model="claude-3-7-sonnet-latest",
             ),
             game_type=payload.game_type,
+            non_hero_mode=payload.non_hero_mode,
         )
     else:
         raise ValueError(f"Unknown LLM type: {llm_type}")

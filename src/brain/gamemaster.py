@@ -31,24 +31,44 @@ class Gamemaster:
         llm_client_reasoning: LLMClientBase,
         llm_client_chat: LLMClientBase,
         game_type: api_schema_mission.GameType,
+        non_hero_mode: bool = False,
     ):
         self._llm_client_reasoning = llm_client_reasoning
         self._llm_client_chat = llm_client_chat
         self._game_type = game_type
+        self._non_hero_mode = non_hero_mode
 
         prompt_dir = Path(__file__).parent / "prompt_templates"
 
         if game_type == api_schema_mission.GameType.SHADOWRUN:
-            mission_prompt = prompt_dir / "shadowrun" / "shadowrun_mission_prompt.txt"
-            system_prompt = prompt_dir / "shadowrun" / "shadowrun_system_prompt.txt"
+            if non_hero_mode:
+                raise ValueError(
+                    "Non-hero mode is not supported for Shadowrun 6th Edition"
+                )
+            else:
+                mission_prompt = (
+                    prompt_dir / "shadowrun" / "shadowrun_mission_prompt.txt"
+                )
+                system_prompt = prompt_dir / "shadowrun" / "shadowrun_system_prompt.txt"
             self._game_name = "Shadowrun 6th Edition"
+
         elif game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
-            mission_prompt = prompt_dir / "vampire" / "vampire_mission_prompt.txt"
-            system_prompt = prompt_dir / "vampire" / "vampire_system_prompt.txt"
+            if non_hero_mode:
+                raise ValueError(
+                    "Non-hero mode is not supported for Vampire the Masquerade 5th Edition"
+                )
+            else:
+                mission_prompt = prompt_dir / "vampire" / "vampire_mission_prompt.txt"
+                system_prompt = prompt_dir / "vampire" / "vampire_system_prompt.txt"
             self._game_name = "Vampire the Masquerade 5th Edition"
         elif game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
-            mission_prompt = prompt_dir / "cthulhu" / "cthulhu_mission_prompt.txt"
-            system_prompt = prompt_dir / "cthulhu" / "cthulhu_system_prompt.txt"
+            if non_hero_mode:
+                raise ValueError(
+                    "Non-hero mode is not supported for Call of Cthulhu 7th Edition"
+                )
+            else:
+                mission_prompt = prompt_dir / "cthulhu" / "cthulhu_mission_prompt.txt"
+                system_prompt = prompt_dir / "cthulhu" / "cthulhu_system_prompt.txt"
             self._game_name = "Call of Cthulhu 7th Edition"
         elif game_type == api_schema_mission.GameType.SEVENTH_SEA:
             mission_prompt = (
@@ -57,8 +77,16 @@ class Gamemaster:
             system_prompt = prompt_dir / "seventh_sea" / "seventh_sea_system_prompt.txt"
             self._game_name = "Seventh Sea 2nd Edition"
         elif game_type == api_schema_mission.GameType.EXPANSE:
-            mission_prompt = prompt_dir / "expanse" / "expanse_mission_prompt.txt"
-            system_prompt = prompt_dir / "expanse" / "expanse_system_prompt.txt"
+            if non_hero_mode:
+                mission_prompt = (
+                    prompt_dir / "expanse" / "expanse_mission_prompt_non_hero.txt"
+                )
+                system_prompt = (
+                    prompt_dir / "expanse" / "expanse_system_prompt_non_hero.txt"
+                )
+            else:
+                mission_prompt = prompt_dir / "expanse" / "expanse_mission_prompt.txt"
+                system_prompt = prompt_dir / "expanse" / "expanse_system_prompt.txt"
             self._game_name = "The Expanse RPG"
         else:
             raise ValueError(f"Unknown game type: {game_type}")
@@ -135,7 +163,9 @@ class Gamemaster:
             oracle = SeventhSeaOracle(llm_client=self._llm_client_reasoning)
             oracle_topic = oracle.mission(background)
         elif self._game_type == api_schema_mission.GameType.EXPANSE:
-            oracle = ExpanseOracle(llm_client=self._llm_client_reasoning)
+            oracle = ExpanseOracle(
+                llm_client=self._llm_client_reasoning, non_hero_mode=self._non_hero_mode
+            )
             oracle_topic = oracle.mission(background)
         else:
             oracle_topic = ""
@@ -177,6 +207,7 @@ class Gamemaster:
                 "description": json_string,
                 "game_type": self._game_type,
                 "background": background,
+                "non_hero_mode": self._non_hero_mode,
             }
             return api_schema_mission.Mission.model_validate(mission)
         except json.decoder.JSONDecodeError as exc:

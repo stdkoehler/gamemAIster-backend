@@ -61,13 +61,24 @@ class CRUD:
                 raise ValueError(f"No mission with id {mission_id}")
             return api_schema_mission.GameType(result)
 
+    def get_mission_non_hero_mode(self, mission_id: int) -> bool:
+        with self._sessionmaker() as session:
+            stmt = select(Mission.non_hero_mode).where(Mission.mission_id == mission_id)
+            result = session.execute(stmt).scalar()
+            if result is None:
+                raise ValueError(f"No mission with id {mission_id}")
+            return result
+
     def insert_mission(
         self, mission: api_schema_mission.Mission
     ) -> api_schema_mission.Mission:
         self._cleanse_unpersisted()
         with self._sessionmaker() as session:
             db_mission = Mission(
-                name=mission.name, game_type=mission.game_type.value, persist=False
+                name=mission.name,
+                game_type=mission.game_type.value,
+                non_hero_mode=mission.non_hero_mode,
+                persist=False,
             )
             session.add(db_mission)
             session.flush()
@@ -114,6 +125,7 @@ class CRUD:
             description=result.MissionDescription.description,
             game_type=api_schema_mission.GameType(result.Mission.game_type),
             background=result.MissionDescription.background,
+            non_hero_mode=result.Mission.non_hero_mode,
         )
 
     def list_missions(self) -> list[api_schema_mission.Mission]:
@@ -138,6 +150,7 @@ class CRUD:
                     description=result.MissionDescription.description,
                     game_type=api_schema_mission.GameType(result.Mission.game_type),
                     background=result.MissionDescription.background,
+                    non_hero_mode=result.Mission.non_hero_mode,
                 )
                 for result in results
             ]

@@ -1,0 +1,388 @@
+{
+    "affectedInterests": [
+        {
+            "name": "Water recycling quotas",
+            "probability": 1.0
+        },
+        {
+            "name": "Ice mining schedules",
+            "probability": 1.0
+        },
+        {
+            "name": "Oxygen scrubber maintenance",
+            "probability": 1.0
+        },
+        {
+            "name": "Housing rental costs",
+            "probability": 1.0
+        },
+        {
+            "name": "Family remittances",
+            "probability": 1.0
+        },
+        {
+            "name": "Work shift assignments",
+            "probability": 1.0
+        },
+        {
+            "name": "Equipment repair budgets",
+            "probability": 0.9
+        },
+        {
+            "name": "Food ration allocations",
+            "probability": 0.9
+        },
+        {
+            "name": "Transport fare increases",
+            "probability": 0.9
+        },
+        {
+            "name": "Medical insurance coverage",
+            "probability": 0.9
+        },
+        {
+            "name": "Power grid reliability",
+            "probability": 0.9
+        },
+        {
+            "name": "Cargo loading bonuses",
+            "probability": 0.8
+        },
+        {
+            "name": "Waste disposal fees",
+            "probability": 0.8
+        },
+        {
+            "name": "Communication link costs",
+            "probability": 0.8
+        },
+        {
+            "name": "Tool rental agreements",
+            "probability": 0.8
+        },
+        {
+            "name": "Childcare availability",
+            "probability": 0.8
+        },
+        {
+            "name": "Pension fund contributions",
+            "probability": 0.7
+        },
+        {
+            "name": "Union dues payments",
+            "probability": 0.7
+        },
+        {
+            "name": "Recreation facility access",
+            "probability": 0.7
+        },
+        {
+            "name": "Educational program fees",
+            "probability": 0.7
+        },
+        {
+            "name": "Gravity therapy sessions",
+            "probability": 0.6
+        },
+        {
+            "name": "Religious service scheduling",
+            "probability": 0.6
+        },
+        {
+            "name": "Legal document processing",
+            "probability": 0.6
+        },
+        {
+            "name": "Marriage registration costs",
+            "probability": 0.5
+        },
+        {
+            "name": "Funeral expense funds",
+            "probability": 0.5
+        },
+        {
+            "name": "Apprenticeship programs",
+            "probability": 0.7
+        },
+        {
+            "name": "Small business permits",
+            "probability": 0.6
+        },
+        {
+            "name": "Community garden plots",
+            "probability": 0.6
+        },
+        {
+            "name": "Gambling debt obligations",
+            "probability": 0.6
+        },
+        {
+            "name": "Salvage rights claims",
+            "probability": 0.7
+        }
+    ],
+    "complicatingSituations": [
+        {
+            "name": "Equipment keeps breaking down faster than usual",
+            "probability": 1.0
+        },
+        {
+            "name": "Bureaucratic paperwork is delayed for weeks",
+            "probability": 1.0
+        },
+        {
+            "name": "Supply shipments are running behind schedule",
+            "probability": 1.0
+        },
+        {
+            "name": "Management is cutting costs on safety equipment",
+            "probability": 0.9
+        },
+        {
+            "name": "New regulations require expensive compliance upgrades",
+            "probability": 0.9
+        },
+        {
+            "name": "A key supervisor is transferred to another station",
+            "probability": 0.9
+        },
+        {
+            "name": "Insurance premiums suddenly increase by 40%",
+            "probability": 0.9
+        },
+        {
+            "name": "The main computer system needs constant manual resets",
+            "probability": 0.8
+        },
+        {
+            "name": "Union representatives are locked in contract negotiations",
+            "probability": 0.8
+        },
+        {
+            "name": "A neighboring work crew is laid off, increasing competition",
+            "probability": 0.8
+        },
+        {
+            "name": "Quality control standards are raised without warning",
+            "probability": 0.8
+        },
+        {
+            "name": "The cafeteria vendor raises meal prices by 25%",
+            "probability": 0.8
+        },
+        {
+            "name": "Housing assignments are reshuffled due to overcrowding",
+            "probability": 0.8
+        },
+        {
+            "name": "Medical staff shortages delay routine health checkups",
+            "probability": 0.7
+        },
+        {
+            "name": "Communication delays disrupt family contact schedules",
+            "probability": 0.7
+        },
+        {
+            "name": "A popular local business closes unexpectedly",
+            "probability": 0.7
+        },
+        {
+            "name": "Transportation schedules are reduced to save fuel costs",
+            "probability": 0.7
+        },
+        {
+            "name": "New workers are hired at lower wages for the same job",
+            "probability": 0.7
+        },
+        {
+            "name": "Environmental systems require more frequent maintenance",
+            "probability": 0.7
+        },
+        {
+            "name": "Administrative fees are added to previously free services",
+            "probability": 0.7
+        },
+        {
+            "name": "Work quotas are increased without additional compensation",
+            "probability": 0.8
+        },
+        {
+            "name": "A critical piece of shared equipment is condemned as unsafe",
+            "probability": 0.6
+        },
+        {
+            "name": "Childcare services reduce their operating hours",
+            "probability": 0.6
+        },
+        {
+            "name": "The local credit union changes its loan terms",
+            "probability": 0.6
+        },
+        {
+            "name": "Shift rotations are changed without consulting workers",
+            "probability": 0.8
+        },
+        {
+            "name": "A longtime coworker retires, leaving knowledge gaps",
+            "probability": 0.7
+        },
+        {
+            "name": "Waste disposal costs triple due to new environmental rules",
+            "probability": 0.6
+        },
+        {
+            "name": "The company cafeteria is replaced with vending machines",
+            "probability": 0.6
+        },
+        {
+            "name": "Overtime opportunities are eliminated to reduce labor costs",
+            "probability": 0.7
+        },
+        {
+            "name": "A minor accident triggers increased safety inspections",
+            "probability": 0.6
+        }
+    ],
+    "dailyConcerns": [
+        {
+            "name": "Making rent payments on time",
+            "probability": 1.0
+        },
+        {
+            "name": "Keeping life support systems running",
+            "probability": 1.0
+        },
+        {
+            "name": "Supporting elderly parents back home",
+            "probability": 1.0
+        },
+        {
+            "name": "Avoiding workplace accidents",
+            "probability": 1.0
+        },
+        {
+            "name": "Maintaining aging equipment",
+            "probability": 1.0
+        },
+        {
+            "name": "Meeting daily work quotas",
+            "probability": 0.9
+        },
+        {
+            "name": "Paying for children's education",
+            "probability": 0.9
+        },
+        {
+            "name": "Dealing with unreliable air recycling",
+            "probability": 0.9
+        },
+        {
+            "name": "Managing chronic health conditions",
+            "probability": 0.9
+        },
+        {
+            "name": "Staying current on union dues",
+            "probability": 0.8
+        },
+        {
+            "name": "Avoiding conflicts with supervisors",
+            "probability": 0.8
+        },
+        {
+            "name": "Stretching food budget to last the month",
+            "probability": 0.8
+        },
+        {
+            "name": "Finding time for equipment training",
+            "probability": 0.8
+        },
+        {
+            "name": "Maintaining good relationships with neighbors",
+            "probability": 0.8
+        },
+        {
+            "name": "Keeping up with changing safety protocols",
+            "probability": 0.8
+        },
+        {
+            "name": "Saving money for emergency repairs",
+            "probability": 0.8
+        },
+        {
+            "name": "Managing shift work sleep schedules",
+            "probability": 0.8
+        },
+        {
+            "name": "Dealing with cramped living conditions",
+            "probability": 0.8
+        },
+        {
+            "name": "Paying off medical debt",
+            "probability": 0.7
+        },
+        {
+            "name": "Finding reliable childcare during work hours",
+            "probability": 0.7
+        },
+        {
+            "name": "Maintaining contact with distant family",
+            "probability": 0.7
+        },
+        {
+            "name": "Avoiding getting into debt with local merchants",
+            "probability": 0.7
+        },
+        {
+            "name": "Dealing with noisy or inconsiderate roommates",
+            "probability": 0.7
+        },
+        {
+            "name": "Managing anxiety about job security",
+            "probability": 0.7
+        },
+        {
+            "name": "Finding time for physical exercise in low gravity",
+            "probability": 0.6
+        },
+        {
+            "name": "Coping with seasonal depression from artificial lighting",
+            "probability": 0.6
+        },
+        {
+            "name": "Maintaining personal tools and work gear",
+            "probability": 0.7
+        },
+        {
+            "name": "Planning for retirement with inadequate savings",
+            "probability": 0.6
+        },
+        {
+            "name": "Dealing with substance abuse problems",
+            "probability": 0.5
+        },
+        {
+            "name": "Managing gambling debts",
+            "probability": 0.4
+        },
+        {
+            "name": "Avoiding trouble with station security",
+            "probability": 0.6
+        },
+        {
+            "name": "Finding privacy in overcrowded housing",
+            "probability": 0.7
+        },
+        {
+            "name": "Coping with the isolation of deep space work",
+            "probability": 0.6
+        },
+        {
+            "name": "Maintaining relationships despite irregular schedules",
+            "probability": 0.7
+        },
+        {
+            "name": "Dealing with workplace harassment or discrimination",
+            "probability": 0.6
+        }
+    ]
+}

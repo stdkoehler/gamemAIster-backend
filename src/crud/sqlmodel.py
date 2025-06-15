@@ -16,6 +16,7 @@ class Mission(Base):
     name_custom: Mapped[str] = mapped_column(String(50), default="")
     name: Mapped[str] = mapped_column(String(50))
     game_type: Mapped[str] = mapped_column(String(50))
+    non_hero_mode: Mapped[bool] = mapped_column(Boolean, default=False)
     persist: Mapped[bool] = mapped_column(Boolean)
 
 
