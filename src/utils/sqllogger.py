@@ -1,7 +1,7 @@
+from pathlib import Path
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
+from sqlalchemy import create_engine, Column, Integer, Text, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
-from typing import Callable, Any
 
 
 Base = declarative_base()
@@ -38,7 +38,10 @@ class SceneLog(Base):
 
 
 class SQLLogger:
-    def __init__(self, db_url: str = "sqlite:///logs/llm_logs.db"):
+    def __init__(self) -> None:
+        logs_dir = Path(__file__).parent.parent / "logs"
+        logs_dir.mkdir(exist_ok=True)
+        db_url = f"sqlite:///{logs_dir}/llm_logs.db"
         self.engine = create_engine(db_url)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
