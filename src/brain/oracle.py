@@ -174,24 +174,32 @@ class SeventhSeaOracle(BaseOracle):
 
 class ExpanseOracle(BaseOracle):
     """
-    Oracle for Seventh Sea missions, using external JSON definitions.
+    Oracle for Expanse missions, using external JSON definitions.
     Generates { factions, incitingIncidents, themes } with 1-2 unique factions.
     """
 
-    def __init__(self, llm_client: LLMClientBase) -> None:
+    def __init__(self, llm_client: LLMClientBase, non_hero_mode: bool = False) -> None:
         super().__init__(
             llm_client=llm_client,
-            config_filename="expanse.json",
-            prompt_filename="expanse/expanse_background_mission_aligner.txt",
+            config_filename=(
+                "expanse_non_hero.json" if non_hero_mode else "expanse.json"
+            ),
+            prompt_filename=(
+                "expanse/expanse_background_mission_aligner_non_hero.txt"
+                if non_hero_mode
+                else "expanse/expanse_background_mission_aligner.txt"
+            ),
         )
+        self._non_hero_mode = non_hero_mode
 
     def _assemble_proposal_seed(self) -> MissionSeed:
         candidate = self._roll()
-        # pick one or two unique factions
-        k = random.randint(1, 2)
-        candidate["factions"] = random.sample(
-            [c.name for c in self._pools["factions"]], k=k
-        )
+        if not self._non_hero_mode:
+            # pick one or two unique factions
+            k = random.randint(1, 2)
+            candidate["factions"] = random.sample(
+                [c.name for c in self._pools["factions"]], k=k
+            )
         return candidate
 
 
@@ -303,6 +311,13 @@ def main() -> None:
         "Expanse Seed:",
         sr.mission(
             "Luna City, Laconia Era. The crew operates a small freight hauler called the Meridian Runner, struggling to make ends meet under the strict regulations of the Laconian Empire. After the Ring Gates reopened, they've been running legitimate cargo between Sol system stations, but their mixed crew of former Belters and Inner Planet refugees has made them targets of suspicion from Laconian authorities who view any non-Imperial crew as potential insurgents."
+        ),
+    )
+    sr = ExpanseOracle(llm_client=llm_client_local, non_hero_mode=True)
+    print(
+        "Expanse Seed:",
+        sr.mission(
+            "I'm David Lahoola, a belter on an ice trawler in the Belt. It's pre-canterbury era and we're scraping by, but the crew is tight-knit. We just started our return leg to Ceres after a long haul."
         ),
     )
     # # Cthulhu

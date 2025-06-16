@@ -1,6 +1,7 @@
+from __future__ import annotations
 from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from src.routers.schema.interaction import InteractionSchema
 
 
@@ -19,6 +20,13 @@ class Mission(BaseModel):
     description: str
     game_type: GameType
     background: str
+    non_hero_mode: bool
+
+    @model_validator(mode="after")
+    def check_non_hero_mode(self) -> Mission:
+        if self.non_hero_mode and self.game_type != GameType.EXPANSE:
+            raise ValueError("Only GameType.EXPANSE may have non_hero_mode=True")
+        return self
 
 
 class SaveMission(BaseModel):
@@ -34,3 +42,10 @@ class LoadMission(BaseModel):
 class NewMissionPayload(BaseModel):
     game_type: GameType
     background: str
+    non_hero_mode: bool = False
+
+    @model_validator(mode="after")
+    def check_non_hero_mode(self) -> NewMissionPayload:
+        if self.non_hero_mode and self.game_type != GameType.EXPANSE:
+            raise ValueError("Only GameType.EXPANSE may have non_hero_mode=True")
+        return self

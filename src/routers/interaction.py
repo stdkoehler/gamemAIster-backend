@@ -44,6 +44,7 @@ async def post_gamemaster_send(
 
     """
     game_type = crud_instance.get_mission_game_type(prompt.mission_id)
+    non_hero_mode = crud_instance.get_mission_non_hero_mode(prompt.mission_id)
     llm_type = os.getenv("LLM")
     if llm_type == "LOCAL":
         llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
@@ -62,6 +63,7 @@ async def post_gamemaster_send(
                 api_key=api_key, model="deepseek-reasoner"
             ),
             game_type=game_type,
+            non_hero_mode=non_hero_mode,
         )
     elif llm_type == "GEMINI":
         api_key = os.getenv("API_KEY_GEMINI")
@@ -77,6 +79,7 @@ async def post_gamemaster_send(
                 model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17",
             ),
             game_type=game_type,
+            non_hero_mode=non_hero_mode,
         )
     elif llm_type == "CLAUDE":
         api_key = os.getenv("API_KEY_CLAUDE")
@@ -92,6 +95,7 @@ async def post_gamemaster_send(
                 model="claude-3-7-sonnet-latest",
             ),
             game_type=game_type,
+            non_hero_mode=non_hero_mode,
         )
     else:
         raise ValueError(f"Unknown LLM type: {llm_type}")
