@@ -15,6 +15,7 @@ class GameType(StrEnum):
 
 class Mission(BaseModel):
     mission_id: int | None = None
+    user_id: str
     name_custom: str = ""
     name: str
     description: str

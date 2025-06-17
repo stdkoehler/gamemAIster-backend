@@ -28,11 +28,13 @@ class Gamemaster:
 
     def __init__(
         self,
+        user_id: str,
         llm_client_reasoning: LLMClientBase,
         llm_client_chat: LLMClientBase,
         game_type: api_schema_mission.GameType,
         non_hero_mode: bool = False,
     ):
+        self._user_id = user_id
         self._llm_client_reasoning = llm_client_reasoning
         self._llm_client_chat = llm_client_chat
         self._game_type = game_type
@@ -203,6 +205,7 @@ class Gamemaster:
             else:
                 name = data["meta"]["title"]
             mission = {
+                "user_id": self._user_id,
                 "name": name,
                 "description": json_string,
                 "game_type": self._game_type,

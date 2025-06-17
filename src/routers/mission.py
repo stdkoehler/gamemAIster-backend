@@ -2,7 +2,9 @@
 
 import os
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.auth.auth import verify_user
 
 from src.llmclient.llm_client import (
     LLMClientClaude,
@@ -25,12 +27,16 @@ log = configure_logger("mission")
 router = APIRouter(
     prefix="/mission",
     tags=["mission"],
+    dependencies=[Depends(verify_user)],
     responses={404: {"description": "Not found"}},
 )
 
 
 @router.post("/new-mission")
-def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
+def new_mission(
+    payload: NewMissionPayload,
+    user: str = Depends(verify_user),
+) -> api_schema_mission.Mission:
     """
     Generate a new mission via LLM call.
     """
@@ -41,6 +47,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
     if llm_type == "LOCAL":
         llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=llm_client_local,
             llm_client_reasoning=llm_client_local,
             game_type=payload.game_type,
@@ -51,6 +58,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
         if api_key is None:
             raise ValueError("OpenRouter API key not set")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=LLMClientDeepSeek(api_key=api_key, model="deepseek-chat"),
             llm_client_reasoning=LLMClientDeepSeek(
                 api_key=api_key, model="deepseek-reasoner"
@@ -63,6 +71,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
         if api_key is None:
             raise ValueError("Gemini API key not set")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=LLMClientGemini(
                 api_key=api_key,
                 model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
@@ -79,6 +88,7 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
         if api_key is None:
             raise ValueError("Claude API key not set")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=LLMClientClaude(
                 api_key=api_key,
                 model="claude-3-7-sonnet-latest",
@@ -103,34 +113,63 @@ def new_mission(payload: NewMissionPayload) -> api_schema_mission.Mission:
 
 
 @router.post("/save-mission")
-def save_mission(mission: api_schema_mission.SaveMission) -> None:
+def save_mission(
+    mission: api_schema_mission.SaveMission,
+    user: str = Depends(verify_user),
+) -> None:
     """
     Save mission to database.
     """
+    try:
+        crud_instance.verify_mission_user(mission_id=mission.mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
     crud_instance.save_mission(mission)
 
 
 @router.get("/missions")
-async def missions() -> list[api_schema_mission.Mission]:
+async def missions(
+    user: str = Depends(verify_user),
+) -> list[api_schema_mission.Mission]:
     """
     List missons in database
     """
-    return crud_instance.list_missions()
+    return crud_instance.list_missions(user_id=user)
 
 
 @router.get("/mission/{mission_id}")
-async def get_mission(mission_id: int) -> api_schema_mission.Mission | None:
+async def get_mission(
+    mission_id: int,
+    user: str = Depends(verify_user),
+) -> api_schema_mission.Mission | None:
     """
     Get the mission description for a given mission id
     """
+    try:
+        crud_instance.verify_mission_user(mission_id=mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
     return crud_instance.get_mission_description(mission_id=mission_id)
 
 
 @router.get("/load-mission/{mission_id}")
-async def load_mission(mission_id: int) -> api_schema_mission.LoadMission | None:
+async def load_mission(
+    mission_id: int,
+    user: str = Depends(verify_user),
+) -> api_schema_mission.LoadMission | None:
     """
     Load a mission from database
     """
+    try:
+        crud_instance.verify_mission_user(mission_id=mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
     mission = crud_instance.get_mission_description(mission_id=mission_id)
 
     if mission is not None:

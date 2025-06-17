@@ -2,8 +2,12 @@
 
 import os
 
-from fastapi import APIRouter
+from typing import Any
+
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
+
+from src.auth.auth import verify_user
 
 from src.brain.gamemaster import Gamemaster
 from src.llmclient.llm_client import (
@@ -24,6 +28,7 @@ log = configure_logger("interaction")
 router = APIRouter(
     prefix="/interaction",
     tags=["interaction"],
+    dependencies=[Depends(verify_user)],
     responses={404: {"description": "Not found"}},
 )
 
@@ -31,6 +36,7 @@ router = APIRouter(
 @router.post("/gamemaster-send")
 async def post_gamemaster_send(
     prompt: api_schema_interaction.InteractionPrompt,
+    user: Any = Depends(verify_user),
 ) -> StreamingResponse:
     """
     This function handles the user prompt for text generation.
@@ -49,15 +55,18 @@ async def post_gamemaster_send(
     if llm_type == "LOCAL":
         llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=llm_client_local,
             llm_client_reasoning=llm_client_local,
             game_type=game_type,
+            non_hero_mode=non_hero_mode,
         )
     elif llm_type == "DEEPSEEK":
         api_key = os.getenv("API_KEY_DEEPSEEK")
         if api_key is None:
             raise ValueError("OpenRouter API key not set")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=LLMClientDeepSeek(api_key=api_key, model="deepseek-chat"),
             llm_client_reasoning=LLMClientDeepSeek(
                 api_key=api_key, model="deepseek-reasoner"
@@ -70,6 +79,7 @@ async def post_gamemaster_send(
         if api_key is None:
             raise ValueError("Gemini API key not set")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=LLMClientGemini(
                 api_key=api_key,
                 model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
@@ -86,6 +96,7 @@ async def post_gamemaster_send(
         if api_key is None:
             raise ValueError("Claude API key not set")
         gamemaster = Gamemaster(
+            user_id=user,
             llm_client_chat=LLMClientClaude(
                 api_key=api_key,
                 model="claude-3-7-sonnet-latest",

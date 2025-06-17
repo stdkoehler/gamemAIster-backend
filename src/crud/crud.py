@@ -45,6 +45,15 @@ class CRUD:
             session.execute(stmt)
             session.commit()
 
+    def verify_mission_user(self, mission_id: int, user_id: str) -> None:
+        with self._sessionmaker() as session:
+            stmt = select(Mission).where(
+                Mission.mission_id == mission_id, Mission.user_id == user_id
+            )
+            result = session.execute(stmt).scalar_one_or_none()
+            if result is None:
+                raise ValueError(f"No mission with id {mission_id} for user {user_id}")
+
     def get_mission_id(self, mission_name: str) -> int:
         with self._sessionmaker() as session:
             stmt = select(Mission.mission_id).where(Mission.name == mission_name)
@@ -75,6 +84,7 @@ class CRUD:
         self._cleanse_unpersisted()
         with self._sessionmaker() as session:
             db_mission = Mission(
+                user_id=mission.user_id,
                 name=mission.name,
                 game_type=mission.game_type.value,
                 non_hero_mode=mission.non_hero_mode,
@@ -120,6 +130,7 @@ class CRUD:
 
         return api_schema_mission.Mission(
             mission_id=result.Mission.mission_id,
+            user_id=result.Mission.user_id,
             name=result.Mission.name,
             name_custom=result.Mission.name_custom,
             description=result.MissionDescription.description,
@@ -128,7 +139,7 @@ class CRUD:
             non_hero_mode=result.Mission.non_hero_mode,
         )
 
-    def list_missions(self) -> list[api_schema_mission.Mission]:
+    def list_missions(self, user_id: str) -> list[api_schema_mission.Mission]:
 
         with self._sessionmaker() as session:
             stmt = (
@@ -137,13 +148,14 @@ class CRUD:
                     MissionDescription,
                     Mission.mission_id == MissionDescription.mission_id,
                 )
-                .where(Mission.persist.is_(True))
+                .where(Mission.persist.is_(True), Mission.user_id == user_id)
                 .order_by(Mission.mission_id)
             )
             results = session.execute(stmt).all()
 
             return [
                 api_schema_mission.Mission(
+                    user_id=result.Mission.user_id,
                     mission_id=result.Mission.mission_id,
                     name=result.Mission.name,
                     name_custom=result.Mission.name_custom,
