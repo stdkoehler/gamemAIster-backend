@@ -73,7 +73,7 @@ allow_redefinition = true
 warn_unused_ignores = false
 
 [[tool.mypy.overrides]]
-module = ["uvicorn.*", "regex.*", "jsonlogger.*"]
+module = ["uvicorn.*", "regex.*", "jsonlogger.*", "firebase_admin.*"]
 ignore_missing_imports = true
 
 [tool.pylint]

@@ -1,7 +1,6 @@
 import os
 from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Optional
 
 USE_FIREBASE = os.getenv("USE_FIREBASE", "true").lower() == "true"
 
