@@ -1,6 +1,11 @@
 import os
+from pathlib import Path
+
 from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+import firebase_admin
+from firebase_admin import credentials, auth
 
 USE_FIREBASE = os.getenv("USE_FIREBASE", "true").lower() == "true"
 
@@ -8,43 +13,36 @@ USE_FIREBASE = os.getenv("USE_FIREBASE", "true").lower() == "true"
 bearer_scheme = HTTPBearer() if USE_FIREBASE else None
 
 if USE_FIREBASE:
-    from pathlib import Path
-    import firebase_admin
-    from firebase_admin import credentials, auth
-
-    # Initialize Firebase Admin only once
     cred = credentials.Certificate(Path(__file__).parent / "serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
-    def _verify_firebase_user(
-        http_credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    ) -> str:
-        token = http_credentials.credentials
-        try:
-            decoded_token = auth.verify_id_token(token)
-            return str(decoded_token["uid"])
-        except Exception as e:
-            raise HTTPException(status_code=401, detail="Invalid authentication") from e
 
-else:
-
-    def _verify_demo_user(request: Request) -> str:
-        demo_user = request.headers.get("X-Demo-User")
-        if not demo_user:
-            raise HTTPException(status_code=401, detail="Missing X-Demo-User header")
-        return demo_user
+async def firebase_user(
+    http_credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+) -> str:
+    try:
+        decoded_token = auth.verify_id_token(http_credentials.credentials)
+        return str(decoded_token["uid"])
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid Firebase token")
 
 
-def verify_user(
+async def demo_user(request: Request) -> str:
+    user = request.headers.get("X-Demo-User")
+    if not user:
+        raise HTTPException(status_code=401, detail="Missing X-Demo-User header")
+    return user
+
+
+async def verify_user(
     request: Request,
     http_credentials: HTTPAuthorizationCredentials | None = (
-        Depends(bearer_scheme) if USE_FIREBASE else None
+        Depends(HTTPBearer()) if USE_FIREBASE else Depends(lambda: None)
     ),
 ) -> str:
     if USE_FIREBASE:
-        if http_credentials is not None:
-            return _verify_firebase_user(http_credentials)
-        else:
-            raise HTTPException(status_code=401, detail="Invalid authentication")
+        if not http_credentials:
+            raise HTTPException(status_code=401, detail="Missing auth token")
+        return await firebase_user(http_credentials)
     else:
-        return _verify_demo_user(request)
+        return await demo_user(request)
