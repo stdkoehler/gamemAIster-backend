@@ -12,6 +12,7 @@ from src.llmclient.llm_parameters import LLMConfig
 
 from src.brain.oracle import (
     BaseOracle,
+    CustomOracle,
     ExpanseOracle,
     SeventhSeaOracle,
     ShadowrunOracle,
@@ -90,6 +91,10 @@ class Gamemaster:
                 mission_prompt = prompt_dir / "expanse" / "expanse_mission_prompt.txt"
                 system_prompt = prompt_dir / "expanse" / "expanse_system_prompt.txt"
             self._game_name = "The Expanse RPG"
+        elif game_type == api_schema_mission.GameType.CUSTOM:
+            mission_prompt = prompt_dir / "custom" / "custom_mission_prompt.txt"
+            system_prompt = prompt_dir / "custom" / "custom_system_prompt.txt"
+            self._game_name = "Custom RPG"
         else:
             raise ValueError(f"Unknown game type: {game_type}")
 
@@ -168,6 +173,9 @@ class Gamemaster:
             oracle = ExpanseOracle(
                 llm_client=self._llm_client_reasoning, non_hero_mode=self._non_hero_mode
             )
+            oracle_topic = oracle.mission(background)
+        elif self._game_type == api_schema_mission.GameType.CUSTOM:
+            oracle = CustomOracle(llm_client=self._llm_client_reasoning)
             oracle_topic = oracle.mission(background)
         else:
             oracle_topic = ""

@@ -275,6 +275,23 @@ class CthulhuOracle(BaseOracle):
         }
 
 
+class CustomOracle(BaseOracle):
+    """
+    Oracle for Custom missions, using external JSON definitions.
+    """
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            config_filename="custom.json",
+            prompt_filename="custom/custom_background_mission_aligner.txt",
+        )
+
+    def _assemble_proposal_seed(self) -> MissionSeed:
+        candidate = self._roll()
+        return candidate
+
+
 # Example usage
 def main() -> None:
     # set pythonpath to src
@@ -306,20 +323,20 @@ def main() -> None:
     #     ),
     # )
     # Expanse
-    sr = ExpanseOracle(llm_client=llm_client_local)
-    print(
-        "Expanse Seed:",
-        sr.mission(
-            "Luna City, Laconia Era. The crew operates a small freight hauler called the Meridian Runner, struggling to make ends meet under the strict regulations of the Laconian Empire. After the Ring Gates reopened, they've been running legitimate cargo between Sol system stations, but their mixed crew of former Belters and Inner Planet refugees has made them targets of suspicion from Laconian authorities who view any non-Imperial crew as potential insurgents."
-        ),
-    )
-    sr = ExpanseOracle(llm_client=llm_client_local, non_hero_mode=True)
-    print(
-        "Expanse Seed:",
-        sr.mission(
-            "I'm David Lahoola, a belter on an ice trawler in the Belt. It's pre-canterbury era and we're scraping by, but the crew is tight-knit. We just started our return leg to Ceres after a long haul."
-        ),
-    )
+    # sr = ExpanseOracle(llm_client=llm_client_local)
+    # print(
+    #     "Expanse Seed:",
+    #     sr.mission(
+    #         "Luna City, Laconia Era. The crew operates a small freight hauler called the Meridian Runner, struggling to make ends meet under the strict regulations of the Laconian Empire. After the Ring Gates reopened, they've been running legitimate cargo between Sol system stations, but their mixed crew of former Belters and Inner Planet refugees has made them targets of suspicion from Laconian authorities who view any non-Imperial crew as potential insurgents."
+    #     ),
+    # )
+    # sr = ExpanseOracle(llm_client=llm_client_local, non_hero_mode=True)
+    # print(
+    #     "Expanse Seed:",
+    #     sr.mission(
+    #         "I'm David Lahoola, a belter on an ice trawler in the Belt. It's pre-canterbury era and we're scraping by, but the crew is tight-knit. We just started our return leg to Ceres after a long haul."
+    #     ),
+    # )
     # # Cthulhu
     # ct = CthulhuOracle(llm_client=llm_client_local)
     # print(
@@ -328,6 +345,13 @@ def main() -> None:
     #         "Elias Ellinghouse is a antiquarian owning a small shop in Lafayette, Lousisiana. He has not yet had contact with any unnatural phenomenon, but is a dedicated collector of peculiar items."
     #     ),
     # )
+    sr = CustomOracle(llm_client=llm_client_local)
+    print(
+        "Custom Seed:",
+        sr.mission(
+            "I'm Doromir, a farmer in Starigard. I have a dispute about farmland with my neighbor and need to resolve it."
+        ),
+    )
 
 
 if __name__ == "__main__":
