@@ -117,7 +117,12 @@ class SummaryMemory:
 
         # remove content between <think>  tags
         response_wo_think = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
-        json_string = extract_json_schema(response_wo_think)
+        try:
+            json_string = extract_json_schema(response_wo_think)
+        except ValueError as exc:
+            raise ValueError(
+                f"LLM response does not contain valid JSON:\n{response_wo_think}"
+            ) from exc
 
         try:
             data = json.loads(json_string)
