@@ -225,7 +225,14 @@ class SummaryMemory:
 
         response = self._llm_client.chat_completion(messages=messages, reasoning=True)
 
-        json_string = extract_json_schema(response)
+        try:
+            json_string = extract_json_schema(response)
+        except ValueError:
+            logger.log_summary(
+                llm_input=log_prompt,
+                raw_output=response,
+                processed_output="Parsing Error",
+            )
 
         try:
             summary_obj: dict[str, str] = json.loads(json_string)
