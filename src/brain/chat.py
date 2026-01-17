@@ -180,6 +180,7 @@ class SummaryMemory:
         log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
         llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
+        llm_config.max_tokens = 8192
 
         response = self._llm_client.chat_completion(
             messages=messages, reasoning=True, llm_config=llm_config
