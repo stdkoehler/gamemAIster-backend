@@ -124,8 +124,8 @@ class LLMClientLocal(LLMClientBase):
         return [
             {
                 "role": "system",
-                # "content": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.", # Hernes
-                "content": "A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown to format your response. Write both your thoughts and summary in the same language as the task posed by the user. NEVER use \boxed{} in your response.\n\nYour thinking process must follow the template below:\n<think>\nYour thoughts or/and draft, like working through an exercise on scratch paper. Be as casual and as long as you want until you are confident to generate a correct answer.\n</think>\n\nHere, provide a concise summary that reflects your reasoning and presents a clear final answer to the user. Don't mention that this is a summary.",  # Magistral
+                "content": "You are a deep thinking AI, you may use extremely long chains of thought to deeply consider the problem and deliberate with yourself via systematic reasoning processes to help come to a correct solution prior to answering. You should enclose your thoughts and internal monologue inside <think> </think> tags, and then provide your solution or response to the problem.",  # DeepHermes3 Mistral
+                # "content": "A user will ask you to solve a task. You should first draft your thinking process (inner monologue) until you have derived the final answer. Afterwards, write a self-contained summary of your thoughts (i.e. your summary should be succinct but contain all the critical steps you needed to reach the conclusion). You should use Markdown to format your response. Write both your thoughts and summary in the same language as the task posed by the user. NEVER use \boxed{} in your response.\n\nYour thinking process must follow the template below:\n<think>\nYour thoughts or/and draft, like working through an exercise on scratch paper. Be as casual and as long as you want until you are confident to generate a correct answer.\n</think>\n\nHere, provide a concise summary that reflects your reasoning and presents a clear final answer to the user. Don't mention that this is a summary.",  # Magistral, Gemma3
             }
         ] + user_msgs
 
@@ -194,7 +194,7 @@ class LLMClientLocal(LLMClientBase):
             headers=self._headers,
             json=data,
             stream=False,
-            timeout=360,
+            timeout=3600,
         )
         text = json.loads(response.text)["choices"][0]["message"]["content"]
         return text if text is not None else ""
@@ -514,7 +514,7 @@ class LLMClientClaude(LLMClientBase):
     """
 
     def __init__(
-        self, api_key: str, model: str = "claude-3-5-haiku-latest"
+        self, api_key: str, model: str = "claude-sonnet-4-5"
     ):  # adjust default as needed
         # Initialize the GenAI client with provided API key
         self._client = anthropic.Anthropic(api_key=api_key)
@@ -561,13 +561,6 @@ class LLMClientClaude(LLMClientBase):
 
         system_instruction, messages = self._convert_messages(messages=messages)
 
-        if reasoning and not (
-            self._model == "claude-3-7-sonnet-latest"
-            or self._model == "claude-3-7-sonnet-20250219"
-        ):
-            reasoning = False
-            print(f"Reasoning disabled for {self._model}")
-
         with self._client.messages.stream(
             model=self._model,
             max_tokens=llm_config.max_tokens,
@@ -591,13 +584,6 @@ class LLMClientClaude(LLMClientBase):
     ) -> str:
 
         system_instruction, messages = self._convert_messages(messages=messages)
-
-        if reasoning and not (
-            self._model == "claude-3-7-sonnet-latest"
-            or self._model == "claude-3-7-sonnet-20250219"
-        ):
-            reasoning = False
-            print(f"Reasoning disabled for {self._model}")
 
         response = self._client.messages.create(
             model=self._model,

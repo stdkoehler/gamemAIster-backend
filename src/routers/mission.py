@@ -91,11 +91,11 @@ def new_mission(
             user_id=user,
             llm_client_chat=LLMClientClaude(
                 api_key=api_key,
-                model="claude-3-7-sonnet-latest",
+                model="claude-sonnet-4-5",
             ),
             llm_client_reasoning=LLMClientClaude(
                 api_key=api_key,
-                model="claude-3-7-sonnet-latest",
+                model="claude-sonnet-4-5",
             ),
             game_type=payload.game_type,
             non_hero_mode=payload.non_hero_mode,
