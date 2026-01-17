@@ -45,6 +45,7 @@ Use this hierarchy to determine scene breaks (highest to lowest priority):
 - **Incomplete → Complete**: Mark a scene complete when it reaches a natural resolution, transition, or clear narrative break
 - **Multiple Scenes**: Long content may contain several complete scenes followed by one incomplete scene
 - **Final Scene Rule**: The last scene in output should typically be incomplete unless the session definitively concludes
+- **Token sparsity**: You may receive scenes form the user that are already marked as completed. Do not return these scenes in your response.
 
 ### Character Tracking System
 Use this format for character arrays:
@@ -283,6 +284,7 @@ Before finalizing output, verify:
 - [ ] Summaries provide standalone comprehensibility with complete detail
 - [ ] __RPG__ lore and terminology are properly applied
 - [ ] **SUMMARY LENGTH** is comprehensive - not sparse or abbreviated
+- [ ] No scene may be in the output that was sent to you marked already as completed
 
 ## Processing Instructions
 
