@@ -1,5 +1,6 @@
 """Chat Conversation Memory"""
 
+import copy
 import re
 import json
 from dataclasses import dataclass
@@ -10,6 +11,7 @@ from pydantic import ValidationError
 
 
 from src.llmclient.llm_parameters import LLMConfig
+from src.llmclient.llm_parameters_gemma import LLM_CONFIG_THINKING, LLM_CONFIG_STORY
 from src.llmclient.llm_client import LLMClientBase
 from src.crud.crud import crud_instance
 
@@ -107,8 +109,8 @@ class SummaryMemory:
         ### Scene Prompt
         log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
-        llm_config = LLMConfig()
-        llm_config.temperature = 0.7
+        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
+        # llm_config.temperature = 0.7
         llm_config.max_tokens = 8192
 
         response = self._llm_client.chat_completion(
@@ -177,7 +179,11 @@ class SummaryMemory:
         ### Entity Prompt
         log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
-        response = self._llm_client.chat_completion(messages=messages, reasoning=True)
+        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
+
+        response = self._llm_client.chat_completion(
+            messages=messages, reasoning=True, llm_config=llm_config
+        )
 
         json_string = extract_json_schema(response)
 
@@ -223,7 +229,11 @@ class SummaryMemory:
         ### Summary Prompt
         log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
-        response = self._llm_client.chat_completion(messages=messages, reasoning=True)
+        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
+
+        response = self._llm_client.chat_completion(
+            messages=messages, reasoning=True, llm_config=llm_config
+        )
 
         try:
             json_string = extract_json_schema(response)
@@ -543,7 +553,7 @@ class SummaryChat:
         else:
             messages.append({"role": "user", "content": user_input})
 
-        llm_config = LLMConfig()
+        llm_config = copy.deepcopy(LLM_CONFIG_STORY)
         llm_config.stop = ["PL", "###", "/FIN"]
 
         llm_response = ""

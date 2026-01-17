@@ -2,6 +2,7 @@
 
 import json
 
+import copy
 from typing import AsyncGenerator
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
 from src.llmclient.llm_client import LLMClientBase
 from src.llmclient.llm_parameters import LLMConfig
+
+from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
 
 from src.brain.oracle import (
     BaseOracle,
@@ -187,6 +190,9 @@ class Gamemaster:
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
         # )
 
+        llm_config_architect = copy.deepcopy(LLM_CONFIG_ARCHITECT)
+        llm_config_architect.max_tokens = 4096
+
         llm_response = self._llm_client_reasoning.chat_completion(
             messages=[
                 {
@@ -196,7 +202,7 @@ class Gamemaster:
                 {"role": "user", "content": oracle_topic},
             ],
             reasoning=True,
-            llm_config=LLMConfig(max_tokens=4096),
+            llm_config=llm_config_architect,
         )
 
         print("### LLM Response")
