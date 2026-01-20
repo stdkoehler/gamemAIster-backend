@@ -273,45 +273,65 @@ class CRUD:
 
     def update_entities(self, mission_id: int, entity_response: EntityResponse) -> None:
         with self._sessionmaker() as session:
-            for entity in entity_response.updated_entities:
-                stmt = select(EntityMemory).where(
-                    EntityMemory.mission_id == mission_id,
-                    EntityMemory.name == entity.name,
-                )
-                existing_entity = session.execute(stmt).scalar_one_or_none()
+            try:
+                # Single query to fetch all existing entities for this mission
+                existing: dict[str, EntityMemory] = {
+                    e.name: e
+                    for e in session.execute(
+                        select(EntityMemory).where(
+                            EntityMemory.mission_id == mission_id
+                        )
+                    ).scalars()
+                }
 
-                if existing_entity is not None:
-                    if entity.updated_name == "DELETE":
-                        session.delete(existing_entity)
+                # Process updates and deletions
+                for updated_entity in entity_response.updated_entities:
+                    db_entity = existing.get(updated_entity.name)
+
+                    if db_entity:
+                        if updated_entity.updated_name == "DELETE":
+                            session.delete(db_entity)
+                            # Remove from our tracking dict so we don't try to update it later
+                            existing.pop(updated_entity.name, None)
+                        else:
+                            # Update summary and name
+                            db_entity.summary = updated_entity.summary
+                            # Update the dict key if name changed
+                            if updated_entity.updated_name != updated_entity.name:
+                                existing.pop(updated_entity.name, None)
+                                existing[updated_entity.updated_name] = db_entity
+                            db_entity.name = updated_entity.updated_name
                     else:
-                        existing_entity.summary = entity.summary
-                        existing_entity.name = entity.updated_name
-                else:
-                    print(f"Updated Entity {entity.name} not found in the database.")
-            session.commit()
+                        print(
+                            f"Warning: Updated entity '{updated_entity.name}' not found in database for mission {mission_id}"
+                        )
 
-            for entity in entity_response.entities:
-                stmt = select(EntityMemory).where(
-                    EntityMemory.mission_id == mission_id,
-                    EntityMemory.name == entity.name,
-                )
-                existing_entity = session.execute(stmt).scalar_one_or_none()
+                # Process new entities and updates
+                for entity in entity_response.entities:
+                    db_entity = existing.get(entity.name)
 
-                if existing_entity:
-                    existing_entity.summary += "; " + entity.summary
-                else:
-                    new_entity = EntityMemory(
-                        mission_id=mission_id,
-                        name=entity.name,
-                        type=entity.type,
-                        summary=entity.summary,
-                    )
-                    session.add(new_entity)
+                    if db_entity:
+                        # Append to existing summary
+                        db_entity.summary += "; " + entity.summary
+                    else:
+                        # Create new entity
+                        new_entity = EntityMemory(
+                            mission_id=mission_id,
+                            name=entity.name,
+                            type=entity.type,
+                            summary=entity.summary,
+                        )
+                        session.add(new_entity)
+                        # Add to tracking dict with proper type
+                        existing[entity.name] = new_entity
 
-                try:
-                    session.commit()
-                except IntegrityError:
-                    session.rollback()
+                # Single commit for all operations
+                session.commit()
+
+            except Exception as e:
+                session.rollback()
+                print(f"Error updating entities for mission {mission_id}: {e}")
+                raise
 
     def get_scenes(self, mission_id: int) -> list[Scene]:
         with self._sessionmaker() as session:
