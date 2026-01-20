@@ -191,6 +191,10 @@ class Gamemaster:
         # )
 
         llm_config_architect = copy.deepcopy(LLM_CONFIG_ARCHITECT)
+        # max_tokens is the max tokens the LLM may generate in the response
+        # total context window = input tokens + max_tokens
+        # our input token is already quite large, so we limit max_tokens to 4096
+        # (this includes thinking process for some local models, e.g. gemma3)
         llm_config_architect.max_tokens = 4096
 
         llm_response = self._llm_client_reasoning.chat_completion(
