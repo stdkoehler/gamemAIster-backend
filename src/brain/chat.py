@@ -51,7 +51,7 @@ class SummaryMemory:
         game_name: str,
         last_k: int,
         mission_id: int,
-        min_summary_tokens: int = 1024,
+        min_summary_tokens: int = 2048,
     ):
         self._llm_client = llm_client
         self._summary_template = summary_template
@@ -152,6 +152,12 @@ class SummaryMemory:
                 f"LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
+            logger.log_scene(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json=json_string,
+                processed_output=str(exc),
+            )
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
@@ -224,6 +230,12 @@ class SummaryMemory:
                 f"LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
+            logger.log_entity(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json=json_string,
+                processed_output=str(exc),
+            )
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
@@ -293,6 +305,12 @@ class SummaryMemory:
                 f"LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
+            logger.log_summary(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json=json_string,
+                processed_output=str(exc),
+            )
             raise ValueError(
                 f"LLM response is missing required keys: {json_string}"
             ) from exc
@@ -307,15 +325,44 @@ class SummaryMemory:
         return new_summary
 
     def _try_summarize(self) -> None:
-        """summarize"""
-        interaction_candidates = self._history[self._n_summarized : -self._last_k]
-        text = "\n".join(
-            [
-                interaction.format_interaction_summary()
-                for interaction in interaction_candidates
-            ]
-        )
-        if self._llm_client.count_tokens(text) > self._min_summary_tokens:
+        """
+        Summarize the history using a content-aware window.
+        We gather the minimum number of interactions required to satisfy
+        _min_summary_tokens, ensuring we don't process too little (saving cost)
+        or too much (saving input space).
+        """
+        eligible_history = self._history[self._n_summarized : -self._last_k]
+        if not eligible_history:
+            return
+
+        def get_formatted_text(candidates: list[Interaction]) -> str:
+            return "\n".join([c.format_interaction_summary() for c in candidates])
+
+        # Find the smallest 'n' that satisfies the token threshold
+        n = 0
+        current_tokens = 0
+        text = ""
+
+        while n < len(eligible_history):
+            n += 1
+            interaction_candidates = eligible_history[:n]
+            text = get_formatted_text(interaction_candidates)
+            current_tokens = self._llm_client.count_tokens(text)
+
+            # Stop as soon as we have enough content to justify the cost
+            if current_tokens > self._min_summary_tokens:
+                break
+
+        # Final Gate: We only proceed if we actually met the threshold
+        # (or if we reached the end of eligible history and want to force a summary)
+        if current_tokens > self._min_summary_tokens:
+            print(
+                "Processing summary for",
+                n,
+                "interactions, leading to n_summarized =",
+                self._n_summarized + n,
+            )
+
             text = re.sub(r"---\s*What do you do\?\s*", "", text)
             entity_response = self.extract_entities(text)
             scene_response = self.scene_summary(text)
@@ -329,6 +376,16 @@ class SummaryMemory:
             crud_instance.update_scenes(self._mission_id, scene_response)
             self._entities = crud_instance.get_entities(self._mission_id)
             self._scenes = crud_instance.get_scenes(self._mission_id)
+        else:
+            print(
+                "Skipping summary for",
+                n,
+                "interactions (only",
+                current_tokens,
+                "tokens / threshold of",
+                self._min_summary_tokens,
+                ").",
+            )
 
     def append(self, interaction: Interaction) -> None:
         """
@@ -504,7 +561,7 @@ class SummaryChat:
         game_name: str,
         mission_id: int,
         last_k: int = 2,
-        min_summary_tokens: int = 1024,
+        min_summary_tokens: int = 2048,
     ):
         self._llm_client_chat = llm_client_chat
         self._role = role
