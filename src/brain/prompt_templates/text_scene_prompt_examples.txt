@@ -298,3 +298,8 @@ Before finalizing output, verify:
 6. **Format Response**: Return only the specified JSON structure
 
 Remember: Summaries must be comprehensive enough that a reader unfamiliar with previous sessions can understand the complete sequence of events, characters involved, and story significance. **EVERY ACTION BY EVERY CHARACTER MUST BE INCLUDED.** **EVERY EVENT MUST BE DOCUMENTED.** **INCLUDE WORLDBUILDING DESCRIPTIONS ONLY WHEN RELEVANT FOR THE STORY; NO FLAVOR TEXT**
+
+## Process the following input:
+
+**DO NOT REPLY AS PLAYER OR GAMEMASTER**
+

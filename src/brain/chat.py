@@ -92,7 +92,7 @@ class SummaryMemory:
         last_scene_id = max([scene.id for scene in scenes], default=0)
         scenes_json = json.dumps([scene.model_dump() for scene in scenes])
 
-        scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text}}}\n```'
+        scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text}}}\n\n**Output:**\n```'
         messages = [
             {
                 "role": "system",
@@ -122,6 +122,12 @@ class SummaryMemory:
         try:
             json_string = extract_json_schema(response_wo_think)
         except ValueError as exc:
+            logger.log_scene(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json="",
+                processed_output="JSON Parsing Error",
+            )
             raise ValueError(
                 f"LLM response does not contain valid JSON:\n{response_wo_think}"
             ) from exc
@@ -136,7 +142,12 @@ class SummaryMemory:
                 scene for scene in scene_response if scene.id >= last_scene_id
             ]
         except (json.decoder.JSONDecodeError, ValidationError) as exc:
-            logger.log_scene(llm_input=log_prompt, raw_output=response)
+            logger.log_scene(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json=json_string,
+                processed_output="Validation Error",
+            )
             raise ValueError(
                 f"LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
@@ -148,6 +159,7 @@ class SummaryMemory:
         logger.log_scene(
             llm_input=log_prompt,
             raw_output=response,
+            extracted_json=json_string,
             processed_output=json_string,
         )
 
@@ -186,12 +198,28 @@ class SummaryMemory:
             messages=messages, reasoning=True, llm_config=llm_config
         )
 
-        json_string = extract_json_schema(response)
+        try:
+            json_string = extract_json_schema(response)
+        except ValueError as exc:
+            logger.log_entity(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json="",
+                processed_output="JSON Parsing Error",
+            )
+            raise ValueError(
+                f"LLM response does not contain valid JSON:\n{response}"
+            ) from exc
 
         try:
             entity_response = EntityResponse.model_validate_json(json_string)
         except (json.decoder.JSONDecodeError, ValidationError) as exc:
-            logger.log_entity(llm_input=log_prompt, raw_output=response)
+            logger.log_entity(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json=json_string,
+                processed_output="Validation Error",
+            )
             raise ValueError(
                 f"LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
@@ -203,6 +231,7 @@ class SummaryMemory:
         logger.log_entity(
             llm_input=log_prompt,
             raw_output=response,
+            extracted_json=json_string,
             processed_output=json_string,
         )
 
@@ -239,18 +268,27 @@ class SummaryMemory:
 
         try:
             json_string = extract_json_schema(response)
-        except ValueError:
+        except ValueError as exc:
             logger.log_summary(
                 llm_input=log_prompt,
                 raw_output=response,
-                processed_output="Parsing Error",
+                extracted_json="",
+                processed_output="JSON Parsing Error",
             )
+            raise ValueError(
+                f"LLM response does not contain valid JSON:\n{response}"
+            ) from exc
 
         try:
             summary_obj: dict[str, str] = json.loads(json_string)
             new_summary = summary_obj["summary"]
         except (json.decoder.JSONDecodeError, ValidationError) as exc:
-            logger.log_summary(llm_input=log_prompt, raw_output=response)
+            logger.log_summary(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json=json_string,
+                processed_output="Validation Error",
+            )
             raise ValueError(
                 f"LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
@@ -262,6 +300,7 @@ class SummaryMemory:
         logger.log_summary(
             llm_input=log_prompt,
             raw_output=response,
+            extracted_json=json_string,
             processed_output=json_string,
         )
 
@@ -277,6 +316,7 @@ class SummaryMemory:
             ]
         )
         if self._llm_client.count_tokens(text) > self._min_summary_tokens:
+            text = re.sub(r"---\s*What do you do\?\s*", "", text)
             entity_response = self.extract_entities(text)
             scene_response = self.scene_summary(text)
             self._summary = self.summarize(text)
