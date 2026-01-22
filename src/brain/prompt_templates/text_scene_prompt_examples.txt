@@ -299,7 +299,29 @@ Before finalizing output, verify:
 
 Remember: Summaries must be comprehensive enough that a reader unfamiliar with previous sessions can understand the complete sequence of events, characters involved, and story significance. **EVERY ACTION BY EVERY CHARACTER MUST BE INCLUDED.** **EVERY EVENT MUST BE DOCUMENTED.** **INCLUDE WORLDBUILDING DESCRIPTIONS ONLY WHEN RELEVANT FOR THE STORY; NO FLAVOR TEXT**
 
-## Process the following input:
+## Start Procesing Task:
 
-**DO NOT REPLY AS PLAYER OR GAMEMASTER**
-
+Start processing the provided *input* and create a JSON as *output*
+Remember the schema:
+```json
+{
+  "scenes": [
+    {
+      "id": 1,
+      "title": "Descriptive Scene Title",
+      "characters": ["Character", "Character (mentioned)", ...],
+      "location": "Primary scene location",
+      "summary": "Complete scene summary",
+      "completed": "true"
+    },
+    {
+      "id": 2,
+      "title": "Current Scene Title",
+      "characters": ["Character", "Character (mentioned)", ...],
+      "location": "Primary scene location",
+      "summary": "Current scene summary",
+      "completed": "false"
+    }
+  ]
+}
+```
