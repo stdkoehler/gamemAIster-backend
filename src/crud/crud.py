@@ -274,7 +274,7 @@ class CRUD:
     def update_entities(self, mission_id: int, entity_response: EntityResponse) -> None:
         with self._sessionmaker() as session:
             try:
-                # Single query to fetch all existing entities for this mission
+                # Fetch existing entities
                 existing: dict[str, EntityMemory] = {
                     e.name: e
                     for e in session.execute(
@@ -284,37 +284,48 @@ class CRUD:
                     ).scalars()
                 }
 
-                # Process updates and deletions
+                # 1. HANDLE DELETIONS FIRST (Standard and Overwrites)
                 for updated_entity in entity_response.updated_entities:
                     db_entity = existing.get(updated_entity.name)
+                    if not db_entity:
+                        continue
 
+                    # Case A: Explicit deletion request
+                    if updated_entity.updated_name == "DELETE":
+                        session.delete(db_entity)
+                        existing.pop(updated_entity.name, None)
+
+                    # Case B: Rename Collision (Delete the target to make room)
+                    elif updated_entity.updated_name != updated_entity.name:
+                        collision_entity = existing.get(updated_entity.updated_name)
+                        if collision_entity:
+                            session.delete(collision_entity)
+                            # We don't pop from existing yet, we'll overwrite it in step 2
+
+                # IMPORTANT: Flush deletions to the DB so the names are "freed up"
+                session.flush()
+
+                # 2. HANDLE RENAMES AND UPDATES
+                for updated_entity in entity_response.updated_entities:
+                    if updated_entity.updated_name == "DELETE":
+                        continue
+
+                    db_entity = existing.get(updated_entity.name)
                     if db_entity:
-                        if updated_entity.updated_name == "DELETE":
-                            session.delete(db_entity)
-                            # Remove from our tracking dict so we don't try to update it later
+                        if updated_entity.updated_name != updated_entity.name:
+                            # Update dictionary and object name
                             existing.pop(updated_entity.name, None)
-                        else:
-                            # Update summary and name
-                            db_entity.summary = updated_entity.summary
-                            # Update the dict key if name changed
-                            if updated_entity.updated_name != updated_entity.name:
-                                existing.pop(updated_entity.name, None)
-                                existing[updated_entity.updated_name] = db_entity
+                            existing[updated_entity.updated_name] = db_entity
                             db_entity.name = updated_entity.updated_name
-                    else:
-                        print(
-                            f"Warning: Updated entity '{updated_entity.name}' not found in database for mission {mission_id}"
-                        )
 
-                # Process new entities and updates
+                        db_entity.summary = updated_entity.summary
+
+                # 3. PROCESS NEW ENTITIES
                 for entity in entity_response.entities:
                     db_entity = existing.get(entity.name)
-
                     if db_entity:
-                        # Append to existing summary
                         db_entity.summary += "; " + entity.summary
                     else:
-                        # Create new entity
                         new_entity = EntityMemory(
                             mission_id=mission_id,
                             name=entity.name,
@@ -322,10 +333,8 @@ class CRUD:
                             summary=entity.summary,
                         )
                         session.add(new_entity)
-                        # Add to tracking dict with proper type
                         existing[entity.name] = new_entity
 
-                # Single commit for all operations
                 session.commit()
 
             except Exception as e:
