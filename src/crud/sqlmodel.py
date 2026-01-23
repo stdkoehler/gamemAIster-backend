@@ -16,6 +16,7 @@ class Mission(Base):
     name: Mapped[str] = mapped_column(String(50))
     game_type: Mapped[str] = mapped_column(String(50))
     non_hero_mode: Mapped[bool] = mapped_column(Boolean, default=False)
+    oracle: Mapped[bool] = mapped_column(Boolean, default=True)
     persist: Mapped[bool] = mapped_column(Boolean)
 
 

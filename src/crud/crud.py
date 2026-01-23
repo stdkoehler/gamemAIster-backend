@@ -78,6 +78,14 @@ class CRUD:
                 raise ValueError(f"No mission with id {mission_id}")
             return result
 
+    def get_mission_oracle(self, mission_id: int) -> bool:
+        with self._sessionmaker() as session:
+            stmt = select(Mission.oracle).where(Mission.mission_id == mission_id)
+            result = session.execute(stmt).scalar()
+            if result is None:
+                raise ValueError(f"No mission with id {mission_id}")
+            return result
+
     def insert_mission(
         self, mission: api_schema_mission.Mission
     ) -> api_schema_mission.Mission:
@@ -88,6 +96,7 @@ class CRUD:
                 name=mission.name,
                 game_type=mission.game_type.value,
                 non_hero_mode=mission.non_hero_mode,
+                oracle=mission.oracle,
                 persist=False,
             )
             session.add(db_mission)
@@ -137,6 +146,7 @@ class CRUD:
             game_type=api_schema_mission.GameType(result.Mission.game_type),
             background=result.MissionDescription.background,
             non_hero_mode=result.Mission.non_hero_mode,
+            oracle=result.Mission.oracle,
         )
 
     def list_missions(self, user_id: str) -> list[api_schema_mission.Mission]:
@@ -163,6 +173,7 @@ class CRUD:
                     game_type=api_schema_mission.GameType(result.Mission.game_type),
                     background=result.MissionDescription.background,
                     non_hero_mode=result.Mission.non_hero_mode,
+                    oracle=result.Mission.oracle,
                 )
                 for result in results
             ]

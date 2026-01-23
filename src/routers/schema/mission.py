@@ -23,6 +23,7 @@ class Mission(BaseModel):
     game_type: GameType
     background: str
     non_hero_mode: bool
+    oracle: bool
 
     @model_validator(mode="after")
     def check_non_hero_mode(self) -> Mission:
@@ -45,6 +46,7 @@ class NewMissionPayload(BaseModel):
     game_type: GameType
     background: str
     non_hero_mode: bool = False
+    oracle: bool = True
 
     @model_validator(mode="after")
     def check_non_hero_mode(self) -> NewMissionPayload:
