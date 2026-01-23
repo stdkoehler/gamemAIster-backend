@@ -10,9 +10,8 @@ class Base(DeclarativeBase):
 
 class Mission(Base):
     __tablename__ = "Mission"
-    mission_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    mission_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(50), nullable=False)
     name_custom: Mapped[str] = mapped_column(String(50), default="")
     name: Mapped[str] = mapped_column(String(50))
     game_type: Mapped[str] = mapped_column(String(50))
@@ -72,7 +71,7 @@ class SceneMemory(Base):
     """
 
     __tablename__ = "SceneMemory"
-    scene_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    scene_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     mission_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE"), primary_key=True
     )

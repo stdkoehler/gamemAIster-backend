@@ -1,3 +1,6 @@
+# auth
+src/auth/serviceAccountKey.json
+
 # dev stuff
 dev/**/*.json
 cert/

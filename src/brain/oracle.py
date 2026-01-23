@@ -1,4 +1,5 @@
 import json
+import copy
 import random
 from typing import TypeAlias
 from pathlib import Path
@@ -7,6 +8,7 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, RootModel
 
 from src.llmclient.llm_client import LLMClientBase
+from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
 from src.brain.json_tools import extract_json_schema
 
 MissionSeed: TypeAlias = dict[str, str | list[str]]
@@ -77,7 +79,12 @@ class BaseOracle(ABC):
             {"role": "system", "content": self._alignment_prompt},
             {"role": "user", "content": json.dumps(proposal)},
         ]
-        response = self._llm_client.chat_completion(messages=messages, reasoning=True)
+
+        llm_config = copy.deepcopy(LLM_CONFIG_ARCHITECT)
+
+        response = self._llm_client.chat_completion(
+            messages=messages, reasoning=True, llm_config=llm_config
+        )
         print("### LLM Alignment")
         print(proposal)
         print(response)
@@ -275,6 +282,23 @@ class CthulhuOracle(BaseOracle):
         }
 
 
+class CustomOracle(BaseOracle):
+    """
+    Oracle for Custom missions, using external JSON definitions.
+    """
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            config_filename="custom.json",
+            prompt_filename="custom/custom_background_mission_aligner.txt",
+        )
+
+    def _assemble_proposal_seed(self) -> MissionSeed:
+        candidate = self._roll()
+        return candidate
+
+
 # Example usage
 def main() -> None:
     # set pythonpath to src
@@ -306,20 +330,20 @@ def main() -> None:
     #     ),
     # )
     # Expanse
-    sr = ExpanseOracle(llm_client=llm_client_local)
-    print(
-        "Expanse Seed:",
-        sr.mission(
-            "Luna City, Laconia Era. The crew operates a small freight hauler called the Meridian Runner, struggling to make ends meet under the strict regulations of the Laconian Empire. After the Ring Gates reopened, they've been running legitimate cargo between Sol system stations, but their mixed crew of former Belters and Inner Planet refugees has made them targets of suspicion from Laconian authorities who view any non-Imperial crew as potential insurgents."
-        ),
-    )
-    sr = ExpanseOracle(llm_client=llm_client_local, non_hero_mode=True)
-    print(
-        "Expanse Seed:",
-        sr.mission(
-            "I'm David Lahoola, a belter on an ice trawler in the Belt. It's pre-canterbury era and we're scraping by, but the crew is tight-knit. We just started our return leg to Ceres after a long haul."
-        ),
-    )
+    # sr = ExpanseOracle(llm_client=llm_client_local)
+    # print(
+    #     "Expanse Seed:",
+    #     sr.mission(
+    #         "Luna City, Laconia Era. The crew operates a small freight hauler called the Meridian Runner, struggling to make ends meet under the strict regulations of the Laconian Empire. After the Ring Gates reopened, they've been running legitimate cargo between Sol system stations, but their mixed crew of former Belters and Inner Planet refugees has made them targets of suspicion from Laconian authorities who view any non-Imperial crew as potential insurgents."
+    #     ),
+    # )
+    # sr = ExpanseOracle(llm_client=llm_client_local, non_hero_mode=True)
+    # print(
+    #     "Expanse Seed:",
+    #     sr.mission(
+    #         "I'm David Lahoola, a belter on an ice trawler in the Belt. It's pre-canterbury era and we're scraping by, but the crew is tight-knit. We just started our return leg to Ceres after a long haul."
+    #     ),
+    # )
     # # Cthulhu
     # ct = CthulhuOracle(llm_client=llm_client_local)
     # print(
@@ -328,6 +352,13 @@ def main() -> None:
     #         "Elias Ellinghouse is a antiquarian owning a small shop in Lafayette, Lousisiana. He has not yet had contact with any unnatural phenomenon, but is a dedicated collector of peculiar items."
     #     ),
     # )
+    sr = CustomOracle(llm_client=llm_client_local)
+    print(
+        "Custom Seed:",
+        sr.mission(
+            "I'm Doromir, a farmer in Starigard. I have a dispute about farmland with my neighbor and need to resolve it."
+        ),
+    )
 
 
 if __name__ == "__main__":

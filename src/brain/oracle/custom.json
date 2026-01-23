@@ -1,0 +1,432 @@
+{
+    "regions": [
+        {
+            "name": "Wolin Island settlement, Pomeranian coast",
+            "probability": 1.0
+        },
+        {
+            "name": "Staraya Ladoga, northern trade route junction",
+            "probability": 1.0
+        },
+        {
+            "name": "Obotrite territory near modern-day Schwerin",
+            "probability": 1.0
+        },
+        {
+            "name": "Veleti lands along Peene River valley",
+            "probability": 0.9
+        },
+        {
+            "name": "Lutici territory, sacred grove region",
+            "probability": 0.9
+        },
+        {
+            "name": "Polabian settlements near Elbe confluence",
+            "probability": 0.9
+        },
+        {
+            "name": "Rugian coastal stronghold",
+            "probability": 0.8
+        },
+        {
+            "name": "Sorbian river crossing village",
+            "probability": 0.8
+        },
+        {
+            "name": "Wendish forest clearing settlement",
+            "probability": 0.8
+        },
+        {
+            "name": "Pomeranian amber trading post",
+            "probability": 0.8
+        },
+        {
+            "name": "Baltic island fishing community",
+            "probability": 0.7
+        },
+        {
+            "name": "Inland Slavic hill fort",
+            "probability": 0.7
+        },
+        {
+            "name": "River mouth trading hub",
+            "probability": 0.7
+        },
+        {
+            "name": "Border settlement facing Saxon lands",
+            "probability": 0.7
+        },
+        {
+            "name": "Deep forest hunter's village",
+            "probability": 0.6
+        },
+        {
+            "name": "Mountain pass farming community",
+            "probability": 0.6
+        },
+        {
+            "name": "Seasonal fishing camp turned permanent",
+            "probability": 0.6
+        },
+        {
+            "name": "Former Roman road trading stop",
+            "probability": 0.5
+        },
+        {
+            "name": "Sacred lake ceremonial center",
+            "probability": 0.5
+        },
+        {
+            "name": "Salt mining settlement",
+            "probability": 0.5
+        }
+    ],
+    "characterRoles": [
+        {
+            "name": "Village blacksmith, free craftsman",
+            "probability": 1.0
+        },
+        {
+            "name": "Clan chief responsible for multiple villages",
+            "probability": 1.0
+        },
+        {
+            "name": "Merchant's daughter, unmarried but educated in trade",
+            "probability": 1.0
+        },
+        {
+            "name": "Experienced warrior sworn to local chief",
+            "probability": 0.9
+        },
+        {
+            "name": "Wise woman and healer serving the community",
+            "probability": 0.9
+        },
+        {
+            "name": "Master boat builder and river pilot",
+            "probability": 0.9
+        },
+        {
+            "name": "Traveling merchant with established trade routes",
+            "probability": 0.9
+        },
+        {
+            "name": "Farmer with expanding homestead",
+            "probability": 0.8
+        },
+        {
+            "name": "Young priest serving the old gods",
+            "probability": 0.8
+        },
+        {
+            "name": "Skilled weaver and textile trader",
+            "probability": 0.8
+        },
+        {
+            "name": "Master hunter and fur trapper",
+            "probability": 0.8
+        },
+        {
+            "name": "Village elder and keeper of laws",
+            "probability": 0.7
+        },
+        {
+            "name": "Amber carver and jewelry maker",
+            "probability": 0.7
+        },
+        {
+            "name": "Fisherman with inherited boat and nets",
+            "probability": 0.7
+        },
+        {
+            "name": "Beekeeper and mead brewer",
+            "probability": 0.7
+        },
+        {
+            "name": "Potter serving multiple settlements",
+            "probability": 0.6
+        },
+        {
+            "name": "Leatherworker and harness maker",
+            "probability": 0.6
+        },
+        {
+            "name": "Newly freed slave learning a trade",
+            "probability": 0.6
+        },
+        {
+            "name": "Young widow managing deceased husband's affairs",
+            "probability": 0.6
+        },
+        {
+            "name": "Apprentice to master craftsman",
+            "probability": 0.6
+        },
+        {
+            "name": "Cattle herder with seasonal grazing rights",
+            "probability": 0.5
+        },
+        {
+            "name": "Salt trader working dangerous routes",
+            "probability": 0.5
+        },
+        {
+            "name": "Former warrior turned farmer",
+            "probability": 0.5
+        },
+        {
+            "name": "Village storyteller and chronicle keeper",
+            "probability": 0.5
+        },
+        {
+            "name": "Refugee from Saxon raids seeking new home",
+            "probability": 0.5
+        }
+    ],
+    "startingSituations": [
+        {
+            "name": "Iron ore shipment from inland mines is two weeks overdue, apprentice burned his hand badly",
+            "probability": 1.0
+        },
+        {
+            "name": "Saxon forces gathering to the west, rival clan disputes fishing rights, harvest was poor",
+            "probability": 1.0
+        },
+        {
+            "name": "Father considering two marriage proposals while mother insists on expanded trade knowledge first",
+            "probability": 1.0
+        },
+        {
+            "name": "Viking raiders spotted three days north, village defenses need urgent repairs",
+            "probability": 0.9
+        },
+        {
+            "name": "Key trade partner died in storm, his sons dispute inheritance and refuse to honor contracts",
+            "probability": 0.9
+        },
+        {
+            "name": "Mysterious illness spreading through livestock, threatening winter food supply",
+            "probability": 0.9
+        },
+        {
+            "name": "Sacred grove desecrated by unknown intruders, community demands justice",
+            "probability": 0.8
+        },
+        {
+            "name": "Neighboring chief demands tribute in exchange for continued peace",
+            "probability": 0.8
+        },
+        {
+            "name": "River flooding destroyed mill and grain stores just before winter",
+            "probability": 0.8
+        },
+        {
+            "name": "Accusation of using dark magic threatens reputation and safety",
+            "probability": 0.8
+        },
+        {
+            "name": "Master craftsman died without completing promised wedding jewelry for chief's daughter",
+            "probability": 0.7
+        },
+        {
+            "name": "Frankish missionaries arrived demanding conversion, dividing the community",
+            "probability": 0.7
+        },
+        {
+            "name": "Prized breeding bull stolen by raiders, threatening next year's prosperity",
+            "probability": 0.7
+        },
+        {
+            "name": "Trusted partner caught cheating in silver weight, damaging trade relationships",
+            "probability": 0.7
+        },
+        {
+            "name": "Forest fire destroyed beehives and honey stores needed for winter mead",
+            "probability": 0.6
+        },
+        {
+            "name": "Daughter eloped with unsuitable man, bringing shame to family honor",
+            "probability": 0.6
+        },
+        {
+            "name": "Danish traders offer exclusive contract but demand conversion to their customs",
+            "probability": 0.6
+        },
+        {
+            "name": "Brother returned from war changed and violent, threatening family stability",
+            "probability": 0.6
+        },
+        {
+            "name": "Ancient burial mound disturbed during farming, angering local spirits",
+            "probability": 0.6
+        },
+        {
+            "name": "Boat damaged in storm, stranding family without means of livelihood",
+            "probability": 0.5
+        },
+        {
+            "name": "Rival craftsman spreading lies about work quality to steal customers",
+            "probability": 0.5
+        },
+        {
+            "name": "Clan chief's son making unwanted advances, creating dangerous political situation",
+            "probability": 0.5
+        },
+        {
+            "name": "Unusual early frost killed unharvested grain, forcing difficult rationing decisions",
+            "probability": 0.5
+        },
+        {
+            "name": "Pregnant wife needs expensive herbs from distant healer",
+            "probability": 0.5
+        },
+        {
+            "name": "Village well contaminated by dead animal, threatening water supply",
+            "probability": 0.5
+        }
+    ],
+    "seasonalContexts": [
+        {
+            "name": "Late autumn, preparing for winter isolation",
+            "probability": 1.0
+        },
+        {
+            "name": "Early spring, trading season about to begin",
+            "probability": 1.0
+        },
+        {
+            "name": "Early winter, time for winter councils and alliance-making",
+            "probability": 1.0
+        },
+        {
+            "name": "Mid-summer, height of trading and raiding season",
+            "probability": 0.9
+        },
+        {
+            "name": "Late winter, food stores running low, spring planning urgent",
+            "probability": 0.9
+        },
+        {
+            "name": "Early summer, time for major construction and boat building",
+            "probability": 0.8
+        },
+        {
+            "name": "Harvest time, determining winter survival chances",
+            "probability": 0.8
+        },
+        {
+            "name": "Spring flooding season, travel difficult but fishing excellent",
+            "probability": 0.8
+        },
+        {
+            "name": "Mid-autumn, final preparations before winter isolation",
+            "probability": 0.7
+        },
+        {
+            "name": "Late spring, planting season and defensive preparations",
+            "probability": 0.7
+        },
+        {
+            "name": "Deep winter, survival mode and storytelling season",
+            "probability": 0.7
+        },
+        {
+            "name": "Midsummer festival season, time for marriages and alliances",
+            "probability": 0.6
+        },
+        {
+            "name": "First thaw, assessing winter damage and planning recovery",
+            "probability": 0.6
+        },
+        {
+            "name": "Late summer, preserving food and preparing tools for autumn work",
+            "probability": 0.6
+        },
+        {
+            "name": "Storm season, dangerous for travel but good for indoor crafts",
+            "probability": 0.5
+        }
+    ],
+    "culturalFoci": [
+        {
+            "name": "Religious observances and seasonal festivals",
+            "probability": 1.0
+        },
+        {
+            "name": "Trade relationships and merchant networks",
+            "probability": 1.0
+        },
+        {
+            "name": "Clan politics and inter-tribal diplomacy",
+            "probability": 1.0
+        },
+        {
+            "name": "Warfare preparation and defensive strategies",
+            "probability": 0.9
+        },
+        {
+            "name": "Craft mastery and guild relationships",
+            "probability": 0.9
+        },
+        {
+            "name": "Marriage alliances and family honor",
+            "probability": 0.9
+        },
+        {
+            "name": "Agricultural cycles and food security",
+            "probability": 0.8
+        },
+        {
+            "name": "Healing practices and herbal knowledge",
+            "probability": 0.8
+        },
+        {
+            "name": "River and sea navigation skills",
+            "probability": 0.8
+        },
+        {
+            "name": "Legal disputes and traditional justice",
+            "probability": 0.7
+        },
+        {
+            "name": "Storytelling and historical preservation",
+            "probability": 0.7
+        },
+        {
+            "name": "Hunting and forest survival skills",
+            "probability": 0.7
+        },
+        {
+            "name": "Construction and settlement planning",
+            "probability": 0.6
+        },
+        {
+            "name": "Textile production and clothing traditions",
+            "probability": 0.6
+        },
+        {
+            "name": "Animal husbandry and breeding programs",
+            "probability": 0.6
+        },
+        {
+            "name": "Metalworking techniques and tool making",
+            "probability": 0.6
+        },
+        {
+            "name": "Sacred site maintenance and ritual duties",
+            "probability": 0.5
+        },
+        {
+            "name": "Burial customs and ancestor veneration",
+            "probability": 0.5
+        },
+        {
+            "name": "Border security and early warning systems",
+            "probability": 0.5
+        },
+        {
+            "name": "Slave integration and social mobility",
+            "probability": 0.5
+        }
+    ]
+}

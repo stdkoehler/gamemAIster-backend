@@ -14,6 +14,7 @@ class SummaryLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     llm_input = Column(Text)
     raw_output = Column(Text)
+    extracted_json = Column(Text)
     processed_output = Column(Text)
 
 
@@ -24,6 +25,7 @@ class EntityLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     llm_input = Column(Text)
     raw_output = Column(Text)
+    extracted_json = Column(Text)
     processed_output = Column(Text)
 
 
@@ -34,6 +36,7 @@ class SceneLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     llm_input = Column(Text)
     raw_output = Column(Text)
+    extracted_json = Column(Text)
     processed_output = Column(Text)
 
 
@@ -51,6 +54,7 @@ class SQLLogger:
         model_class: type[SummaryLog] | type[EntityLog] | type[SceneLog],
         llm_input: str,
         raw_output: str,
+        exctracted_json: str = "",
         processed_output: str = "",
     ) -> None:
         session = self.Session()
@@ -61,6 +65,7 @@ class SQLLogger:
             log_entry = model_class(
                 llm_input=llm_input,
                 raw_output=raw_output,
+                extracted_json=exctracted_json,
                 processed_output=processed_output,
             )
             session.add(log_entry)
@@ -72,16 +77,32 @@ class SQLLogger:
             session.close()
 
     def log_summary(
-        self, llm_input: str, raw_output: str, processed_output: str = ""
+        self,
+        llm_input: str,
+        raw_output: str,
+        extracted_json: str = "",
+        processed_output: str = "",
     ) -> None:
-        self._add_log(SummaryLog, llm_input, raw_output, processed_output)
+        self._add_log(
+            SummaryLog, llm_input, raw_output, extracted_json, processed_output
+        )
 
     def log_entity(
-        self, llm_input: str, raw_output: str, processed_output: str = ""
+        self,
+        llm_input: str,
+        raw_output: str,
+        extracted_json: str = "",
+        processed_output: str = "",
     ) -> None:
-        self._add_log(EntityLog, llm_input, raw_output, processed_output)
+        self._add_log(
+            EntityLog, llm_input, raw_output, extracted_json, processed_output
+        )
 
     def log_scene(
-        self, llm_input: str, raw_output: str, processed_output: str = ""
+        self,
+        llm_input: str,
+        raw_output: str,
+        extracted_json: str = "",
+        processed_output: str = "",
     ) -> None:
-        self._add_log(SceneLog, llm_input, raw_output, processed_output)
+        self._add_log(SceneLog, llm_input, raw_output, extracted_json, processed_output)

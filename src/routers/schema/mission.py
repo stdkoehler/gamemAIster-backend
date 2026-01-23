@@ -11,10 +11,12 @@ class GameType(StrEnum):
     CALL_OF_CTHULHU = "call_of_cthulhu"
     SEVENTH_SEA = "seventh_sea"
     EXPANSE = "expanse"
+    CUSTOM = "custom"
 
 
 class Mission(BaseModel):
     mission_id: int | None = None
+    user_id: str
     name_custom: str = ""
     name: str
     description: str

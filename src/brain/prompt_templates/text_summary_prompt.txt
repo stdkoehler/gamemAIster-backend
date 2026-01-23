@@ -46,6 +46,7 @@ Return ONLY a valid JSON object in exactly this format:
 - **Comprehensive**: Incorporate all significant elements from both sources
 - **Contextual**: Preserve the broader context and relationships between events
 - **Clear**: Use precise language and avoid ambiguity
+- **Compressed**: The summary needs to compressed. Include relevant details but remove flavor text that doesn't drive the story.
 
 ## Processing Guidelines
 
@@ -183,6 +184,7 @@ Return ONLY a valid JSON object in exactly this format:
 2. **APPEND BY DEFAULT**: Your primary task is to add new information, not rewrite existing content
 3. **MINIMAL CHANGES**: Only modify existing summary when new events create direct contradictions
 4. **NO UNNECESSARY REWORDING**: Do not rephrase existing content for style or flow unless absolutely necessary
+5. **TOKEN EFFICIENCY**: Summarize such that the story relevant parts are maintained, but remove flavor text. The summary should not read like a nice novel but should instead be a comprehensive summary of the story events and characters.
 
 **STANDARD WORKFLOW**:
 1. **Read and Preserve**: Treat previous summary as foundation that should remain largely intact

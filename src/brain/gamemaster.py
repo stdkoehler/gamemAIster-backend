@@ -2,6 +2,7 @@
 
 import json
 
+import copy
 from typing import AsyncGenerator
 from pathlib import Path
 
@@ -10,8 +11,11 @@ from src.brain.chat import SummaryChat
 from src.llmclient.llm_client import LLMClientBase
 from src.llmclient.llm_parameters import LLMConfig
 
+from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
+
 from src.brain.oracle import (
     BaseOracle,
+    CustomOracle,
     ExpanseOracle,
     SeventhSeaOracle,
     ShadowrunOracle,
@@ -28,11 +32,13 @@ class Gamemaster:
 
     def __init__(
         self,
+        user_id: str,
         llm_client_reasoning: LLMClientBase,
         llm_client_chat: LLMClientBase,
         game_type: api_schema_mission.GameType,
         non_hero_mode: bool = False,
     ):
+        self._user_id = user_id
         self._llm_client_reasoning = llm_client_reasoning
         self._llm_client_chat = llm_client_chat
         self._game_type = game_type
@@ -88,6 +94,10 @@ class Gamemaster:
                 mission_prompt = prompt_dir / "expanse" / "expanse_mission_prompt.txt"
                 system_prompt = prompt_dir / "expanse" / "expanse_system_prompt.txt"
             self._game_name = "The Expanse RPG"
+        elif game_type == api_schema_mission.GameType.CUSTOM:
+            mission_prompt = prompt_dir / "custom" / "custom_mission_prompt.txt"
+            system_prompt = prompt_dir / "custom" / "custom_system_prompt.txt"
+            self._game_name = "Custom RPG"
         else:
             raise ValueError(f"Unknown game type: {game_type}")
 
@@ -122,7 +132,7 @@ class Gamemaster:
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
             last_k=5,
-            min_summary_tokens=1024,
+            min_summary_tokens=2048,
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,
@@ -167,6 +177,9 @@ class Gamemaster:
                 llm_client=self._llm_client_reasoning, non_hero_mode=self._non_hero_mode
             )
             oracle_topic = oracle.mission(background)
+        elif self._game_type == api_schema_mission.GameType.CUSTOM:
+            oracle = CustomOracle(llm_client=self._llm_client_reasoning)
+            oracle_topic = oracle.mission(background)
         else:
             oracle_topic = ""
 
@@ -177,6 +190,13 @@ class Gamemaster:
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
         # )
 
+        llm_config_architect = copy.deepcopy(LLM_CONFIG_ARCHITECT)
+        # max_tokens is the max tokens the LLM may generate in the response
+        # total context window = input tokens + max_tokens
+        # our input token is already quite large, so we limit max_tokens to 4096
+        # (this includes thinking process for some local models, e.g. gemma3)
+        llm_config_architect.max_tokens = 8192  # 4096
+
         llm_response = self._llm_client_reasoning.chat_completion(
             messages=[
                 {
@@ -186,7 +206,7 @@ class Gamemaster:
                 {"role": "user", "content": oracle_topic},
             ],
             reasoning=True,
-            llm_config=LLMConfig(max_tokens=4096),
+            llm_config=llm_config_architect,
         )
 
         print("### LLM Response")
@@ -203,6 +223,7 @@ class Gamemaster:
             else:
                 name = data["meta"]["title"]
             mission = {
+                "user_id": self._user_id,
                 "name": name,
                 "description": json_string,
                 "game_type": self._game_type,
