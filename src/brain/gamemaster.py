@@ -62,6 +62,9 @@ class Gamemaster:
                 mission_prompt = (
                     prompt_dir / "shadowrun" / "shadowrun_mission_prompt.txt"
                 )
+                mission_prompt_non_oracle = (
+                    prompt_dir / "shadowrun" / "shadowrun_mission_prompt.txt"
+                )
                 system_prompt = prompt_dir / "shadowrun" / "shadowrun_system_prompt.txt"
             self._game_name = "Shadowrun 6th Edition"
 
@@ -72,6 +75,9 @@ class Gamemaster:
                 )
             else:
                 mission_prompt = prompt_dir / "vampire" / "vampire_mission_prompt.txt"
+                mission_prompt_non_oracle = (
+                    prompt_dir / "vampire" / "vampire_non_oracle_mission_prompt.txt"
+                )
                 system_prompt = prompt_dir / "vampire" / "vampire_system_prompt.txt"
             self._game_name = "Vampire the Masquerade 5th Edition"
         elif game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
@@ -81,11 +87,17 @@ class Gamemaster:
                 )
             else:
                 mission_prompt = prompt_dir / "cthulhu" / "cthulhu_mission_prompt.txt"
+                mission_prompt_non_oracle = (
+                    prompt_dir / "cthulhu" / "cthulhu_non_oracle_mission_prompt.txt"
+                )
                 system_prompt = prompt_dir / "cthulhu" / "cthulhu_system_prompt.txt"
             self._game_name = "Call of Cthulhu 7th Edition"
         elif game_type == api_schema_mission.GameType.SEVENTH_SEA:
             mission_prompt = (
                 prompt_dir / "seventh_sea" / "seventh_sea_mission_prompt.txt"
+            )
+            mission_prompt_non_oracle = (
+                prompt_dir / "seventh_sea" / "seventh_sea_non_oracle_mission_prompt.txt"
             )
             system_prompt = prompt_dir / "seventh_sea" / "seventh_sea_system_prompt.txt"
             self._game_name = "Seventh Sea 2nd Edition"
@@ -94,15 +106,24 @@ class Gamemaster:
                 mission_prompt = (
                     prompt_dir / "expanse" / "expanse_mission_prompt_non_hero.txt"
                 )
+                mission_prompt_non_oracle = (
+                    prompt_dir / "expanse" / "expanse_mission_prompt_non_hero.txt"
+                )
                 system_prompt = (
                     prompt_dir / "expanse" / "expanse_system_prompt_non_hero.txt"
                 )
             else:
                 mission_prompt = prompt_dir / "expanse" / "expanse_mission_prompt.txt"
+                mission_prompt_non_oracle = (
+                    prompt_dir / "expanse" / "expanse_mission_prompt.txt"
+                )
                 system_prompt = prompt_dir / "expanse" / "expanse_system_prompt.txt"
             self._game_name = "The Expanse RPG"
         elif game_type == api_schema_mission.GameType.CUSTOM:
             mission_prompt = prompt_dir / "custom" / "custom_mission_prompt.txt"
+            mission_prompt_non_oracle = (
+                prompt_dir / "custom" / "custom_mission_prompt.txt"
+            )
             system_prompt = prompt_dir / "custom" / "custom_system_prompt.txt"
             self._game_name = "Custom RPG"
         else:
@@ -113,6 +134,9 @@ class Gamemaster:
 
         with open(mission_prompt, "r", encoding="utf-8") as f:
             self._mission_template = f.read()
+
+        with open(mission_prompt_non_oracle, "r", encoding="utf-8") as f:
+            self._mission_template_non_oracle = f.read()
 
         with open(prompt_dir / "text_summary_prompt.txt", "r", encoding="utf-8") as f:
             self._summary_template = f.read()
@@ -166,33 +190,39 @@ class Gamemaster:
         Args:
             background (str): User supplied background information to seed the mission.
         """
-        oracle: BaseOracle
-        if self._game_type == api_schema_mission.GameType.SHADOWRUN:
-            oracle = ShadowrunOracle(llm_client=self._llm_client_reasoning)
-            oracle_topic = oracle.mission(background)
-        elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
-            oracle = VampireOracle(llm_client=self._llm_client_reasoning)
-            oracle_topic = oracle.mission(background)
-        elif self._game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
-            oracle = CthulhuOracle(llm_client=self._llm_client_reasoning)
-            oracle_topic = oracle.mission(background)
-        elif self._game_type == api_schema_mission.GameType.SEVENTH_SEA:
-            oracle = SeventhSeaOracle(llm_client=self._llm_client_reasoning)
-            oracle_topic = oracle.mission(background)
-        elif self._game_type == api_schema_mission.GameType.EXPANSE:
-            oracle = ExpanseOracle(
-                llm_client=self._llm_client_reasoning,
-                non_hero_mode=self._mission_options.non_hero_mode,
-            )
-            oracle_topic = oracle.mission(background)
-        elif self._game_type == api_schema_mission.GameType.CUSTOM:
-            oracle = CustomOracle(llm_client=self._llm_client_reasoning)
-            oracle_topic = oracle.mission(background)
+
+        if self._mission_options.oracle:
+            oracle: BaseOracle
+            if self._game_type == api_schema_mission.GameType.SHADOWRUN:
+                oracle = ShadowrunOracle(llm_client=self._llm_client_reasoning)
+                topic = oracle.mission(background)
+            elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
+                oracle = VampireOracle(llm_client=self._llm_client_reasoning)
+                topic = oracle.mission(background)
+            elif self._game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
+                oracle = CthulhuOracle(llm_client=self._llm_client_reasoning)
+                topic = oracle.mission(background)
+            elif self._game_type == api_schema_mission.GameType.SEVENTH_SEA:
+                oracle = SeventhSeaOracle(llm_client=self._llm_client_reasoning)
+                topic = oracle.mission(background)
+            elif self._game_type == api_schema_mission.GameType.EXPANSE:
+                oracle = ExpanseOracle(
+                    llm_client=self._llm_client_reasoning,
+                    non_hero_mode=self._mission_options.non_hero_mode,
+                )
+                topic = oracle.mission(background)
+            elif self._game_type == api_schema_mission.GameType.CUSTOM:
+                oracle = CustomOracle(llm_client=self._llm_client_reasoning)
+                topic = oracle.mission(background)
+            else:
+                topic = ""
+            system_prompt = self._mission_template
         else:
-            oracle_topic = ""
+            topic = json.dumps({"background": background}, ensure_ascii=False, indent=2)
+            system_prompt = self._mission_template_non_oracle
 
         print("### GenerateMission")
-        print(oracle_topic)
+        print(topic)
 
         # llm_response = self._llm_client.completion(
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
@@ -209,9 +239,9 @@ class Gamemaster:
             messages=[
                 {
                     "role": "system",
-                    "content": self._mission_template,
+                    "content": system_prompt,
                 },
-                {"role": "user", "content": oracle_topic},
+                {"role": "user", "content": topic},
             ],
             reasoning=True,
             llm_config=llm_config_architect,
