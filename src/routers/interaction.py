@@ -15,6 +15,7 @@ from src.llmclient.llm_client import (
     LLMClientGemini,
     LLMClientLocal,
     LLMClientDeepSeek,
+    LLMClientMinMax,
 )
 
 from src.utils.logger import configure_logger
@@ -104,6 +105,23 @@ async def post_gamemaster_send(
             llm_client_reasoning=LLMClientClaude(
                 api_key=api_key,
                 model="claude-sonnet-4-5",
+            ),
+            game_type=game_type,
+            non_hero_mode=non_hero_mode,
+        )
+    elif llm_type == "MINMAX":
+        api_key = os.getenv("API_KEY_MINMAX")
+        if api_key is None:
+            raise ValueError("MiniMax API key not set")
+        gamemaster = Gamemaster(
+            user_id=user,
+            llm_client_chat=LLMClientMinMax(
+                api_key=api_key,
+                model="MiniMax-M2.1",
+            ),
+            llm_client_reasoning=LLMClientMinMax(
+                api_key=api_key,
+                model="MiniMax-M2.1",
             ),
             game_type=game_type,
             non_hero_mode=non_hero_mode,
