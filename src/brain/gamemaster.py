@@ -149,6 +149,14 @@ class Gamemaster:
         ) as f:
             self._scene_template = f.read()
 
+        # currently we provide the complete history to the LLM
+        # moving to RAG style summary could be better for longer sessions
+        # since it's not a knowledge interaction the typical RAG might not be ideal
+        # (context still grows)
+        # we could tag every interaction in the knowledge database with the
+        # entities it mentions, similarly for the next interaction we could
+        # let a LLM request extract the entities that are relevant to the current
+        # k interactions and only provide those in the summary
         with open(prompt_dir / "summary_provider.txt", "r", encoding="utf-8") as f:
             self._summary_provider_template = f.read()
 
