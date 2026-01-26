@@ -15,7 +15,7 @@ from src.llmclient.llm_client import (
 )
 
 from src.crud.crud import crud_instance
-from src.brain.gamemaster import Gamemaster
+from src.brain.gamemaster import Gamemaster, MissionOptions
 
 from src.utils.logger import configure_logger
 
@@ -43,6 +43,12 @@ def new_mission(
     """
     print(payload.game_type)
     print("non_hero_mode:", payload.non_hero_mode)
+    print("oracle:", payload.oracle)
+
+    mission_options = MissionOptions(
+        non_hero_mode=payload.non_hero_mode,
+        oracle=payload.oracle,
+    )
 
     llm_type = os.getenv("LLM")
     if llm_type == "LOCAL":
@@ -52,7 +58,7 @@ def new_mission(
             llm_client_chat=llm_client_local,
             llm_client_reasoning=llm_client_local,
             game_type=payload.game_type,
-            non_hero_mode=payload.non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "DEEPSEEK":
         api_key = os.getenv("API_KEY_DEEPSEEK")
@@ -65,7 +71,7 @@ def new_mission(
                 api_key=api_key, model="deepseek-reasoner"
             ),
             game_type=payload.game_type,
-            non_hero_mode=payload.non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "GEMINI":
         api_key = os.getenv("API_KEY_GEMINI")
@@ -82,7 +88,7 @@ def new_mission(
                 model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
             ),
             game_type=payload.game_type,
-            non_hero_mode=payload.non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "CLAUDE":
         api_key = os.getenv("API_KEY_CLAUDE")
@@ -99,7 +105,7 @@ def new_mission(
                 model="claude-sonnet-4-5",
             ),
             game_type=payload.game_type,
-            non_hero_mode=payload.non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "MINMAX":
         api_key = os.getenv("API_KEY_MINMAX")
@@ -116,7 +122,7 @@ def new_mission(
                 model="MiniMax-M2.1",
             ),
             game_type=payload.game_type,
-            non_hero_mode=payload.non_hero_mode,
+            mission_options=mission_options,
         )
     else:
         raise ValueError(f"Unknown LLM type: {llm_type}")

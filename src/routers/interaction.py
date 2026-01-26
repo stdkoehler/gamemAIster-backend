@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 
 from src.auth.auth import verify_user
 
-from src.brain.gamemaster import Gamemaster
+from src.brain.gamemaster import Gamemaster, MissionOptions
 from src.llmclient.llm_client import (
     LLMClientClaude,
     LLMClientGemini,
@@ -52,6 +52,12 @@ async def post_gamemaster_send(
     """
     game_type = crud_instance.get_mission_game_type(prompt.mission_id)
     non_hero_mode = crud_instance.get_mission_non_hero_mode(prompt.mission_id)
+    oracle = crud_instance.get_mission_oracle(prompt.mission_id)
+    mission_options = MissionOptions(
+        non_hero_mode=non_hero_mode,
+        oracle=oracle,
+    )
+
     llm_type = os.getenv("LLM")
     if llm_type == "LOCAL":
         llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
@@ -60,7 +66,7 @@ async def post_gamemaster_send(
             llm_client_chat=llm_client_local,
             llm_client_reasoning=llm_client_local,
             game_type=game_type,
-            non_hero_mode=non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "DEEPSEEK":
         api_key = os.getenv("API_KEY_DEEPSEEK")
@@ -73,7 +79,7 @@ async def post_gamemaster_send(
                 api_key=api_key, model="deepseek-reasoner"
             ),
             game_type=game_type,
-            non_hero_mode=non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "GEMINI":
         api_key = os.getenv("API_KEY_GEMINI")
@@ -90,7 +96,7 @@ async def post_gamemaster_send(
                 model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17",
             ),
             game_type=game_type,
-            non_hero_mode=non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "CLAUDE":
         api_key = os.getenv("API_KEY_CLAUDE")
@@ -107,7 +113,7 @@ async def post_gamemaster_send(
                 model="claude-sonnet-4-5",
             ),
             game_type=game_type,
-            non_hero_mode=non_hero_mode,
+            mission_options=mission_options,
         )
     elif llm_type == "MINMAX":
         api_key = os.getenv("API_KEY_MINMAX")
@@ -124,7 +130,7 @@ async def post_gamemaster_send(
                 model="MiniMax-M2.1",
             ),
             game_type=game_type,
-            non_hero_mode=non_hero_mode,
+            mission_options=mission_options,
         )
     else:
         raise ValueError(f"Unknown LLM type: {llm_type}")
