@@ -1,7 +1,10 @@
 """WIP Gamemaster"""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import json
+import os
 
 import copy
 from typing import AsyncGenerator
@@ -9,8 +12,14 @@ from pathlib import Path
 
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
-from src.llmclient.llm_client import LLMClientBase
-from src.llmclient.llm_parameters import LLMConfig
+from src.llmclient.llm_client import (
+    LLMClientBase,
+    LLMClientClaude,
+    LLMClientGemini,
+    LLMClientLocal,
+    LLMClientDeepSeek,
+    LLMClientMinMax,
+)
 
 from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
 
@@ -27,6 +36,80 @@ from src.brain.json_tools import extract_json_schema
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
+
+
+def build_gamemaster(
+    user_id: str,
+    game_type: api_schema_mission.GameType,
+    mission_options: MissionOptions,
+) -> Gamemaster:
+    """
+    Factory helper to construct a `Gamemaster` with the configured LLM clients.
+    """
+    llm_type = os.getenv("LLM")
+    if llm_type == "LOCAL":
+        client = LLMClientLocal(base_url="http://127.0.0.1:5000")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=client,
+            llm_client_reasoning=client,
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "DEEPSEEK":
+        api_key = os.getenv("API_KEY_DEEPSEEK")
+        if api_key is None:
+            raise ValueError("OpenRouter API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientDeepSeek(api_key=api_key, model="deepseek-chat"),
+            llm_client_reasoning=LLMClientDeepSeek(
+                api_key=api_key, model="deepseek-reasoner"
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "GEMINI":
+        api_key = os.getenv("API_KEY_GEMINI")
+        if api_key is None:
+            raise ValueError("Gemini API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientGemini(
+                api_key=api_key, model="gemini-2.5-pro-exp-03-25"
+            ),
+            llm_client_reasoning=LLMClientGemini(
+                api_key=api_key, model="gemini-2.5-pro-exp-03-25"
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "CLAUDE":
+        api_key = os.getenv("API_KEY_CLAUDE")
+        if api_key is None:
+            raise ValueError("Claude API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientClaude(api_key=api_key, model="claude-sonnet-4-5"),
+            llm_client_reasoning=LLMClientClaude(
+                api_key=api_key, model="claude-sonnet-4-5"
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "MINMAX":
+        api_key = os.getenv("API_KEY_MINMAX")
+        if api_key is None:
+            raise ValueError("MiniMax API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientMinMax(api_key=api_key, model="MiniMax-M2.1"),
+            llm_client_reasoning=LLMClientMinMax(api_key=api_key, model="MiniMax-M2.1"),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    else:
+        raise ValueError(f"Unknown LLM type: {llm_type}")
 
 
 @dataclass

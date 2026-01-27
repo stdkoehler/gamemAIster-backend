@@ -1,28 +1,16 @@
 """endpoints calling text_gen_webui"""
 
-import os
-
-from typing import Any
-
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from src.auth.auth import verify_user
 
-from src.brain.gamemaster import Gamemaster, MissionOptions
-from src.llmclient.llm_client import (
-    LLMClientClaude,
-    LLMClientGemini,
-    LLMClientLocal,
-    LLMClientDeepSeek,
-    LLMClientMinMax,
-)
+from src.brain.gamemaster import Gamemaster
+from src.routers.dependencies import get_gamemaster_for_interaction
 
 from src.utils.logger import configure_logger
 
 import src.routers.schema.interaction as api_schema_interaction
-
-from src.crud.crud import crud_instance
 
 log = configure_logger("interaction")
 
@@ -37,7 +25,7 @@ router = APIRouter(
 @router.post("/gamemaster-send")
 async def post_gamemaster_send(
     prompt: api_schema_interaction.InteractionPrompt,
-    user: Any = Depends(verify_user),
+    gamemaster: Gamemaster = Depends(get_gamemaster_for_interaction),
 ) -> StreamingResponse:
     """
     This function handles the user prompt for text generation.
@@ -50,91 +38,6 @@ async def post_gamemaster_send(
         StreamingResponse: A streaming response containing the generated text.
 
     """
-    game_type = crud_instance.get_mission_game_type(prompt.mission_id)
-    non_hero_mode = crud_instance.get_mission_non_hero_mode(prompt.mission_id)
-    oracle = crud_instance.get_mission_oracle(prompt.mission_id)
-    mission_options = MissionOptions(
-        non_hero_mode=non_hero_mode,
-        oracle=oracle,
-    )
-
-    llm_type = os.getenv("LLM")
-    if llm_type == "LOCAL":
-        llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=llm_client_local,
-            llm_client_reasoning=llm_client_local,
-            game_type=game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "DEEPSEEK":
-        api_key = os.getenv("API_KEY_DEEPSEEK")
-        if api_key is None:
-            raise ValueError("OpenRouter API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientDeepSeek(api_key=api_key, model="deepseek-chat"),
-            llm_client_reasoning=LLMClientDeepSeek(
-                api_key=api_key, model="deepseek-reasoner"
-            ),
-            game_type=game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "GEMINI":
-        api_key = os.getenv("API_KEY_GEMINI")
-        if api_key is None:
-            raise ValueError("Gemini API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientGemini(
-                api_key=api_key,
-                model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
-            ),
-            llm_client_reasoning=LLMClientGemini(
-                api_key=api_key,
-                model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17",
-            ),
-            game_type=game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "CLAUDE":
-        api_key = os.getenv("API_KEY_CLAUDE")
-        if api_key is None:
-            raise ValueError("Claude API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientClaude(
-                api_key=api_key,
-                model="claude-sonnet-4-5",
-            ),
-            llm_client_reasoning=LLMClientClaude(
-                api_key=api_key,
-                model="claude-sonnet-4-5",
-            ),
-            game_type=game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "MINMAX":
-        api_key = os.getenv("API_KEY_MINMAX")
-        if api_key is None:
-            raise ValueError("MiniMax API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientMinMax(
-                api_key=api_key,
-                model="MiniMax-M2.1",
-            ),
-            llm_client_reasoning=LLMClientMinMax(
-                api_key=api_key,
-                model="MiniMax-M2.1",
-            ),
-            game_type=game_type,
-            mission_options=mission_options,
-        )
-    else:
-        raise ValueError(f"Unknown LLM type: {llm_type}")
-
     return StreamingResponse(
         gamemaster.stream_interaction_response(prompt),
         media_type="application/x-ndjson",
@@ -146,6 +49,17 @@ async def post_stop_generation() -> None:
     """
     Stop an ongoing LLM generation
     """
-    LLMClientLocal(base_url="http://127.0.0.1:5000").stop_generation()
+    # We don't need this, instead:
+    #     1. Stopping via Connection Termination (Streaming)
+    # The most common way to stop generation mid-flow is by using the Streaming API
+    # (stream: true).
+    # The Mechanism: When you stream a response (usually via Server-Sent Events),
+    # your client application maintains an open connection. To "stop" generation,
+    # the client simply closes the connection or sends an Abort Signal.
+    # The Result: Most modern providers (OpenAI, Anthropic) are optimized to detect
+    # this disconnection. Once the socket is closed, the backend stops generating
+    # further tokens to save on compute costs.
+    # Cost Tip: You are generally only billed for the tokens actually generated up
+    # until the point the server processes the disconnection.
 
     return None

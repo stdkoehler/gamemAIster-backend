@@ -1,22 +1,13 @@
 """endpoints calling session"""
 
-import os
-
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.auth.auth import verify_user
 
-from src.llmclient.llm_client import (
-    LLMClientClaude,
-    LLMClientGemini,
-    LLMClientLocal,
-    LLMClientDeepSeek,
-    LLMClientMinMax,
-)
-
 from src.crud.crud import crud_instance
-from src.brain.gamemaster import Gamemaster, MissionOptions
+from src.brain.gamemaster import Gamemaster
 
+from src.routers.dependencies import get_gamemaster_for_mission
 from src.utils.logger import configure_logger
 
 import src.routers.schema.mission as api_schema_mission
@@ -36,7 +27,7 @@ router = APIRouter(
 @router.post("/new-mission")
 def new_mission(
     payload: NewMissionPayload,
-    user: str = Depends(verify_user),
+    gamemaster: Gamemaster = Depends(get_gamemaster_for_mission),
 ) -> api_schema_mission.Mission:
     """
     Generate a new mission via LLM call.
@@ -44,88 +35,6 @@ def new_mission(
     print(payload.game_type)
     print("non_hero_mode:", payload.non_hero_mode)
     print("oracle:", payload.oracle)
-
-    mission_options = MissionOptions(
-        non_hero_mode=payload.non_hero_mode,
-        oracle=payload.oracle,
-    )
-
-    llm_type = os.getenv("LLM")
-    if llm_type == "LOCAL":
-        llm_client_local = LLMClientLocal(base_url="http://127.0.0.1:5000")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=llm_client_local,
-            llm_client_reasoning=llm_client_local,
-            game_type=payload.game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "DEEPSEEK":
-        api_key = os.getenv("API_KEY_DEEPSEEK")
-        if api_key is None:
-            raise ValueError("OpenRouter API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientDeepSeek(api_key=api_key, model="deepseek-chat"),
-            llm_client_reasoning=LLMClientDeepSeek(
-                api_key=api_key, model="deepseek-reasoner"
-            ),
-            game_type=payload.game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "GEMINI":
-        api_key = os.getenv("API_KEY_GEMINI")
-        if api_key is None:
-            raise ValueError("Gemini API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientGemini(
-                api_key=api_key,
-                model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
-            ),
-            llm_client_reasoning=LLMClientGemini(
-                api_key=api_key,
-                model="gemini-2.5-pro-exp-03-25",  # "gemini-2.5-flash-preview-04-17"
-            ),
-            game_type=payload.game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "CLAUDE":
-        api_key = os.getenv("API_KEY_CLAUDE")
-        if api_key is None:
-            raise ValueError("Claude API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientClaude(
-                api_key=api_key,
-                model="claude-sonnet-4-5",
-            ),
-            llm_client_reasoning=LLMClientClaude(
-                api_key=api_key,
-                model="claude-sonnet-4-5",
-            ),
-            game_type=payload.game_type,
-            mission_options=mission_options,
-        )
-    elif llm_type == "MINMAX":
-        api_key = os.getenv("API_KEY_MINMAX")
-        if api_key is None:
-            raise ValueError("MiniMax API key not set")
-        gamemaster = Gamemaster(
-            user_id=user,
-            llm_client_chat=LLMClientMinMax(
-                api_key=api_key,
-                model="MiniMax-M2.1",
-            ),
-            llm_client_reasoning=LLMClientMinMax(
-                api_key=api_key,
-                model="MiniMax-M2.1",
-            ),
-            game_type=payload.game_type,
-            mission_options=mission_options,
-        )
-    else:
-        raise ValueError(f"Unknown LLM type: {llm_type}")
 
     mission = gamemaster.generate_mission(background=payload.background)
     mission = crud_instance.insert_mission(mission=mission)
