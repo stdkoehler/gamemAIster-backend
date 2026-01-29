@@ -28,6 +28,7 @@ from anthropic.types import (
     ThinkingConfigDisabledParam,
 )
 
+from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
 from src.llmclient.llm_parameters import LLMConfig
 
 
@@ -43,6 +44,27 @@ class LLMClientBase(ABC):
         """
         base = LLMConfig.defaults()
         self.member_config = config.apply_to(base) if config else base
+
+    def get_task_config(
+        self, task: LLMTask, call_override: LLMConfig | None = None
+    ) -> LLMConfig:
+        """
+        The 3-Layer Resolve:
+        1. Registry (Class + Task defaults)
+        2. Member Config (Instance overrides)
+        3. Call Override (The final word)
+        """
+        # Layer 1: Resolve from Registry (includes Local fallback logic)
+        registry_resolved = ConfigRegistry.get_config(self.__class__.__name__, task)
+
+        # Layer 2: Merge with this Client Instance's specific configuration
+        active_config = self.member_config.apply_to(registry_resolved)
+
+        # Layer 3: Merge with the specific call override (if provided)
+        if call_override:
+            active_config = call_override.apply_to(active_config)
+
+        return active_config
 
     @abstractmethod
     def _execute_chat_completion_stream(

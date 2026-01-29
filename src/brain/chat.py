@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 
 from src.llmclient.llm_parameters import LLMConfig
-from src.llmclient.llm_parameters_gemma import LLM_CONFIG_THINKING, LLM_CONFIG_STORY
+from src.llmclient.llm_config_registry import LLMTask
 from src.llmclient.llm_client import LLMClientBase
 from src.crud.crud import crud_instance
 
@@ -111,7 +111,9 @@ class SummaryMemory:
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_THINKING),
+            config_override=LLMConfig(max_tokens=8192).apply_to(
+                self._llm_client.get_task_config(LLMTask.SUMMARY)
+            ),
         )
 
         # remove content between <think>  tags
@@ -197,7 +199,9 @@ class SummaryMemory:
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_THINKING),
+            config_override=LLMConfig(max_tokens=8192).apply_to(
+                self._llm_client.get_task_config(LLMTask.SUMMARY)
+            ),
         )
 
         try:
@@ -223,7 +227,7 @@ class SummaryMemory:
                 processed_output="Validation Error",
             )
             raise ValueError(
-                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+                "LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
             logger.log_entity(
@@ -270,7 +274,9 @@ class SummaryMemory:
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_THINKING),
+            config_override=LLMConfig(max_tokens=8192).apply_to(
+                self._llm_client.get_task_config(LLMTask.SUMMARY)
+            ),
         )
 
         try:
@@ -297,7 +303,7 @@ class SummaryMemory:
                 processed_output="Validation Error",
             )
             raise ValueError(
-                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+                "LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
             logger.log_summary(
@@ -652,7 +658,7 @@ class SummaryChat:
         for chunk in self._llm_client_chat.chat_completion_stream(
             messages,
             config_override=LLMConfig(stop=["PL", "###", "/FIN"]).apply_to(
-                LLM_CONFIG_STORY
+                self._llm_client_chat.get_task_config(LLMTask.STORY)
             ),
         ):
             if not begun:

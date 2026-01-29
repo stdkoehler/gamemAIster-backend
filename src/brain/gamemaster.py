@@ -6,7 +6,6 @@ from dataclasses import dataclass
 import json
 import os
 
-import copy
 from typing import AsyncGenerator
 from pathlib import Path
 
@@ -22,7 +21,7 @@ from src.llmclient.llm_client import (
 )
 
 from src.llmclient.llm_parameters import LLMConfig
-from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
+from src.llmclient.llm_config_registry import LLMTask
 
 from src.brain.oracle import (
     BaseOracle,
@@ -325,7 +324,6 @@ class Gamemaster:
         # our input token is already quite large, so we limit max_tokens to 4096
         # (this includes thinking process for some local models, e.g. gemma3)
         # 4096
-        # TODO: max_tokens should be configurable per LLM type
         llm_response = self._llm_client_reasoning.chat_completion(
             messages=[
                 {
@@ -335,7 +333,9 @@ class Gamemaster:
                 {"role": "user", "content": topic},
             ],
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_ARCHITECT),
+            config_override=LLMConfig(max_tokens=8192).apply_to(
+                self._llm_client_reasoning.get_task_config(LLMTask.ARCHITECT)
+            ),
         )
 
         print("### LLM Response")

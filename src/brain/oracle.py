@@ -1,5 +1,4 @@
 import json
-import copy
 import random
 from typing import TypeAlias
 from pathlib import Path
@@ -8,7 +7,7 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, RootModel
 
 from src.llmclient.llm_client import LLMClientBase
-from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
+from src.llmclient.llm_config_registry import LLMTask
 from src.brain.json_tools import extract_json_schema
 
 MissionSeed: TypeAlias = dict[str, str | list[str]]
@@ -80,10 +79,10 @@ class BaseOracle(ABC):
             {"role": "user", "content": json.dumps(proposal)},
         ]
 
-        llm_config = copy.deepcopy(LLM_CONFIG_ARCHITECT)
-
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            config_override=self._llm_client.get_task_config(LLMTask.ARCHITECT),
         )
         print("### LLM Alignment")
         print(proposal)
