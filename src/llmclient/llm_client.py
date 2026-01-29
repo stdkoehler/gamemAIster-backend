@@ -34,37 +34,78 @@ from src.llmclient.llm_parameters import LLMConfig
 
 class LLMClientBase(ABC):
     """
-    Abstract Base Class defining all methods required for an LLM Interface
+    Abstract Base Class defining all methods required for an LLM Interface.
+    Handles the multi-layer configuration resolution and UNSET cleanup.
     """
 
-    def __init__(self, config: LLMConfig | None = None) -> None:
+    def __init__(
+        self, config: LLMConfig | None = None, model_name: str | None = None
+    ) -> None:
         """
-        Initializes client with a 'member config'.
-        Inherits from system defaults + optional custom overrides.
+        Initializes client with an identity and a 'member config'.
         """
-        base = LLMConfig.defaults()
-        self.member_config = config.apply_to(base) if config else base
+        self.model_name = model_name
+        # member_config holds instance-level preferences
+        # It is NOT resolved here so that it can still be a 'partial' config
+        self.member_config = config if config else LLMConfig()
 
     def get_task_config(
         self, task: LLMTask, call_override: LLMConfig | None = None
     ) -> LLMConfig:
         """
-        The 3-Layer Resolve:
-        1. Registry (Class + Task defaults)
-        2. Member Config (Instance overrides)
-        3. Call Override (The final word)
+        The 4-Layer Resolve:
+        1. Member Config (Instance-level defaults)
+        2. Registry (Model Name or Class Name + Task defaults) override Member Config
+            with task specific settings.
+        3. Call Override (The final word for this specific call) override the above
+            with caller defined settings.
+        4. Resolution (Fill remaining holes with system defaults) remove all UNSETs.
         """
-        # Layer 1: Resolve from Registry (includes Local fallback logic)
-        registry_resolved = ConfigRegistry.get_config(self.__class__.__name__, task)
+        # Layer 1: Identity/Hardware baseline (e.g. max_tokens for this model)
+        identity = self.model_name or self.__class__.__name__
+        registry_resolved = ConfigRegistry.get_config(identity, task)
 
-        # Layer 2: Merge with this Client Instance's specific configuration
-        active_config = self.member_config.apply_to(registry_resolved)
+        # Layer 2: Apply the Registry personality ON TOP OF the client instance
+        # This means ARCHITECT's temperature (0.95) will OVERWRITE
+        # the client's default temperature.
+        active_config = registry_resolved.apply_to(self.member_config)
 
-        # Layer 3: Merge with the specific call override (if provided)
+        # Layer 3: The Per-Call Override (The ultimate authority)
         if call_override:
             active_config = call_override.apply_to(active_config)
 
-        return active_config
+        # Layer 4: Final Bake
+        return active_config.resolve()
+
+    def chat_completion(
+        self,
+        messages: list[dict[str, str]],
+        reasoning: bool = False,
+        config_override: LLMConfig | None = None,
+        task: LLMTask = LLMTask.STORY,
+    ) -> str:
+        """
+        Public method to execute a chat completion.
+        Ensures active_config is fully resolved (no UNSETs) before execution.
+        """
+        # We use get_task_config to handle the heavy lifting and UNSET removal
+        active_config = self.get_task_config(task, call_override=config_override)
+
+        return self._execute_chat_completion(messages, reasoning, active_config)
+
+    def chat_completion_stream(
+        self,
+        messages: list[dict[str, str]],
+        reasoning: bool = False,
+        config_override: LLMConfig | None = None,
+        task: LLMTask = LLMTask.STORY,
+    ) -> Generator[str, None, None]:
+        """
+        Public method for streaming. Ensures UNSET removal via get_task_config.
+        """
+        active_config = self.get_task_config(task, call_override=config_override)
+
+        return self._execute_chat_completion_stream(messages, reasoning, active_config)
 
     @abstractmethod
     def _execute_chat_completion_stream(
@@ -75,24 +116,6 @@ class LLMClientBase(ABC):
         actual API call logic here.
         """
 
-    def chat_completion_stream(
-        self,
-        messages: list[dict[str, str]],
-        reasoning: bool = False,
-        config_override: LLMConfig | None = None,
-    ) -> Generator[str, None, None]:
-        """
-        Public method to execute a chat completion with optional config overrides.
-        Merges member config with any provided overrides before execution.
-        """
-        active_config = (
-            config_override.apply_to(self.member_config)
-            if config_override
-            else self.member_config
-        )
-
-        return self._execute_chat_completion_stream(messages, reasoning, active_config)
-
     @abstractmethod
     def _execute_chat_completion(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
@@ -101,24 +124,6 @@ class LLMClientBase(ABC):
         Internal abstract method: Child classes MUST implement the
         actual API call logic here.
         """
-
-    def chat_completion(
-        self,
-        messages: list[dict[str, str]],
-        reasoning: bool = False,
-        config_override: LLMConfig | None = None,
-    ) -> str:
-        """
-        Public method to execute a chat completion with optional config overrides.
-        Merges member config with any provided overrides before execution.
-        """
-        active_config = (
-            config_override.apply_to(self.member_config)
-            if config_override
-            else self.member_config
-        )
-
-        return self._execute_chat_completion(messages, reasoning, active_config)
 
     @abstractmethod
     def count_tokens(self, text: str) -> int:

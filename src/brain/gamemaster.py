@@ -333,9 +333,8 @@ class Gamemaster:
                 {"role": "user", "content": topic},
             ],
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(
-                self._llm_client_reasoning.get_task_config(LLMTask.ARCHITECT)
-            ),
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.ARCHITECT,
         )
 
         print("### LLM Response")

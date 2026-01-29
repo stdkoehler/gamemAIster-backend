@@ -111,9 +111,8 @@ class SummaryMemory:
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(
-                self._llm_client.get_task_config(LLMTask.SUMMARY)
-            ),
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.SUMMARY,
         )
 
         # remove content between <think>  tags
@@ -199,9 +198,8 @@ class SummaryMemory:
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(
-                self._llm_client.get_task_config(LLMTask.SUMMARY)
-            ),
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.SUMMARY,
         )
 
         try:
@@ -274,9 +272,8 @@ class SummaryMemory:
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192).apply_to(
-                self._llm_client.get_task_config(LLMTask.SUMMARY)
-            ),
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.SUMMARY,
         )
 
         try:
@@ -657,9 +654,8 @@ class SummaryChat:
         begun = False
         for chunk in self._llm_client_chat.chat_completion_stream(
             messages,
-            config_override=LLMConfig(stop=["PL", "###", "/FIN"]).apply_to(
-                self._llm_client_chat.get_task_config(LLMTask.STORY)
-            ),
+            config_override=LLMConfig(stop=["PL", "###", "/FIN"]),
+            task=LLMTask.STORY,
         ):
             if not begun:
                 chunk = self._trim_chunk(chunk)

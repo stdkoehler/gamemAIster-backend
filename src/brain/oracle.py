@@ -82,7 +82,7 @@ class BaseOracle(ABC):
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
-            config_override=self._llm_client.get_task_config(LLMTask.ARCHITECT),
+            task=LLMTask.ARCHITECT,
         )
         print("### LLM Alignment")
         print(proposal)

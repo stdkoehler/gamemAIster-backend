@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
-from dataclasses import dataclass, replace, asdict
+from dataclasses import dataclass, fields, replace, asdict
 
 
 class Unset:
@@ -49,13 +49,31 @@ class LLMConfig:
     stop: list[str] | Unset = UNSET
     logits_processor: list[str] | Unset = UNSET
 
-    def apply_to(self, base: LLMConfig) -> LLMConfig:
+    def apply_to(self, base: "LLMConfig") -> "LLMConfig":
         """
         Creates a new LLMConfig by merging 'self' (the patch) onto 'base'.
         Only fields that are NOT 'UNSET' in 'self' will overwrite 'base'.
         """
-        patch_dict = {k: v for k, v in asdict(self).items() if v is not UNSET}
-        return replace(base, **patch_dict)
+        actual_overrides = {}
+
+        # Iterating over fields preserves the identity of UNSET
+        for field in fields(self):
+            value = getattr(self, field.name)
+            if value is not UNSET:
+                actual_overrides[field.name] = value
+
+        # Apply only the actual overrides to the base object
+        return replace(base, **actual_overrides)
+
+    def resolve(self) -> "LLMConfig":
+        """
+        Fills any remaining UNSET fields with system-wide defaults.
+        Ensures the returned object has NO 'UNSET' values.
+        """
+        # Start with the absolute ground-truth defaults
+        defaults = self.defaults()
+        # Apply 'self' (which may have UNSETs) onto the defaults
+        return self.apply_to(defaults)
 
     def to_dict(self) -> dict[str, Any]:
         """Returns a dict of all fields that are NOT 'UNSET'."""
