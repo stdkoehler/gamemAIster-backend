@@ -229,23 +229,19 @@ class LLMClientLocal(LLMClientBase):
         payload = asdict(config)
         payload.update({"messages": messages, "stream": True})
 
-        response = requests.post(
+        stream_response = requests.post(
             self._chat_completion_url,
             headers=self._headers,
             json=payload,
             stream=True,
             timeout=360,
         )
-        response.raise_for_status()
-        lines_gen = (line for line in response.iter_lines())
-        client = SSEClient(lines_gen)
+        client = SSEClient(stream_response)  # type: ignore
 
         for event in client.events():
-            if event.data:
-                payload = json.loads(event.data)
-                chunk = payload["choices"][0]["delta"].get("content")
-                if chunk:
-                    yield chunk
+            result = json.loads(event.data)
+            print(result)
+            yield result["choices"][0]["delta"]["content"]
 
     def _execute_chat_completion(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
@@ -350,13 +346,25 @@ class LLMClientDeepSeek(LLMClientBase):
         return response or ""
 
     def count_tokens(self, text: str) -> int:
+        """
+        Counts the number of tokens in a given text by API call.
+
+        Args:
+            text (str): The text to count the tokens in.
+
+        Returns:
+            int: The number of tokens in the text.
+
+        """
         encoding = tiktoken.encoding_for_model(
             "gpt-4o"
         )  # DeepSeek uses similar tokenization
         return len(encoding.encode(text))
 
     def stop_generation(self) -> None:
-        pass
+        """
+        Stops the generation process.
+        """
 
 
 # --- 2. Gemini Client (Google GenAI SDK) ---
@@ -370,7 +378,7 @@ class LLMClientGemini(LLMClientBase):
     def __init__(
         self,
         api_key: str,
-        model: str = "gemini-2.0-flash",
+        model: str = "gemini-3-flash-preview",
         config: LLMConfig | None = None,
     ):
         super().__init__(config)
@@ -380,6 +388,15 @@ class LLMClientGemini(LLMClientBase):
     def _generate_contents(
         self, messages: list[dict[str, str]]
     ) -> tuple[str, list[Content]]:
+        """
+        Generates content using the Google Gemini model.
+        Args:
+            messages (list[dict[str, str]]): List of messages to be sent to the model.
+
+        Returns:
+            str: The system instruction extracted from the messages.
+            list[Content]: List of content objects representing user and model messages.
+        """
         try:
             system_instruction = next(m for m in messages if m["role"] == "system")[
                 "content"
@@ -436,6 +453,16 @@ class LLMClientGemini(LLMClientBase):
         return response.text or ""
 
     def count_tokens(self, text: str) -> int:
+        """
+        Counts the number of tokens in a given text by API call.
+
+        Args:
+            text (str): The text to count the tokens in.
+
+        Returns:
+            int: The number of tokens in the text.
+
+        """
         try:
             enc = tiktoken.encoding_for_model(self._model)
         except KeyError:
@@ -443,7 +470,9 @@ class LLMClientGemini(LLMClientBase):
         return len(enc.encode(text))
 
     def stop_generation(self) -> None:
-        pass
+        """
+        Stops the generation process.
+        """
 
 
 # --- 3. Claude & MiniMax Client (Anthropic SDK) ---
@@ -468,6 +497,14 @@ class LLMClientAnthropicBase(LLMClientBase):
     def _convert_messages(
         self, messages: list[dict[str, str]]
     ) -> tuple[str, list[MessageParam]]:
+        """
+        Converts a list of messages to the format required by the Anthropic API.
+        Args:
+            messages (list[dict[str, str]]): List of messages to be converted.
+
+        Returns:
+            list[MessageParam]: List of MessageParam objects representing the messages.
+        """
         messages_converted = []
         for m in messages:
             if m["role"] in ["user", "assistant"]:
@@ -536,13 +573,29 @@ class LLMClientAnthropicBase(LLMClientBase):
         return next(c.text for c in response.content if c.type == "text")
 
     def count_tokens(self, text: str) -> int:
+        """
+        Counts the number of tokens in a given text by API call.
+
+        Args:
+            text (str): The text to count the tokens in.
+
+        Returns:
+            int: The number of tokens in the text.
+
+        """
         return len(tiktoken.get_encoding("cl100k_base").encode(text))
 
     def stop_generation(self) -> None:
-        pass
+        """
+        Stops the generation process.
+        """
 
 
 class LLMClientClaude(LLMClientAnthropicBase):
+    """
+    LLMClient implementation for Claude using the Anthropic SDK.
+    """
+
     def __init__(
         self,
         api_key: str,
@@ -553,6 +606,10 @@ class LLMClientClaude(LLMClientAnthropicBase):
 
 
 class LLMClientMinMax(LLMClientAnthropicBase):
+    """
+    LLMClient implementation for MiniMax using the Anthropic SDK.
+    """
+
     def __init__(
         self,
         api_key: str,
