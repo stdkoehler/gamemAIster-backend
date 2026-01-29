@@ -1,6 +1,5 @@
 """Chat Conversation Memory"""
 
-import copy
 import re
 import json
 from dataclasses import dataclass
@@ -109,12 +108,10 @@ class SummaryMemory:
         ### Scene Prompt
         log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
-        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
-        # llm_config.temperature = 0.7
-        llm_config.max_tokens = 8192
-
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_THINKING),
         )
 
         # remove content between <think>  tags
@@ -197,11 +194,10 @@ class SummaryMemory:
         ### Entity Prompt
         log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
-        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
-        llm_config.max_tokens = 8192
-
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_THINKING),
         )
 
         try:
@@ -271,11 +267,10 @@ class SummaryMemory:
         ### Summary Prompt
         log_prompt = "\n\n".join(msg["content"] for msg in messages)
 
-        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
-        llm_config.max_tokens = 8192
-
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_THINKING),
         )
 
         try:
@@ -652,13 +647,13 @@ class SummaryChat:
         else:
             messages.append({"role": "user", "content": user_input})
 
-        llm_config = copy.deepcopy(LLM_CONFIG_STORY)
-        llm_config.stop = ["PL", "###", "/FIN"]
-
         llm_response = ""
         begun = False
         for chunk in self._llm_client_chat.chat_completion_stream(
-            messages, llm_config=llm_config
+            messages,
+            config_override=LLMConfig(stop=["PL", "###", "/FIN"]).apply_to(
+                LLM_CONFIG_STORY
+            ),
         ):
             if not begun:
                 chunk = self._trim_chunk(chunk)

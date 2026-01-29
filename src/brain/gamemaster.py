@@ -21,6 +21,7 @@ from src.llmclient.llm_client import (
     LLMClientMinMax,
 )
 
+from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
 
 from src.brain.oracle import (
@@ -319,13 +320,12 @@ class Gamemaster:
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
         # )
 
-        llm_config_architect = copy.deepcopy(LLM_CONFIG_ARCHITECT)
         # max_tokens is the max tokens the LLM may generate in the response
         # total context window = input tokens + max_tokens
         # our input token is already quite large, so we limit max_tokens to 4096
         # (this includes thinking process for some local models, e.g. gemma3)
-        llm_config_architect.max_tokens = 8192  # 4096
-
+        # 4096
+        # TODO: max_tokens should be configurable per LLM type
         llm_response = self._llm_client_reasoning.chat_completion(
             messages=[
                 {
@@ -335,7 +335,7 @@ class Gamemaster:
                 {"role": "user", "content": topic},
             ],
             reasoning=True,
-            llm_config=llm_config_architect,
+            config_override=LLMConfig(max_tokens=8192).apply_to(LLM_CONFIG_ARCHITECT),
         )
 
         print("### LLM Response")
