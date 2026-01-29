@@ -156,8 +156,13 @@ class LLMClientLocal(LLMClientBase):
 
     """
 
-    def __init__(self, base_url: str, config: LLMConfig | None = None):
-        super().__init__(config)
+    def __init__(
+        self,
+        base_url: str,
+        config: LLMConfig | None = None,
+        model_name: str | None = None,
+    ):
+        super().__init__(config=config, model_name=model_name)
         self._base_url = base_url
         self._completion_url = urljoin(base_url, "/v1/completions")
         self._chat_completion_url = urljoin(base_url, "/v1/chat/completions")

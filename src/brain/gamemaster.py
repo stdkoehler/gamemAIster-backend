@@ -48,7 +48,11 @@ def build_gamemaster(
     """
     llm_type = os.getenv("LLM")
     if llm_type == "LOCAL":
-        client = LLMClientLocal(base_url="http://127.0.0.1:5000")
+        local_model = os.getenv("LOCAL_MODEL", None)
+        client = LLMClientLocal(
+            base_url="http://127.0.0.1:5000",
+            model_name=local_model,
+        )
         return Gamemaster(
             user_id=user_id,
             llm_client_chat=client,
