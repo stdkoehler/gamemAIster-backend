@@ -1,6 +1,10 @@
 from enum import Enum, auto
-from typing import Dict
-from src.llmclient.llm_parameters import LLMConfig
+from src.llmclient.llm_parameters import (
+    UNSET,
+    TaskResolution,
+    LLMConfig,
+    LLMLogicConfig,
+)
 
 
 class LLMTask(Enum):
@@ -20,22 +24,37 @@ class ConfigRegistry:
 
     # We define the specific capacity (max_tokens) per client here.
     # The personalities (Thinking, Architect, Story) are merged onto these.
-    _MATRIX: Dict[str, Dict[LLMTask, LLMConfig]] = {
+    _MATRIX: dict[str, dict[LLMTask, TaskResolution]] = {
         "LLMClientLocal": {
-            LLMTask.SUMMARY: LLMConfig(max_tokens=2048),
-            LLMTask.ARCHITECT: LLMConfig(max_tokens=4096),
-            LLMTask.STORY: LLMConfig(max_tokens=2048),
+            LLMTask.SUMMARY: TaskResolution(
+                llm=LLMConfig(max_tokens=2048),
+                logic=LLMLogicConfig(last_k=5, min_summary_tokens=2048),
+            ),
+            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=4096)),
+            LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=2048)),
         },
         "LLMClientDeepSeek": {
-            LLMTask.SUMMARY: LLMConfig(max_tokens=4096),
-            LLMTask.ARCHITECT: LLMConfig(max_tokens=8192),
-            LLMTask.STORY: LLMConfig(max_tokens=4096),
+            LLMTask.SUMMARY: TaskResolution(
+                llm=LLMConfig(max_tokens=4096),
+                logic=LLMLogicConfig(last_k=15, min_summary_tokens=2048),
+            ),
+            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=8192)),
+            LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=4096)),
+        },
+        "LLMClientMinMax": {
+            LLMTask.SUMMARY: TaskResolution(
+                llm=LLMConfig(max_tokens=4096),
+                logic=LLMLogicConfig(last_k=15, min_summary_tokens=2048),
+            ),
+            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=8192)),
+            LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=4096)),
         },
         # Add other clients here (e.g., LLMClientGemini)
     }
 
     # Personality Profiles (Your Original Parameters)
-    _PROFILES: Dict[LLMTask, LLMConfig] = {
+    # will be overwritten with matrix values where applicable
+    _PROFILES: dict[LLMTask, LLMConfig] = {
         LLMTask.SUMMARY: LLMConfig(
             temperature=0.1,
             min_p=0.05,
@@ -82,21 +101,42 @@ class ConfigRegistry:
     }
 
     @classmethod
-    def get_config(cls, client_class_name: str, task: LLMTask) -> LLMConfig:
+    def get_llm_logic_config(cls, model_identifier: str) -> LLMLogicConfig:
+        """
+        Retrieves internal logic parameters for a specific model.
+        Currently pulls from the SUMMARY task resolution as these are general model limits.
+        """
+        client_map = cls._MATRIX.get(model_identifier, cls._MATRIX["LLMClientLocal"])
+
+        # We assume SUMMARY holds the 'General' logic for the model
+        task_resolution = client_map.get(LLMTask.SUMMARY)
+
+        if (
+            task_resolution
+            and task_resolution.logic
+            and task_resolution.logic.last_k is not UNSET
+        ):
+            return task_resolution.logic
+
+        return LLMLogicConfig.defaults()
+
+    @classmethod
+    def get_llm_config(cls, model_identifier: str, task: LLMTask) -> LLMConfig:
         """
         Resolves the configuration for a given client and task.
         Falls back to LLMClientLocal if the client is not registered.
         """
         # 1. Get the Capacity (max_tokens) for the specific client
         # Fallback to LLMClientLocal if specific class name isn't in matrix
-        client_capacity_map = cls._MATRIX.get(
-            client_class_name, cls._MATRIX["LLMClientLocal"]
+        client_map = cls._MATRIX.get(model_identifier, cls._MATRIX["LLMClientLocal"])
+        task_resolution = client_map.get(task)
+        capacity_config = (
+            task_resolution.llm if task_resolution else LLMConfig(max_tokens=2048)
         )
-        capacity_config = client_capacity_map.get(task, LLMConfig(max_tokens=1024))
 
         # 2. Get the Personality (samplers, temperature) for the task
         personality_config = cls._PROFILES.get(task, LLMConfig.defaults())
 
-        # 3. Merge: Capacity is the base, Personality is the overlay
+        # 3. Merge: Personality is base, Capaciy overwrites
         # This ensures Personality Samplers + Client-specific Tokens
-        return personality_config.apply_to(capacity_config)
+        return capacity_config.apply_to(personality_config)

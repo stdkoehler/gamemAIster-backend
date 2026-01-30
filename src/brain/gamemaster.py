@@ -21,7 +21,7 @@ from src.llmclient.llm_client import (
 )
 
 from src.llmclient.llm_parameters import LLMConfig
-from src.llmclient.llm_config_registry import LLMTask
+from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
 
 from src.brain.oracle import (
     BaseOracle,
@@ -253,12 +253,15 @@ class Gamemaster:
         """
         Provide summary chat
         """
+        logic_config = ConfigRegistry.get_llm_logic_config(
+            self._llm_client_chat.model_identifier
+        )
 
         chat = SummaryChat(
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
-            last_k=5,
-            min_summary_tokens=2048,
+            last_k=logic_config.last_k,  # type: ignore
+            min_summary_tokens=logic_config.min_summary_tokens,  # type: ignore
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,

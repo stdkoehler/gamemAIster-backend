@@ -22,7 +22,7 @@ UNSET = Unset()
 @dataclass(frozen=True)
 class LLMConfig:
     """
-    A strictly typed, immutable configuration object.
+    Inference parameters sent to the LLM API.
     Defaults are set to UNSET to facilitate the Overlay Pattern.
     """
 
@@ -119,3 +119,43 @@ class LLMConfig:
             stop=[],
             logits_processor=[],
         )
+
+
+@dataclass(frozen=True)
+class LLMLogicConfig:
+    """
+    Internal application logic parameters.
+    These are used by the server (e.g., SummaryChat) and never sent to the LLM API.
+    """
+
+    last_k: int | Unset = UNSET
+    min_summary_tokens: int | Unset = UNSET
+
+    def apply_to(self, base: LLMLogicConfig) -> LLMLogicConfig:
+        """
+        Creates a new LLMLogicConfig by merging 'self' (the patch) onto 'base'.
+        Only fields that are NOT 'UNSET' in 'self' will overwrite 'base'.
+        """
+        actual_overrides: dict[str, Any] = {}
+
+        for field in fields(self):
+            value = getattr(self, field.name)
+            if value is not UNSET:
+                actual_overrides[field.name] = value
+
+        return replace(base, **actual_overrides)
+
+    @classmethod
+    def defaults(cls) -> LLMLogicConfig:
+        """Default logic settings if not specified by the model registry."""
+        return cls(last_k=5, min_summary_tokens=2048)
+
+
+@dataclass(frozen=True)
+class TaskResolution:
+    """
+    A bundle containing both the API configuration and internal logic configuration.
+    """
+
+    llm: LLMConfig
+    logic: LLMLogicConfig | None = None

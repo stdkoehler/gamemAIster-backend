@@ -49,6 +49,11 @@ class LLMClientBase(ABC):
         # It is NOT resolved here so that it can still be a 'partial' config
         self.member_config = config if config else LLMConfig()
 
+    @property
+    def model_identifier(self) -> str:
+        """Returns the class name of the client."""
+        return self.model_name or self.__class__.__name__
+
     def get_task_config(
         self, task: LLMTask, call_override: LLMConfig | None = None
     ) -> LLMConfig:
@@ -62,8 +67,7 @@ class LLMClientBase(ABC):
         4. Resolution (Fill remaining holes with system defaults) remove all UNSETs.
         """
         # Layer 1: Identity/Hardware baseline (e.g. max_tokens for this model)
-        identity = self.model_name or self.__class__.__name__
-        registry_resolved = ConfigRegistry.get_config(identity, task)
+        registry_resolved = ConfigRegistry.get_llm_config(self.model_identifier, task)
 
         # Layer 2: Apply the Registry personality ON TOP OF the client instance
         # This means ARCHITECT's temperature (0.95) will OVERWRITE
