@@ -37,6 +37,19 @@ from src.brain.json_tools import extract_json_schema
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
 
+VAMPIRE_WARMSTART = """
+<think>
+I MUST adhere to Vampire the Masquerade V5 lore and rules and ensure my response aligns with VtM's lore and atmosphere. At the same time my response MUST NOT be cliché or overly dramatic. I don't need to force the supernatural elements if they don't come naturally.
+I always should consider the player character for narrative and mechanical implications: Is he human, ghoul, Kindred of a specific clan?
+If the player rolled and provided a result upon my request, I must consider the impact (considering margin=difficulty-successes). If the player suggested an action, I also must determine if a roll is required. What are the stakes based on VtM V5's rules?
+I should not overdo asking for rolls, specifically I shouldn't ask for a similar roll multiple times in short succession.
+Let's very briefly summarize the current chain of events.
+"""
+
+REASONING_WARMSTART = {
+    api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE: VAMPIRE_WARMSTART,
+}
+
 
 def build_gamemaster(
     user_id: str,
@@ -49,18 +62,24 @@ def build_gamemaster(
     llm_type = os.getenv("LLM")
     if llm_type == "LOCAL":
         local_model = os.getenv("LOCAL_MODEL", None)
-        client = LLMClientLocal(
+        client_story = LLMClientLocal(
             base_url="http://127.0.0.1:5000",
             model_name=local_model,
+            reasoning_warmstart=REASONING_WARMSTART.get(game_type, None),
+        )
+        client_reasoning = LLMClientLocal(
+            base_url="http://127.0.0.1:5000",
+            model_name=local_model,
+            reasoning_warmstart="<think>",
         )
         return Gamemaster(
             user_id=user_id,
-            llm_client_chat=client,
-            llm_client_reasoning=client,
+            llm_client_chat=client_story,
+            llm_client_reasoning=client_reasoning,
             game_type=game_type,
             mission_options=mission_options,
         )
-    elif llm_type == "DEEPSEEK":
+    if llm_type == "DEEPSEEK":
         api_key = os.getenv("API_KEY_DEEPSEEK")
         if api_key is None:
             raise ValueError("OpenRouter API key not set")
@@ -73,7 +92,7 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    elif llm_type == "GEMINI":
+    if llm_type == "GEMINI":
         api_key = os.getenv("API_KEY_GEMINI")
         if api_key is None:
             raise ValueError("Gemini API key not set")
@@ -88,7 +107,7 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    elif llm_type == "CLAUDE":
+    if llm_type == "CLAUDE":
         api_key = os.getenv("API_KEY_CLAUDE")
         if api_key is None:
             raise ValueError("Claude API key not set")
@@ -101,7 +120,7 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    elif llm_type == "MINMAX":
+    if llm_type == "MINMAX":
         api_key = os.getenv("API_KEY_MINMAX")
         if api_key is None:
             raise ValueError("MiniMax API key not set")
@@ -112,8 +131,8 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    else:
-        raise ValueError(f"Unknown LLM type: {llm_type}")
+
+    raise ValueError(f"Unknown LLM type: {llm_type}")
 
 
 @dataclass

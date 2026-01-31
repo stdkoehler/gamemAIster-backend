@@ -39,7 +39,10 @@ class LLMClientBase(ABC):
     """
 
     def __init__(
-        self, config: LLMConfig | None = None, model_name: str | None = None
+        self,
+        config: LLMConfig | None = None,
+        model_name: str | None = None,
+        reasoning_warmstart: str | None = None,
     ) -> None:
         """
         Initializes client with an identity and a 'member config'.
@@ -48,6 +51,7 @@ class LLMClientBase(ABC):
         # member_config holds instance-level preferences
         # It is NOT resolved here so that it can still be a 'partial' config
         self.member_config = config if config else LLMConfig()
+        self.reasoning_warmstart = reasoning_warmstart
 
     @property
     def model_identifier(self) -> str:
@@ -165,24 +169,19 @@ class LLMClientLocal(LLMClientBase):
         base_url: str,
         config: LLMConfig | None = None,
         model_name: str | None = None,
+        reasoning_warmstart: str | None = None,
     ):
-        super().__init__(config=config, model_name=model_name)
+        super().__init__(
+            config=config,
+            model_name=model_name,
+            reasoning_warmstart=reasoning_warmstart,
+        )
         self._base_url = base_url
         self._completion_url = urljoin(base_url, "/v1/completions")
         self._chat_completion_url = urljoin(base_url, "/v1/chat/completions")
         self._stop_generation_url = urljoin(base_url, "/v1/internal/stop-generation")
         self._token_url = urljoin(base_url, "/v1/internal/token-count")
         self._headers = {"Content-Type": "application/json"}
-
-    def _prepare_payload(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
-    ) -> dict[str, Any]:
-        if reasoning:
-            messages = self.adjust_reasoning_messages(messages)
-
-        payload = asdict(config)
-        payload["messages"] = messages
-        return payload
 
     def _post_request(
         self, url: str, payload: dict[str, Any], timeout: int = 60
@@ -204,9 +203,9 @@ class LLMClientLocal(LLMClientBase):
         response.raise_for_status()
         return response.json()
 
-    def adjust_reasoning_messages(
-        self, messages: list[dict[str, str]]
-    ) -> list[dict[str, str]]:
+    def adjust_reasoning_mistral24b(
+        self, messages: list[dict[str, str]], payload: dict[str, Any]
+    ) -> tuple[list[dict[str, str]], dict[str, Any]]:
         """
         Adjusts the messages to include reasoning prompts if requested.
         Required for DeepHermes Mistral 24b
@@ -214,7 +213,11 @@ class LLMClientLocal(LLMClientBase):
         system_msg = next(
             (msg for msg in messages if msg["role"] == "system"), {"content": ""}
         )
-        user_msgs = [msg for msg in messages if msg["role"] == "user"]
+        user_msgs = [
+            msg
+            for msg in messages
+            if msg["role"] == "user" or msg["role"] == "assistant"
+        ]
 
         # In-place safety for the user message content
         if user_msgs:
@@ -222,20 +225,61 @@ class LLMClientLocal(LLMClientBase):
                 "content"
             ] = f"{system_msg['content']}\n\n{user_msgs[0]['content']}"
 
+        if self.reasoning_warmstart is not None:
+            user_msgs = user_msgs + [
+                {
+                    "role": "assistant",
+                    "content": self.reasoning_warmstart,
+                }
+            ]
+            payload["continue_"] = True
+
         return [
             {
                 "role": "system",
                 "content": "You are a deep thinking AI. Enclose thoughts in <think> </think> tags.",
             }
-        ] + user_msgs
+        ] + user_msgs, payload
+
+    def adjust_reasoning_gemma3_r1(
+        self, messages: list[dict[str, str]], payload: dict[str, Any]
+    ) -> tuple[list[dict[str, str]], dict[str, Any]]:
+        """
+        Gemma3 R1 requires refilled <think> to trigger thinking
+        """
+        if self.reasoning_warmstart is not None:
+            payload["continue_"] = True
+            return (
+                messages
+                + [
+                    {
+                        "role": "assistant",
+                        "content": self.reasoning_warmstart,
+                    }
+                ],
+                payload,
+            )
+        return messages, payload
+
+    def adjust_reasoning(
+        self, messages: list[dict[str, str]], payload: dict[str, Any]
+    ) -> tuple[list[dict[str, str]], dict[str, Any]]:
+        """different models need different reasoning adjustments"""
+        if self.model_name == "mistral-24b-hermes":
+            messages, payload = self.adjust_reasoning_mistral24b(messages, payload)
+        elif self.model_name == "gemma-3-r1-27b":
+            messages, payload = self.adjust_reasoning_gemma3_r1(messages, payload)
+
+        return messages, payload
 
     def _execute_chat_completion_stream(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
     ) -> Generator[str, None, None]:
-        if reasoning:
-            messages = self.adjust_reasoning_messages(messages)
-
         payload = asdict(config)
+
+        if reasoning:
+            messages, payload = self.adjust_reasoning(messages, payload)
+
         payload.update({"messages": messages, "stream": True})
 
         stream_response = requests.post(
@@ -255,10 +299,11 @@ class LLMClientLocal(LLMClientBase):
     def _execute_chat_completion(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
     ) -> str:
-        if reasoning:
-            messages = self.adjust_reasoning_messages(messages)
-
         payload = asdict(config)
+
+        if reasoning:
+            messages, payload = self.adjust_reasoning(messages, payload)
+
         payload.update({"messages": messages, "stream": False})
 
         result = self._post_request(self._chat_completion_url, payload, timeout=3600)

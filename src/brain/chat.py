@@ -481,17 +481,21 @@ class SummaryMemory:
         )
 
     def chat(self) -> list[dict[str, str]]:
+        think_pattern = r"(?si)<think>.*?</think>"
         messages = []
         for interaction in self._history:
+            llm_output = re.sub(think_pattern, "", interaction.llm_output)
             messages.append({"role": "user", "content": interaction.user_input})
-            messages.append({"role": "assistant", "content": interaction.llm_output})
+            messages.append({"role": "assistant", "content": llm_output})
         return messages
 
     def chat_unsummarized(self) -> list[dict[str, str]]:
+        think_pattern = r"(?si)<think>.*?</think>"
         messages = []
         for interaction in self.interactions_unsummarized():
+            llm_output = re.sub(think_pattern, "", interaction.llm_output)
             messages.append({"role": "user", "content": interaction.user_input})
-            messages.append({"role": "assistant", "content": interaction.llm_output})
+            messages.append({"role": "assistant", "content": llm_output})
         return messages
 
     def get_summary(self) -> str:
@@ -664,11 +668,6 @@ class SummaryChat:
                     begun = True
             llm_response += chunk
             yield chunk
-
-        # pattern = (
-        #     r"(?:What\ do\ you\ want\ to\ |What\ would\ you\ like\ to\ )\S[\S\s]*\?\s*"
-        # )
-        # llm_response = re.sub(pattern, "", llm_response)
 
         interaction = Interaction(user_input=user_input, llm_output=llm_response)
 
