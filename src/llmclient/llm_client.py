@@ -4,7 +4,8 @@ import json
 import time
 
 from typing import Generator, Any
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
+from enum import StrEnum
 from abc import ABC, abstractmethod
 
 from urllib.parse import urljoin
@@ -30,6 +31,38 @@ from anthropic.types import (
 
 from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
 from src.llmclient.llm_parameters import LLMConfig
+
+
+class StreamType(StrEnum):
+    """Enumeration for different types of streaming responses."""
+
+    TEXT = "text"
+    TEXT_END = "text_end"
+    THINKING = "thinking"
+    THINKING_END = "thinking_end"
+
+
+@dataclass
+class StreamResponse:
+    """
+    Streaming response can be delta for frontend rendering and complete thinking/text
+    with signature for backend and data storage.
+    """
+
+    type: StreamType
+    """Type of the stream response."""
+
+    delta: str
+    """Delta content for incremental updates."""
+
+    signature: str | None = None
+    """Signature for identifying the thinking response. Relevant for multi-turn thinking."""
+
+    full_thinking: str | None = None
+    """Complete thinking content to be handled by the backend."""
+
+    full_text: str | None = None
+    """Complete text content to be handled by the backend."""
 
 
 class LLMClientBase(ABC):
@@ -107,7 +140,7 @@ class LLMClientBase(ABC):
         reasoning: bool = False,
         config_override: LLMConfig | None = None,
         task: LLMTask = LLMTask.STORY,
-    ) -> Generator[str, None, None]:
+    ) -> Generator[StreamResponse, None, None]:
         """
         Public method for streaming. Ensures UNSET removal via get_task_config.
         """
@@ -118,7 +151,7 @@ class LLMClientBase(ABC):
     @abstractmethod
     def _execute_chat_completion_stream(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
-    ) -> Generator[str, None, None]:
+    ) -> Generator[StreamResponse, None, None]:
         """
         Internal abstract method: Child classes MUST implement the
         actual API call logic here.
@@ -274,7 +307,7 @@ class LLMClientLocal(LLMClientBase):
 
     def _execute_chat_completion_stream(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
-    ) -> Generator[str, None, None]:
+    ) -> Generator[StreamResponse, None, None]:
         payload = asdict(config)
 
         if reasoning:
@@ -291,10 +324,53 @@ class LLMClientLocal(LLMClientBase):
         )
         client = SSEClient(stream_response)  # type: ignore
 
+        # Local model doesn't have specific thinking events
+        # We need to built them ourselves with the think tags
+        thinking_started = False
+        thinking_over = False
+        thinking = ""
+        text = ""
+        rolling_thinking = ""
         for event in client.events():
             result = json.loads(event.data)
-            print(result)
-            yield result["choices"][0]["delta"]["content"]
+            chunk = result["choices"][0]["delta"]["content"]
+            if not thinking_over:
+                rolling_thinking += chunk
+                print(rolling_thinking)
+            if "<think>" in rolling_thinking:
+                thinking_started = True
+                _, think_split = rolling_thinking.split("<think>", 1)
+                rolling_thinking = think_split
+                yield StreamResponse(type=StreamType.THINKING, delta=chunk)
+                continue
+            if thinking_started and "</think>" in rolling_thinking:
+                think_split, text_split = rolling_thinking.split("</think>", 1)
+                thinking = think_split
+                text = text_split
+                rolling_thinking = ""
+                thinking_over = True
+                yield StreamResponse(type=StreamType.THINKING, delta=chunk)
+                yield StreamResponse(
+                    type=StreamType.THINKING_END,
+                    delta="",
+                    signature="",
+                    full_thinking=thinking,
+                )
+                yield StreamResponse(type=StreamType.TEXT, delta=text_split)
+                continue
+            if thinking_started and not thinking_over:
+                yield StreamResponse(type=StreamType.THINKING, delta=chunk)
+                continue
+            if not thinking_started or thinking_over:
+                text += chunk
+                yield StreamResponse(type=StreamType.TEXT, delta=chunk)
+                continue
+
+        yield StreamResponse(
+            type=StreamType.TEXT_END,
+            delta="",
+            full_text=text,
+        )
 
     def _execute_chat_completion(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
@@ -572,8 +648,8 @@ class LLMClientAnthropicBase(LLMClientBase):
 
     def _execute_chat_completion_stream(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
-    ) -> Generator[str, None, None]:
-        sys_inst, msgs = self._convert_messages(messages)
+    ) -> Generator[StreamResponse, None, None]:
+        sys_inst, messages = self._convert_messages(messages)
 
         thinking_cfg = (
             ThinkingConfigEnabledParam(
@@ -586,14 +662,47 @@ class LLMClientAnthropicBase(LLMClientBase):
         with self._client.messages.stream(
             model=self._model,
             max_tokens=config.max_tokens,  # type: ignore
-            temperature=(
-                config.temperature if not reasoning else 1.0  # type: ignore
-            ),  # Anthropic requires temp 1.0 for thinking
+            temperature=(1.0 if reasoning else config.temperature),  # type: ignore
             thinking=thinking_cfg,
             system=sys_inst,
-            messages=msgs,
+            messages=messages,
         ) as stream:
-            yield from stream.text_stream
+            for event in stream:
+                # 1. Capture the Thinking/Reasoning phase
+                if event.type == "content_block_start":
+                    if event.content_block.type == "thinking":
+                        # You can wrap these in <think> tags for your DB/Frontend
+                        yield StreamResponse(type=StreamType.THINKING, delta="<think>")
+                if event.type == "content_block_stop":
+                    if event.content_block.type == "thinking":
+                        # You can wrap these in <think> tags for your DB/Frontend
+                        yield StreamResponse(
+                            type=StreamType.THINKING_END,
+                            delta="</think>",
+                            signature=event.content_block.signature,
+                            full_thinking=event.content_block.thinking,
+                        )
+                    if event.content_block.type == "text":
+                        yield StreamResponse(
+                            type=StreamType.TEXT_END,
+                            delta="",
+                            full_text=event.content_block.text,
+                        )
+                if event.type == "content_block_delta":
+                    if event.delta.type == "thinking_delta":
+                        # You can wrap these in <think> tags for your DB/Frontend
+                        yield StreamResponse(
+                            type=StreamType.THINKING, delta=event.delta.thinking
+                        )
+
+                    # 2. Capture the actual Storyteller response
+                    elif event.delta.type == "text_delta":
+                        yield StreamResponse(
+                            type=StreamType.TEXT, delta=event.delta.text
+                        )
+                # 3. Handle the end of the message (optional)
+                elif event.type == "message_stop":
+                    break
 
     def _execute_chat_completion(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig

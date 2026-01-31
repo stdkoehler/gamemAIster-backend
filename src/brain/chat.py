@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_config_registry import LLMTask
-from src.llmclient.llm_client import LLMClientBase
+from src.llmclient.llm_client import LLMClientBase, StreamResponse, StreamType
 from src.crud.crud import crud_instance
 
 from src.brain.data_types import Interaction, EntityResponse, Scene
@@ -655,19 +655,20 @@ class SummaryChat:
             messages.append({"role": "user", "content": user_input})
 
         llm_response = ""
-        begun = False
         for chunk in self._llm_client_chat.chat_completion_stream(
             messages,
             config_override=LLMConfig(stop=["PL", "###", "/FIN"]),
             reasoning=True,
             task=LLMTask.STORY,
         ):
-            if not begun:
-                chunk = self._trim_chunk(chunk)
-                if chunk != "":
-                    begun = True
-            llm_response += chunk
-            yield chunk
+            if chunk.type == StreamType.TEXT or chunk.type is StreamType.THINKING:
+                yield chunk.delta
+            if chunk.type == StreamType.THINKING_END:
+                full_thinking = chunk.full_thinking
+                signature = chunk.signature
+                yield chunk.delta
+            if chunk.type == StreamType.TEXT_END:
+                llm_response = chunk.full_text if chunk.full_text else ""
 
         interaction = Interaction(user_input=user_input, llm_output=llm_response)
 
