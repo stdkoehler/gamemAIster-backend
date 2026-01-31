@@ -326,50 +326,111 @@ class LLMClientLocal(LLMClientBase):
 
         # Local model doesn't have specific thinking events
         # We need to built them ourselves with the think tags
-        thinking_started = False
-        thinking_over = False
-        thinking = ""
-        text = ""
-        rolling_thinking = ""
+        # 1. Define constants to avoid "Magic Strings" and calculation errors
+        TAG_START = "<think>"
+        TAG_END = "</think>"
+        # We only need to buffer enough to catch the longest tag being split across chunks
+        MAX_TAG_LEN = max(len(TAG_START), len(TAG_END))
+
+        class ParseState(StrEnum):
+            PRE_THINK = "pre_think"  # Looking for <think>
+            THINKING = "thinking"  # Looking for </think>
+            TEXT = "text"  # Thinking is done, just stream text
+
+        buffer = ""
+        state = ParseState.PRE_THINK
+
+        accumulated_text = ""
+        accumulated_thinking = ""
+
         for event in client.events():
             result = json.loads(event.data)
-            chunk = result["choices"][0]["delta"]["content"]
-            if not thinking_over:
-                rolling_thinking += chunk
-                print(rolling_thinking)
-            if "<think>" in rolling_thinking:
-                thinking_started = True
-                _, think_split = rolling_thinking.split("<think>", 1)
-                rolling_thinking = think_split
-                yield StreamResponse(type=StreamType.THINKING, delta=chunk)
+            chunk = result["choices"][0]["delta"].get("content", "")
+
+            if not chunk:
                 continue
-            if thinking_started and "</think>" in rolling_thinking:
-                think_split, text_split = rolling_thinking.split("</think>", 1)
-                thinking = think_split
-                text = text_split
-                rolling_thinking = ""
-                thinking_over = True
-                yield StreamResponse(type=StreamType.THINKING, delta=chunk)
-                yield StreamResponse(
-                    type=StreamType.THINKING_END,
-                    delta="",
-                    signature="",
-                    full_thinking=thinking,
-                )
-                yield StreamResponse(type=StreamType.TEXT, delta=text_split)
-                continue
-            if thinking_started and not thinking_over:
-                yield StreamResponse(type=StreamType.THINKING, delta=chunk)
-                continue
-            if not thinking_started or thinking_over:
-                text += chunk
-                yield StreamResponse(type=StreamType.TEXT, delta=chunk)
-                continue
+
+            buffer += chunk
+
+            # The 'while True' allows us to process state transitions
+            # immediately within the same chunk (e.g., "Hello <think>")
+            while True:
+
+                # --- PHASE 1: Normal Text (Looking for Start Tag) ---
+                if state == ParseState.PRE_THINK:
+                    if (idx := buffer.find(TAG_START)) != -1:
+                        # Tag found: Emit text before tag, emit tag, switch state
+                        before, after = buffer[:idx], buffer[idx + len(TAG_START) :]
+
+                        if before:
+                            accumulated_text += before
+                            yield StreamResponse(type=StreamType.TEXT, delta=before)
+
+                        yield StreamResponse(type=StreamType.THINKING, delta=TAG_START)
+
+                        buffer = after
+                        state = ParseState.THINKING
+                        continue  # Re-process 'after' in the new state immediately
+
+                    # Tag NOT found: Emit safe part of buffer, keep tail
+                    # at least tag length to catch split tags
+                    if len(buffer) > MAX_TAG_LEN:
+                        safe_content = buffer[:-MAX_TAG_LEN]
+                        buffer = buffer[-MAX_TAG_LEN:]
+                        accumulated_text += safe_content
+                        yield StreamResponse(type=StreamType.TEXT, delta=safe_content)
+                    break
+
+                # --- PHASE 2: Thinking (Looking for End Tag) ---
+                elif state == ParseState.THINKING:
+                    if (idx := buffer.find(TAG_END)) != -1:
+                        # Tag found: Emit thought before tag, emit tag, finalize thought
+                        before, after = buffer[:idx], buffer[idx + len(TAG_END) :]
+
+                        if before:
+                            accumulated_thinking += before
+                            yield StreamResponse(type=StreamType.THINKING, delta=before)
+
+                        yield StreamResponse(type=StreamType.THINKING, delta=TAG_END)
+
+                        # Send the full thinking object
+                        yield StreamResponse(
+                            type=StreamType.THINKING_END,
+                            delta="",
+                            full_thinking=accumulated_thinking,
+                        )
+
+                        buffer = after
+                        state = ParseState.TEXT
+                        continue
+
+                    # Tag NOT found: Emit safe part of buffer, keep tail
+                    if len(buffer) > MAX_TAG_LEN:
+                        safe_content = buffer[:-MAX_TAG_LEN]
+                        buffer = buffer[-MAX_TAG_LEN:]
+                        accumulated_thinking += safe_content
+                        yield StreamResponse(
+                            type=StreamType.THINKING, delta=safe_content
+                        )
+                    break
+
+                # --- PHASE 3: Done (Passthrough) ---
+                elif state == ParseState.TEXT:
+                    if buffer:
+                        accumulated_text += buffer
+                        yield StreamResponse(type=StreamType.TEXT, delta=buffer)
+                        buffer = ""
+                    break
+
+        # Handle any remaining buffer if stream ends unexpectedly
+        if buffer and state != ParseState.THINKING:
+            accumulated_text += buffer
+            yield StreamResponse(type=StreamType.TEXT, delta=buffer)
 
         yield StreamResponse(
             type=StreamType.TEXT_END,
             delta="",
-            full_text=text,
+            full_text=accumulated_text,
         )
 
     def _execute_chat_completion(
