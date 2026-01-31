@@ -1,5 +1,6 @@
 """Types"""
 
+import re
 from enum import Enum
 from pydantic import BaseModel
 
@@ -56,7 +57,19 @@ class Interaction:
         Returns:
             str: The formatted interaction.
         """
-        return f"Player: {self._user_input}\n" f"Gamemaster: {self._llm_output}"
+
+        def cleanse_text(text: str) -> str:
+            """Cleanses the text by removing OOC and "What do you do" sections."""
+            ooc_pattern = r"(?si)\s*[\[\(]OOC:.*?[\)\]]"
+            think_pattern = r"(?si)<think>.*?</think>"
+            wdyd_pattern = r"(?si)---(?:\s+)?\**What do you do.*"
+            text = re.sub(ooc_pattern, "", text)
+            text = re.sub(think_pattern, "", text)
+            return re.sub(wdyd_pattern, "", text)
+
+        clean_user_input = cleanse_text(self._user_input)
+        clean_llm_output = cleanse_text(self._llm_output)
+        return f"Player: {clean_user_input}\n" f"Gamemaster: {clean_llm_output}"
 
     @property
     def user_input(self) -> str:

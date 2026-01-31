@@ -655,6 +655,7 @@ class SummaryChat:
         for chunk in self._llm_client_chat.chat_completion_stream(
             messages,
             config_override=LLMConfig(stop=["PL", "###", "/FIN"]),
+            reasoning=True,
             task=LLMTask.STORY,
         ):
             if not begun:
