@@ -397,7 +397,7 @@ class LLMClientLocal(LLMClientBase):
                         yield StreamResponse(
                             type=StreamType.THINKING_END,
                             delta="",
-                            full_thinking=accumulated_thinking,
+                            full_thinking=accumulated_thinking.strip(),
                         )
 
                         buffer = after
@@ -430,7 +430,7 @@ class LLMClientLocal(LLMClientBase):
         yield StreamResponse(
             type=StreamType.TEXT_END,
             delta="",
-            full_text=accumulated_text,
+            full_text=accumulated_text.strip(),
         )
 
     def _execute_chat_completion(
