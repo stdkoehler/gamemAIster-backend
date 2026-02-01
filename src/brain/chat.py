@@ -658,7 +658,6 @@ class SummaryChat:
             if chunk.type == StreamType.THINKING:
                 yield ("thinking", chunk.delta)
             elif chunk.type == StreamType.TEXT:
-                print(chunk.delta)
                 yield ("text", chunk.delta)
             elif chunk.type == StreamType.THINKING_END:
                 full_thinking = chunk.full_thinking
@@ -668,6 +667,18 @@ class SummaryChat:
                 llm_response = chunk.full_text if chunk.full_text else ""
             else:
                 raise ValueError(f"Unknown stream type: {chunk.type}")
+
+        # Carefull, we can only do this for a LLM that is not tamper protected
+        if (
+            self._llm_client_chat.reasoning_warmstart is not None
+            and full_thinking is not None
+        ):
+            full_thinking = full_thinking.replace(
+                self._llm_client_chat.reasoning_warmstart.replace(
+                    "<think>", ""
+                ).strip(),
+                "",
+            ).strip()
 
         interaction = Interaction(
             user_input=(
