@@ -366,7 +366,8 @@ class LLMClientLocal(LLMClientBase):
                             accumulated_text += before
                             yield StreamResponse(type=StreamType.TEXT, delta=before)
 
-                        yield StreamResponse(type=StreamType.THINKING, delta=TAG_START)
+                        # Don't emit the tags
+                        # yield StreamResponse(type=StreamType.THINKING, delta=TAG_START)
 
                         buffer = after
                         state = ParseState.THINKING
@@ -391,7 +392,8 @@ class LLMClientLocal(LLMClientBase):
                             accumulated_thinking += before
                             yield StreamResponse(type=StreamType.THINKING, delta=before)
 
-                        yield StreamResponse(type=StreamType.THINKING, delta=TAG_END)
+                        # Don't emit the tags
+                        # yield StreamResponse(type=StreamType.THINKING, delta=TAG_END)
 
                         # Send the full thinking object
                         yield StreamResponse(

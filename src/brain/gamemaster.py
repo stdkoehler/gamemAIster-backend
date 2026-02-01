@@ -305,7 +305,7 @@ class Gamemaster:
             else None
         )
         for chunk in chat.predict(prompt.prompt, interaction):
-            yield json.dumps({"text": chunk}) + "\n"
+            yield json.dumps({"type": chunk[0], "content": chunk[1]}) + "\n"
 
     def generate_mission(self, background: str) -> api_schema_mission.Mission:
         """

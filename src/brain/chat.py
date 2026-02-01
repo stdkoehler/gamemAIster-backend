@@ -539,7 +539,7 @@ class SummaryChat:
 
     def predict(
         self, user_input: str | None, last_interaction: Interaction | None = None
-    ) -> Generator[str, None, None]:
+    ) -> Generator[tuple[str, str], None, None]:
         """
         Orchestrates the LLM generation process, handling new turns, history corrections,
         and regenerations.
@@ -578,7 +578,7 @@ class SummaryChat:
                                                    history before generation (Case 2 & 3).
 
         Yields:
-            str: Streamed chunks of the LLM's thinking process and final text response.
+            tuple[str, str]: Streamed chunks of the LLM's thinking process and final text response.
 
         Raises:
             ValueError: If `user_input` is None (Regen) but `last_interaction` is also None.
@@ -655,14 +655,19 @@ class SummaryChat:
             reasoning=True,
             task=LLMTask.STORY,
         ):
-            if chunk.type == StreamType.TEXT or chunk.type is StreamType.THINKING:
-                yield chunk.delta
-            if chunk.type == StreamType.THINKING_END:
+            if chunk.type == StreamType.THINKING:
+                yield ("thinking", chunk.delta)
+            elif chunk.type == StreamType.TEXT:
+                print(chunk.delta)
+                yield ("text", chunk.delta)
+            elif chunk.type == StreamType.THINKING_END:
                 full_thinking = chunk.full_thinking
                 signature = chunk.signature
-                yield chunk.delta
-            if chunk.type == StreamType.TEXT_END:
+                yield ("thinking_end", chunk.delta)
+            elif chunk.type == StreamType.TEXT_END:
                 llm_response = chunk.full_text if chunk.full_text else ""
+            else:
+                raise ValueError(f"Unknown stream type: {chunk.type}")
 
         interaction = Interaction(
             user_input=(
