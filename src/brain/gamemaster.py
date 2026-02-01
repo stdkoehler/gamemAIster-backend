@@ -277,6 +277,10 @@ class Gamemaster:
             self._llm_client_chat.model_identifier
         )
 
+        # prompt.prompt is new user input, None if regenerate previous interaction
+        # prompt.prev_interaction is previous interaction to update or new user prompt,
+        #    None if new interaction
+
         chat = SummaryChat(
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
@@ -291,6 +295,8 @@ class Gamemaster:
             mission_id=prompt.mission_id,
         )
 
+        # if frontend sends previous interaction, we want to update it
+        # (adapted user_prompt for regeneration, adapted llm_output for correction)
         interaction = (
             Interaction(
                 prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output

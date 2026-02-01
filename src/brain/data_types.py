@@ -13,12 +13,23 @@ class Interaction:
         _id (str): The unique identifier of the interaction.
         _user_input (str): The user input in the interaction.
         _llm_output (str): The AI language model output in the interaction.
+        _llm_thinking (str | None): The AI language model's internal thinking or reasoning.
+        _llm_thinking_signature (str | None): The signature or metadata related to the AI's thinking.
     """
 
-    def __init__(self, user_input: str, llm_output: str, id_: int | None = None):
+    def __init__(
+        self,
+        user_input: str,
+        llm_output: str,
+        llm_thinking: str | None = None,
+        llm_thinking_signature: str | None = None,
+        id_: int | None = None,
+    ):
         self._id = id_
         self._user_input = user_input
         self._llm_output = llm_output
+        self._llm_thinking = llm_thinking
+        self._llm_thinking_signature = llm_thinking_signature
 
     def format_interaction_summary(self) -> str:
         """
@@ -50,6 +61,14 @@ class Interaction:
     @property
     def llm_output(self) -> str:
         return self._llm_output
+
+    @property
+    def llm_thinking(self) -> str | None:
+        return self._llm_thinking
+
+    @property
+    def llm_thinking_signature(self) -> str | None:
+        return self._llm_thinking_signature
 
 
 class Entity(BaseModel):

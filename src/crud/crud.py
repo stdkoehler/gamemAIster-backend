@@ -197,6 +197,8 @@ class CRUD:
                     id_=memory.conversation_memory_id,
                     user_input=memory.user_input,
                     llm_output=memory.llm_output,
+                    llm_thinking=memory.llm_thinking,
+                    llm_thinking_signature=memory.llm_thinking_signature,
                 )
                 for memory in result
             ]
@@ -206,6 +208,8 @@ class CRUD:
             mission_id=mission_id,
             user_input=interaction.user_input,
             llm_output=interaction.llm_output,
+            llm_thinking=interaction.llm_thinking,
+            llm_thinking_signature=interaction.llm_thinking_signature,
         )
         with self._sessionmaker() as session:
             session.add(memory)
@@ -233,6 +237,13 @@ class CRUD:
             if conversation_memory is not None:
                 conversation_memory.user_input = interaction.user_input
                 conversation_memory.llm_output = interaction.llm_output
+                # only update if llm_thinking and llm_signature is not none
+                if interaction.llm_thinking is not None:
+                    conversation_memory.llm_thinking = interaction.llm_thinking
+                if interaction.llm_thinking_signature is not None:
+                    conversation_memory.llm_thinking_signature = (
+                        interaction.llm_thinking_signature
+                    )
                 session.commit()
             else:
                 print("No ConversationMemory found for the given mission_id.")
