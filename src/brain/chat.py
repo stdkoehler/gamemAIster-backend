@@ -407,24 +407,6 @@ class SummaryMemory:
 
         # self._try_summarize()
 
-    def interactions_complete(self) -> list[Interaction]:
-        """
-        Returns the complete history of interactions in the chat conversation.
-
-        Returns:
-            List[Interaction]: The complete history of interactions.
-        """
-        return self._history
-
-    def interactions_summarized(self) -> list[Interaction]:
-        """
-        Returns a list of interactions that have already been summarized in the chat conversation.
-
-        Returns:
-            List[Interaction]: The list of interactions that have been summarized.
-        """
-        return self._history[: self._n_summarized]
-
     def interactions_unsummarized(self) -> list[Interaction]:
         """
         Returns the current interactions (that have not been summarized yet) in the chat conversation.
@@ -434,51 +416,14 @@ class SummaryMemory:
         """
         return self._history[self._n_summarized :]
 
-    def text_interactions_unsummarized(self) -> str:
+    def last_user_input(self) -> str:
         """
-        Returns the formatted text of the current interactions in the chat conversation.
+        Returns the user input of the last interaction in the chat conversation.
 
         Returns:
-            str: The formatted text of the current interactions.
+            str: The user input of the last interaction.
         """
-        return "\n".join(
-            interaction.format_interaction()
-            for interaction in self.interactions_unsummarized()
-        )
-
-    def text_interactions_unsummarized_regenerate(self) -> tuple[str, str]:
-        """
-        Returns the formatted text of the current interactions in the chat conversation, excluding the last interaction.
-
-        Returns:
-            tuple[str, str]: A tuple containing two strings:
-                - The formatted text of the current interactions, excluding the last interaction.
-                - The user input of the last interaction.
-        """
-        if not self._history:
-            return "", ""
-        unsummarized_interactions = self.interactions_unsummarized()
-        return (
-            "\n".join(
-                interaction.format_interaction()
-                for interaction in unsummarized_interactions[:-1]
-            ),
-            self._history[-1].user_input,
-        )
-
-    def text_interactions_complete(self) -> str:
-        """
-        Returns the formatted text of all interactions in the chat conversation.
-
-        Returns:
-            str: The formatted text of all interactions.
-        """
-        return "\n".join(
-            [
-                interaction.format_interaction()
-                for interaction in self.interactions_complete()
-            ]
-        )
+        return self._history[-1].user_input
 
     def chat(self) -> list[dict[str, str]]:
         think_pattern = r"(?si)<think>.*?</think>"
@@ -614,7 +559,7 @@ class SummaryChat:
 
         # regenerate with previous input
         if user_input is None:
-            _, user_input = self._memory.text_interactions_unsummarized_regenerate()
+            user_input = self._memory.last_user_input()
 
         # print("Current Summary:")
         # print(self._memory.summary)

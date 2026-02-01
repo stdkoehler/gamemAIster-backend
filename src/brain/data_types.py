@@ -5,21 +5,6 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class Actor(Enum):
-    """
-    An enumeration class representing the actors in a chat conversation.
-
-    Attributes:
-        USER (str): Represents the user in the conversation.
-        LLM (str): Represents the AI language model in the conversation.
-    """
-
-    SYSTEM = "<|im_start|>system"
-    SYSTEM_END = "<|im_end|>"
-    USER = "<|im_start|>user\n{msg}<|im_end|>"
-    LLM = "<|im_start|>assistant\n{msg}<|im_end|>"
-
-
 class Interaction:
     """
     A class representing an interaction in a chat conversation.
@@ -34,19 +19,6 @@ class Interaction:
         self._id = id_
         self._user_input = user_input
         self._llm_output = llm_output
-
-    def format_interaction(self) -> str:
-        """
-        Formats the interaction by combining the formatted user input and the
-        formatted AI language model output.
-
-        Returns:
-            str: The formatted interaction.
-        """
-        return (
-            f"{self.format_user_input(self._user_input)}\n"
-            f"{self.format_llm_output(self._llm_output)}"
-        )
 
     def format_interaction_summary(self) -> str:
         """
@@ -78,40 +50,6 @@ class Interaction:
     @property
     def llm_output(self) -> str:
         return self._llm_output
-
-    @property
-    def user_input_formatted(self) -> str:
-        return Interaction.format_user_input(self._user_input)
-
-    @property
-    def llm_output_formatted(self) -> str:
-        return Interaction.format_llm_output(self._llm_output)
-
-    @staticmethod
-    def format_user_input(user_input: str) -> str:
-        """
-        Formats the user input by combining it with the actor prefix.
-
-        Args:
-            user_input (str): The user input to be formatted.
-
-        Returns:
-            str: The formatted user input with the actor prefix.
-        """
-        return Actor.USER.value.format(msg=user_input)
-
-    @staticmethod
-    def format_llm_output(llm_output: str) -> str:
-        """
-        Formats the user input by combining it with the actor prefix.
-
-        Args:
-            llm_output (str): The llm output to be formatted.
-
-        Returns:
-            str: The formatted llm output with the llm prefix.
-        """
-        return Actor.LLM.value.format(msg=llm_output)
 
 
 class Entity(BaseModel):
