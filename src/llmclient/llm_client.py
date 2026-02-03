@@ -831,7 +831,7 @@ class LLMClientClaude(LLMClientAnthropicBase):
         super().__init__(api_key, model, config=config)
 
 
-class LLMClientMinMax(LLMClientAnthropicBase):
+class LLMClientMiniMax(LLMClientAnthropicBase):
     """
     LLMClient implementation for MiniMax using the Anthropic SDK.
     """

@@ -41,7 +41,7 @@ class ConfigRegistry:
             LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=8192)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=4096)),
         },
-        "LLMClientMinMax": {
+        "LLMClientMiniMax": {
             LLMTask.SUMMARY: TaskResolution(
                 llm=LLMConfig(max_tokens=4096),
                 logic=LLMLogicConfig(last_k=15, min_summary_tokens=2048),

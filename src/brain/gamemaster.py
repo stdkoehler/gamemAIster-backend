@@ -17,7 +17,7 @@ from src.llmclient.llm_client import (
     LLMClientGemini,
     LLMClientLocal,
     LLMClientDeepSeek,
-    LLMClientMinMax,
+    LLMClientMiniMax,
 )
 
 from src.llmclient.llm_parameters import LLMConfig
@@ -121,14 +121,16 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    if llm_type == "MINMAX":
-        api_key = os.getenv("API_KEY_MINMAX")
+    if llm_type == "MINIMAX":
+        api_key = os.getenv("API_KEY_MINIMAX")
         if api_key is None:
             raise ValueError("MiniMax API key not set")
         return Gamemaster(
             user_id=user_id,
-            llm_client_chat=LLMClientMinMax(api_key=api_key, model="MiniMax-M2.1"),
-            llm_client_reasoning=LLMClientMinMax(api_key=api_key, model="MiniMax-M2.1"),
+            llm_client_chat=LLMClientMiniMax(api_key=api_key, model="MiniMax-M2.1"),
+            llm_client_reasoning=LLMClientMiniMax(
+                api_key=api_key, model="MiniMax-M2.1"
+            ),
             game_type=game_type,
             mission_options=mission_options,
         )
