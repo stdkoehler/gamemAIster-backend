@@ -129,7 +129,19 @@ class LLMLogicConfig:
     """
 
     last_k: int | Unset = UNSET
+    """Conversation Turns that are always kept unsummarized."""
+
     min_summary_tokens: int | Unset = UNSET
+    """Minimum number of tokens required for a summary to be generated."""
+
+    keep_thinking_turns: int | bool | Unset = UNSET
+    """
+    Number of conversation turns for which we feed thinking content back to the model.
+    MiniMax M2.1, Claude 3, Gemini Pro benefit from this.
+    int: Number of turns to keep thinking content for.
+    True: Keep thinking content for all turns (indefinitely).
+    False: Do not feed back thinking content.
+    """
 
     def apply_to(self, base: LLMLogicConfig) -> LLMLogicConfig:
         """
@@ -148,7 +160,7 @@ class LLMLogicConfig:
     @classmethod
     def defaults(cls) -> LLMLogicConfig:
         """Default logic settings if not specified by the model registry."""
-        return cls(last_k=5, min_summary_tokens=2048)
+        return cls(last_k=5, min_summary_tokens=2048, keep_thinking_turns=False)
 
 
 @dataclass(frozen=True)
