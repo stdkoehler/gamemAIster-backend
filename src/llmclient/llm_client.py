@@ -32,7 +32,40 @@ from anthropic.types import (
 )
 
 from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
-from src.llmclient.llm_parameters import LLMConfig
+from src.llmclient.llm_parameters import LLMConfig, LLMLogicConfig
+
+
+class MessageRole(StrEnum):
+    """Message role for conversation."""
+
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+
+
+@dataclass
+class MessageContent:
+    """Message content with type and content string."""
+
+    text: str
+    """The actual content string."""
+
+    thinking: str | None = None
+    """The actual thinking string, if applicable."""
+
+    thinking_signature: str | None = None
+    """Unique signature for the thinking content, if applicable."""
+
+
+@dataclass
+class Message:
+    """Represents a single message in the conversation."""
+
+    role: MessageRole
+    """Role of the message sender (e.g., 'system', 'user', 'assistant')."""
+
+    content: MessageContent
+    """Content of the message."""
 
 
 class StreamType(StrEnum):
@@ -120,9 +153,17 @@ class LLMClientBase(ABC):
         # Layer 4: Final Bake
         return active_config.resolve()
 
+    def get_logic_config(self) -> LLMLogicConfig:
+        """
+        Retrieves the logic configuration for the current model.
+        This includes how many interaction steps to keep unsummarized, how many
+        thinking turns to feed back, etc.
+        """
+        return ConfigRegistry.get_llm_logic_config(self.model_identifier)
+
     def chat_completion(
         self,
-        messages: list[dict[str, str]],
+        messages: list[Message],
         reasoning: bool = False,
         config_override: LLMConfig | None = None,
         task: LLMTask = LLMTask.STORY,
@@ -138,7 +179,7 @@ class LLMClientBase(ABC):
 
     def chat_completion_stream(
         self,
-        messages: list[dict[str, str]],
+        messages: list[Message],
         reasoning: bool = False,
         config_override: LLMConfig | None = None,
         task: LLMTask = LLMTask.STORY,
@@ -152,7 +193,7 @@ class LLMClientBase(ABC):
 
     @abstractmethod
     def _execute_chat_completion_stream(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> Generator[StreamResponse, None, None]:
         """
         Internal abstract method: Child classes MUST implement the
@@ -161,7 +202,7 @@ class LLMClientBase(ABC):
 
     @abstractmethod
     def _execute_chat_completion(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> str:
         """
         Internal abstract method: Child classes MUST implement the
@@ -239,46 +280,52 @@ class LLMClientLocal(LLMClientBase):
         return response.json()
 
     def adjust_reasoning_mistral24b(
-        self, messages: list[dict[str, str]], payload: dict[str, Any]
-    ) -> tuple[list[dict[str, str]], dict[str, Any]]:
+        self, messages: list[Message], payload: dict[str, Any]
+    ) -> tuple[list[Message], dict[str, Any]]:
         """
         Adjusts the messages to include reasoning prompts if requested.
         Required for DeepHermes Mistral 24b
         """
         system_msg = next(
-            (msg for msg in messages if msg["role"] == "system"), {"content": ""}
+            (msg for msg in messages if msg.role == MessageRole.SYSTEM),
+            Message(role=MessageRole.SYSTEM, content=MessageContent(text="")),
         )
         user_msgs = [
             msg
             for msg in messages
-            if msg["role"] == "user" or msg["role"] == "assistant"
+            if msg.role == MessageRole.USER or msg.role == MessageRole.ASSISTANT
         ]
 
-        # In-place safety for the user message content
+        # In-place safety for the user message content, we add the system message to the
+        # first user message because our actual system message needs to be the thinking
+        # command
         if user_msgs:
-            user_msgs[0][
-                "content"
-            ] = f"{system_msg['content']}\n\n{user_msgs[0]['content']}"
+            user_msgs[0].content.text = (
+                f"{system_msg.content.text}\n\n{user_msgs[0].content.text}"
+            )
 
+        # this is the message the assistant should complete, we add the warmstart
         if self.reasoning_warmstart is not None:
-            user_msgs = user_msgs + [
-                {
-                    "role": "assistant",
-                    "content": self.reasoning_warmstart,
-                }
-            ]
+            user_msgs.append(
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(text=self.reasoning_warmstart),
+                )
+            )
             payload["continue_"] = True
 
         return [
-            {
-                "role": "system",
-                "content": "You are a deep thinking AI. Enclose thoughts in <think> </think> tags.",
-            }
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(
+                    text="You are a deep thinking AI. Enclose thoughts in <think> </think> tags."
+                ),
+            )
         ] + user_msgs, payload
 
     def adjust_reasoning_gemma3_r1(
-        self, messages: list[dict[str, str]], payload: dict[str, Any]
-    ) -> tuple[list[dict[str, str]], dict[str, Any]]:
+        self, messages: list[Message], payload: dict[str, Any]
+    ) -> tuple[list[Message], dict[str, Any]]:
         """
         Gemma3 R1 requires refilled <think> to trigger thinking
         """
@@ -287,18 +334,18 @@ class LLMClientLocal(LLMClientBase):
             return (
                 messages
                 + [
-                    {
-                        "role": "assistant",
-                        "content": self.reasoning_warmstart,
-                    }
+                    Message(
+                        role=MessageRole.ASSISTANT,
+                        content=MessageContent(text=self.reasoning_warmstart),
+                    )
                 ],
                 payload,
             )
         return messages, payload
 
     def adjust_reasoning(
-        self, messages: list[dict[str, str]], payload: dict[str, Any]
-    ) -> tuple[list[dict[str, str]], dict[str, Any]]:
+        self, messages: list[Message], payload: dict[str, Any]
+    ) -> tuple[list[Message], dict[str, Any]]:
         """different models need different reasoning adjustments"""
         if self.model_name == "mistral-24b-hermes":
             messages, payload = self.adjust_reasoning_mistral24b(messages, payload)
@@ -307,15 +354,24 @@ class LLMClientLocal(LLMClientBase):
 
         return messages, payload
 
+    def message_to_dict(self, message: Message) -> dict[str, str]:
+        """Convert Message object to dictionary format for API compatibility."""
+        return {"role": message.role.value, "content": message.content.text}
+
     def _execute_chat_completion_stream(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> Generator[StreamResponse, None, None]:
         payload = asdict(config)
 
         if reasoning:
             messages, payload = self.adjust_reasoning(messages, payload)
 
-        payload.update({"messages": messages, "stream": True})
+        payload.update(
+            {
+                "messages": [self.message_to_dict(msg) for msg in messages],
+                "stream": True,
+            }
+        )
 
         stream_response = requests.post(
             self._chat_completion_url,
@@ -438,15 +494,19 @@ class LLMClientLocal(LLMClientBase):
         )
 
     def _execute_chat_completion(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> str:
         payload = asdict(config)
 
         if reasoning:
             messages, payload = self.adjust_reasoning(messages, payload)
 
-        payload.update({"messages": messages, "stream": False})
-
+        payload.update(
+            {
+                "messages": [self.message_to_dict(msg) for msg in messages],
+                "stream": False,
+            }
+        )
         result = self._post_request(self._chat_completion_url, payload, timeout=3600)
         text = result["choices"][0]["message"]["content"]
         return text if text is not None else ""
@@ -690,29 +750,41 @@ class LLMClientAnthropicBase(LLMClientBase):
         self._model = model
 
     def _convert_messages(
-        self, messages: list[dict[str, str]]
+        self, messages: list[Message]
     ) -> tuple[str, list[MessageParam]]:
         """
         Converts a list of messages to the format required by the Anthropic API.
         Args:
-            messages (list[dict[str, str]]): List of messages to be converted.
+            messages (list[Message]): List of messages to be converted.
 
         Returns:
             list[MessageParam]: List of MessageParam objects representing the messages.
         """
         messages_converted = []
-        for m in messages:
-            if m["role"] in ["user", "assistant"]:
-                messages_converted.append(MessageParam(content=m["content"], role=m["role"]))  # type: ignore
+        # this is were we would feed back thinking for interleaved thinking:
+        # test_thinking = ThinkingBlock(signature=final_message.content[0].signature, thinking=final_message.content[0].thinking, type="thinking", citations=None, text=None)
+        # test_thinking == final_message.content[0] # is true only if we add citations=None and text=None
+        # test_text = TextBlock(text=final_message.content[1].text, type="text")
+        # test_text == final_message.content[1] # is true
+        # test_content = [test_thinking, test_text]
+
+        for msg in messages:
+            if msg.role in [MessageRole.USER, MessageRole.ASSISTANT]:
+                messages_converted.append(
+                    MessageParam(
+                        content=[TextBlock(text=msg.content.text, type="text")],
+                        role="user" if msg.role == MessageRole.USER else "assistant",
+                    )
+                )
 
         system_instruction = next(
-            (m["content"] for m in messages if m["role"] == "system"),
+            (msg.content.text for msg in messages if msg.role == MessageRole.SYSTEM),
             "You're an helpful assistant",
         )
         return system_instruction, messages_converted
 
     def _execute_chat_completion_stream(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> Generator[StreamResponse, None, None]:
         sys_inst, messages = self._convert_messages(messages)
 
@@ -781,7 +853,7 @@ class LLMClientAnthropicBase(LLMClientBase):
             print(final_message)
 
     def _execute_chat_completion(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> str:
         sys_inst, msgs = self._convert_messages(messages)
 

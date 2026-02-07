@@ -11,7 +11,13 @@ from pydantic import ValidationError
 
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_config_registry import LLMTask
-from src.llmclient.llm_client import LLMClientBase, StreamResponse, StreamType
+from src.llmclient.llm_client import (
+    LLMClientBase,
+    StreamType,
+    MessageRole,
+    MessageContent,
+    Message,
+)
 from src.crud.crud import crud_instance
 
 from src.brain.data_types import Interaction, EntityResponse, Scene
@@ -93,20 +99,22 @@ class SummaryMemory:
 
         scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text}}}\n\n**Output:**\n```'
         messages = [
-            {
-                "role": "system",
-                "content": self._scene_template.replace("__RPG__", self._game_name),
-            },
-            {
-                "role": "user",
-                "content": scene_input.format(
-                    scenes=scenes_json, text=text_interaction
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(
+                    text=self._scene_template.replace("__RPG__", self._game_name)
                 ),
-            },
+            ),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=scene_input.format(scenes=scenes_json, text=text_interaction)
+                ),
+            ),
         ]
 
         ### Scene Prompt
-        log_prompt = "\n\n".join(msg["content"] for msg in messages)
+        log_prompt = "\n\n".join(msg.content.text for msg in messages)
 
         response = self._llm_client.chat_completion(
             messages=messages,
@@ -147,7 +155,7 @@ class SummaryMemory:
                 processed_output="Validation Error",
             )
             raise ValueError(
-                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+                "LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
             logger.log_scene(
@@ -180,20 +188,24 @@ class SummaryMemory:
 
         entity_input = 'Extract entities from the following text and update the given entities:\n{{"text": {text},"entities": {entities}}}'
         messages = [
-            {
-                "role": "system",
-                "content": self._entity_template.replace("__RPG__", self._game_name),
-            },
-            {
-                "role": "user",
-                "content": entity_input.format(
-                    text=text_interaction, entities=entities_json
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(
+                    text=self._entity_template.replace("__RPG__", self._game_name)
                 ),
-            },
+            ),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=entity_input.format(
+                        text=text_interaction, entities=entities_json
+                    )
+                ),
+            ),
         ]
 
         ### Entity Prompt
-        log_prompt = "\n\n".join(msg["content"] for msg in messages)
+        log_prompt = "\n\n".join(msg.content.text for msg in messages)
 
         response = self._llm_client.chat_completion(
             messages=messages,
@@ -256,19 +268,20 @@ class SummaryMemory:
 
         summary_input = 'Summarize the following text:\n{{"previous_summary": {prev}, "current_events": {current}}}'
         messages = [
-            {
-                "role": "system",
-                "content": self._summary_template,
-            },
-            {
-                "role": "user",
-                "content": summary_input.format(prev=summary, current=text_interaction),
-            },
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(text=self._summary_template),
+            ),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=summary_input.format(prev=summary, current=text_interaction)
+                ),
+            ),
         ]
 
         ### Summary Prompt
-        log_prompt = "\n\n".join(msg["content"] for msg in messages)
-
+        log_prompt = "\n\n".join(msg.content.text for msg in messages)
         response = self._llm_client.chat_completion(
             messages=messages,
             reasoning=True,
@@ -427,22 +440,46 @@ class SummaryMemory:
         """
         return self._history[-1].user_input
 
-    def chat(self) -> list[dict[str, str]]:
-        think_pattern = r"(?si)<think>.*?</think>"
+    def chat(self) -> list[Message]:
         messages = []
         for interaction in self._history:
-            llm_output = re.sub(think_pattern, "", interaction.llm_output)
-            messages.append({"role": "user", "content": interaction.user_input})
-            messages.append({"role": "assistant", "content": llm_output})
+            messages.append(
+                Message(
+                    role=MessageRole.USER,
+                    content=MessageContent(text=interaction.user_input),
+                )
+            )
+            messages.append(
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text=interaction.llm_output,
+                        thinking=interaction.llm_thinking,
+                        thinking_signature=interaction.llm_thinking_signature,
+                    ),
+                )
+            )
         return messages
 
-    def chat_unsummarized(self) -> list[dict[str, str]]:
-        think_pattern = r"(?si)<think>.*?</think>"
+    def chat_unsummarized(self) -> list[Message]:
         messages = []
         for interaction in self.interactions_unsummarized():
-            llm_output = re.sub(think_pattern, "", interaction.llm_output)
-            messages.append({"role": "user", "content": interaction.user_input})
-            messages.append({"role": "assistant", "content": llm_output})
+            messages.append(
+                Message(
+                    role=MessageRole.USER,
+                    content=MessageContent(text=interaction.user_input),
+                )
+            )
+            messages.append(
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text=interaction.llm_output,
+                        thinking=interaction.llm_thinking,
+                        thinking_signature=interaction.llm_thinking_signature,
+                    ),
+                )
+            )
         return messages
 
     def get_summary(self) -> str:
@@ -608,27 +645,36 @@ class SummaryChat:
         system_prompt = self._role.format(
             MISSION=self._mission, BACKGROUND=self._background
         )
-        messages = [{"role": "system", "content": system_prompt}]
+        messages: list[Message] = [
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(text=system_prompt),
+            )
+        ]
 
         if self._memory.n_summarized > 0:
 
             # we have summarized interactions, we add summary, entities and the
             # unsummarized interactions
             messages.append(
-                {
-                    "role": "user",
-                    "content": self._summary_provider_template.format(
-                        SUMMARY=self._memory.summary,
-                        SCENES=self._memory.get_scenes_json(),
-                        ENTITIES=self._memory.get_entities_json(),
+                Message(
+                    role=MessageRole.USER,
+                    content=MessageContent(
+                        text=self._summary_provider_template.format(
+                            SUMMARY=self._memory.summary,
+                            SCENES=self._memory.get_scenes_json(),
+                            ENTITIES=self._memory.get_entities_json(),
+                        ),
                     ),
-                }
+                )
             )
             messages.append(
-                {
-                    "role": "assistant",
-                    "content": "[OOC: Thank you for the summary and entities. I will use them to continue the story.]",
-                }
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text="[OOC: Thank you for the summary and entities. I will use them to continue the story.]",
+                    ),
+                )
             )
 
             messages += self._memory.chat_unsummarized()
@@ -640,7 +686,11 @@ class SummaryChat:
             messages = messages[:-1]
         else:
             if user_input is not None:
-                messages.append({"role": "user", "content": user_input})
+                messages.append(
+                    Message(
+                        role=MessageRole.USER, content=MessageContent(text=user_input)
+                    )
+                )
             else:
                 raise ValueError(
                     "user_input is None but last_interaction is also None. Cannot proceed."
@@ -668,6 +718,7 @@ class SummaryChat:
             else:
                 raise ValueError(f"Unknown stream type: {chunk.type}")
 
+        # Don't store the prefilled warmstart prompt to avoid constant repetition
         # Carefull, we can only do this for a LLM that is not tamper protected
         if (
             self._llm_client_chat.reasoning_warmstart is not None

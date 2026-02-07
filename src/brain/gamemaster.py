@@ -18,6 +18,9 @@ from src.llmclient.llm_client import (
     LLMClientLocal,
     LLMClientDeepSeek,
     LLMClientMiniMax,
+    Message,
+    MessageContent,
+    MessageRole,
 )
 
 from src.llmclient.llm_parameters import LLMConfig
@@ -275,9 +278,7 @@ class Gamemaster:
         """
         Provide summary chat
         """
-        logic_config = ConfigRegistry.get_llm_logic_config(
-            self._llm_client_chat.model_identifier
-        )
+        logic_config = self._llm_client_chat.get_logic_config()
 
         # prompt.prompt is new user input, None if regenerate previous interaction
         # prompt.prev_interaction is previous interaction to update or new user prompt,
@@ -361,11 +362,11 @@ class Gamemaster:
         # 4096
         llm_response = self._llm_client_reasoning.chat_completion(
             messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {"role": "user", "content": topic},
+                Message(
+                    role=MessageRole.SYSTEM,
+                    content=MessageContent(text=system_prompt),
+                ),
+                Message(role=MessageRole.USER, content=MessageContent(text=topic)),
             ],
             reasoning=True,
             config_override=LLMConfig(max_tokens=8192),
