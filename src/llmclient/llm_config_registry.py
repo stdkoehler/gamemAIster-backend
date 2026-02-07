@@ -4,13 +4,24 @@ from src.llmclient.llm_parameters import (
     TaskResolution,
     LLMConfig,
     LLMLogicConfig,
+    ThinkingFeebackPolicy,
 )
 
 
 class LLMTask(Enum):
+    """
+    The specific task or 'personality' we want to use the LLM for.
+    This helps us determine the right config.
+    """
+
     STORY = auto()
+    """The 'Storyteller' personality, used for generating the main narrative content of the game."""
+
     ARCHITECT = auto()
+    """The 'Architect' personality, used for world-building, scene generation, and structural content."""
+
     SUMMARY = auto()
+    """The 'Summarizer' personality, used for condensing interactions and extracting key information."""
 
 
 # --- Registry Implementation ---
@@ -44,7 +55,11 @@ class ConfigRegistry:
         "LLMClientMiniMax": {
             LLMTask.SUMMARY: TaskResolution(
                 llm=LLMConfig(max_tokens=4096),
-                logic=LLMLogicConfig(last_k=15, min_summary_tokens=2048),
+                logic=LLMLogicConfig(
+                    last_k=15,
+                    min_summary_tokens=2048,
+                    keep_thinking_turns=ThinkingFeebackPolicy.forever(),
+                ),
             ),
             LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=8192)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=4096)),

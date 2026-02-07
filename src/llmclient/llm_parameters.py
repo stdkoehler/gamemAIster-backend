@@ -20,6 +20,36 @@ UNSET = Unset()
 
 
 @dataclass(frozen=True)
+class ThinkingFeebackPolicy:
+    """Whether and how many assistant messages we feed back as "thinking" content to the model."""
+
+    limit: int | None  # None = Forever, 0 = Never, >0 = N turns
+
+    @classmethod
+    def forever(cls) -> ThinkingFeebackPolicy:
+        """Feedback content from all assistant messages will be fed back to the model."""
+        return cls(limit=None)
+
+    @classmethod
+    def never(cls) -> ThinkingFeebackPolicy:
+        """No feedback content from assistant messages will be fed back to the model."""
+        return cls(limit=0)
+
+    @classmethod
+    def turns(cls, n: int) -> ThinkingFeebackPolicy:
+        """Feedback content from the last 'n' assistant messages will be fed back to the model."""
+        if n < 0:
+            raise ValueError("Turn count must be non-negative")
+        return cls(limit=n)
+
+    def should_keep(self, turns_ago: int) -> bool:
+        """Determines if feedback should be kept based on how many turns ago it was."""
+        if self.limit is None:
+            return True
+        return turns_ago <= self.limit
+
+
+@dataclass(frozen=True)
 class LLMConfig:
     """
     Inference parameters sent to the LLM API.
@@ -134,13 +164,10 @@ class LLMLogicConfig:
     min_summary_tokens: int | Unset = UNSET
     """Minimum number of tokens required for a summary to be generated."""
 
-    keep_thinking_turns: int | bool | Unset = UNSET
+    keep_thinking_turns: ThinkingFeebackPolicy | Unset = UNSET
     """
     Number of conversation turns for which we feed thinking content back to the model.
     MiniMax M2.1, Claude 3, Gemini Pro benefit from this.
-    int: Number of turns to keep thinking content for.
-    True: Keep thinking content for all turns (indefinitely).
-    False: Do not feed back thinking content.
     """
 
     def apply_to(self, base: LLMLogicConfig) -> LLMLogicConfig:
@@ -160,7 +187,11 @@ class LLMLogicConfig:
     @classmethod
     def defaults(cls) -> LLMLogicConfig:
         """Default logic settings if not specified by the model registry."""
-        return cls(last_k=5, min_summary_tokens=2048, keep_thinking_turns=False)
+        return cls(
+            last_k=5,
+            min_summary_tokens=2048,
+            keep_thinking_turns=ThinkingFeebackPolicy.never(),
+        )
 
 
 @dataclass(frozen=True)

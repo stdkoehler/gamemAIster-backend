@@ -24,7 +24,7 @@ from src.llmclient.llm_client import (
 )
 
 from src.llmclient.llm_parameters import LLMConfig
-from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
+from src.llmclient.llm_config_registry import LLMTask
 
 from src.brain.oracle import (
     BaseOracle,

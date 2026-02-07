@@ -3,7 +3,7 @@
 import json
 import time
 
-from typing import Generator, Any
+from typing import Generator, Any, cast
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 from abc import ABC, abstractmethod
@@ -32,7 +32,11 @@ from anthropic.types import (
 )
 
 from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
-from src.llmclient.llm_parameters import LLMConfig, LLMLogicConfig
+from src.llmclient.llm_parameters import (
+    LLMConfig,
+    LLMLogicConfig,
+    ThinkingFeebackPolicy,
+)
 
 
 class MessageRole(StrEnum):
@@ -754,26 +758,82 @@ class LLMClientAnthropicBase(LLMClientBase):
     ) -> tuple[str, list[MessageParam]]:
         """
         Converts a list of messages to the format required by the Anthropic API.
+
+        This is were we would feed back thinking for interleaved thinking:
+        thinking = ThinkingBlock(
+            signature=final_message.content[0].signature,
+            thinking=final_message.content[0].thinking,
+            type="thinking",
+            citations=None,
+            text=None
+        )
+
+        text = TextBlock(text=final_message.content[1].text, type="text")
+        content = [thinking, text]
+
         Args:
             messages (list[Message]): List of messages to be converted.
 
         Returns:
             list[MessageParam]: List of MessageParam objects representing the messages.
         """
-        messages_converted = []
-        # this is were we would feed back thinking for interleaved thinking:
-        # test_thinking = ThinkingBlock(signature=final_message.content[0].signature, thinking=final_message.content[0].thinking, type="thinking", citations=None, text=None)
-        # test_thinking == final_message.content[0] # is true only if we add citations=None and text=None
-        # test_text = TextBlock(text=final_message.content[1].text, type="text")
-        # test_text == final_message.content[1] # is true
-        # test_content = [test_thinking, test_text]
 
-        for msg in messages:
-            if msg.role in [MessageRole.USER, MessageRole.ASSISTANT]:
+        messages_converted = []
+        # Mypy being stupid
+        raw_policy = self.get_logic_config().keep_thinking_turns
+        policy = (
+            raw_policy
+            if isinstance(raw_policy, ThinkingFeebackPolicy)
+            else ThinkingFeebackPolicy.never()
+        )
+
+        # assistant messages to turn map for reasoning feedback policy
+        # maps message index to "turns ago" for the assistant messages only, so we can
+        # apply the feedback policy
+        assistant_indices = [
+            i for i, msg in enumerate(messages) if msg.role == MessageRole.ASSISTANT
+        ]
+        num_assistant_msgs = len(assistant_indices)
+        turn_map = {
+            idx: (num_assistant_msgs - rank)
+            for rank, idx in enumerate(assistant_indices)
+        }
+
+        for i, msg in enumerate(messages):
+            if msg.role == MessageRole.SYSTEM:
+                # System messages usually aren't sent in the 'messages' list
+                # for most APIs (Anthropic/OpenAI), they go in a top-level param.
+                continue
+
+            if msg.role in MessageRole.USER:
                 messages_converted.append(
                     MessageParam(
                         content=[TextBlock(text=msg.content.text, type="text")],
-                        role="user" if msg.role == MessageRole.USER else "assistant",
+                        role="user",
+                    )
+                )
+
+            elif msg.role in MessageRole.ASSISTANT:
+                turns_ago = turn_map[i]
+
+                content: list[ThinkingBlock | TextBlock] = []
+                if policy.should_keep(turns_ago):
+                    content.append(
+                        ThinkingBlock(
+                            signature=msg.content.thinking_signature or "",
+                            thinking=msg.content.thinking or "",
+                            type="thinking",
+                            citations=None,
+                            text=None,
+                        ),
+                    )
+
+                content.append(TextBlock(text=msg.content.text, type="text"))
+
+                messages_converted.append(
+                    MessageParam(
+                        content=content,
+                        role="assistant",
                     )
                 )
 

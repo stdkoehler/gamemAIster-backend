@@ -418,7 +418,19 @@ class SummaryMemory:
             interaction (Interaction): The interaction that overwrites the last interaction
         """
         crud_instance.update_last_interaction(self._mission_id, interaction)
-        self._history[-1] = interaction
+        if interaction.llm_thinking is not None:
+            self._history[-1] = interaction
+        else:
+            # The frontend my send a updated last interaction without thinking content,
+            # in this case we want to keep the original thinking and signature to avoid
+            # tampering with the thinking content
+            last_interaction = crud_instance.get_interactions(self._mission_id)[-1]
+            self._history[-1] = Interaction(
+                user_input=interaction.user_input,
+                llm_output=interaction.llm_output,
+                llm_thinking=last_interaction.llm_thinking,
+                llm_thinking_signature=last_interaction.llm_thinking_signature,
+            )
 
         # self._try_summarize()
 
@@ -638,6 +650,7 @@ class SummaryChat:
         if last_interaction is not None:
             # frontend interaction object has llm_thinking and llm_thinking_signature
             # set to None, update_last will not touch the original
+            # frontend is always sending last interaction, even if nothing was edited
             self._memory.update_last(last_interaction)
 
         # print("Current Summary:")
