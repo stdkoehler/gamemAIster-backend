@@ -27,6 +27,8 @@ from anthropic.types import (
     MessageParam,
     ThinkingConfigEnabledParam,
     ThinkingConfigDisabledParam,
+    ThinkingBlock,
+    TextBlock,
 )
 
 from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
@@ -731,17 +733,15 @@ class LLMClientAnthropicBase(LLMClientBase):
             messages=messages,
         ) as stream:
             for event in stream:
-                # 1. Capture the Thinking/Reasoning phase
+                # Capture Thinking Start/End
                 if event.type == "content_block_start":
                     if event.content_block.type == "thinking":
-                        # You can wrap these in <think> tags for your DB/Frontend
-                        yield StreamResponse(type=StreamType.THINKING, delta="<think>")
-                if event.type == "content_block_stop":
+                        yield StreamResponse(type=StreamType.THINKING, delta="")
+                elif event.type == "content_block_stop":
                     if event.content_block.type == "thinking":
-                        # You can wrap these in <think> tags for your DB/Frontend
                         yield StreamResponse(
                             type=StreamType.THINKING_END,
-                            delta="</think>",
+                            delta="",
                             signature=event.content_block.signature,
                             full_thinking=event.content_block.thinking,
                         )
@@ -751,14 +751,12 @@ class LLMClientAnthropicBase(LLMClientBase):
                             delta="",
                             full_text=event.content_block.text,
                         )
-                if event.type == "content_block_delta":
+                # Emit deltas for streaming
+                elif event.type == "content_block_delta":
                     if event.delta.type == "thinking_delta":
-                        # You can wrap these in <think> tags for your DB/Frontend
                         yield StreamResponse(
                             type=StreamType.THINKING, delta=event.delta.thinking
                         )
-
-                    # 2. Capture the actual Storyteller response
                     elif event.delta.type == "text_delta":
                         yield StreamResponse(
                             type=StreamType.TEXT, delta=event.delta.text
@@ -766,6 +764,21 @@ class LLMClientAnthropicBase(LLMClientBase):
                 # 3. Handle the end of the message (optional)
                 elif event.type == "message_stop":
                     break
+
+            # final_message.content is what we have to send back to MiniMaxM2.1 for multi-turn thinking
+            # [
+            #     ThinkingBlock(signature, thinking, type="thinking")
+            #     TextBlock(text, type="text")
+            # ]
+            # test_thinking = ThinkingBlock(signature=final_message.content[0].signature, thinking=final_message.content[0].thinking, type="thinking", citations=None, text=None)
+            # test_thinking == final_message.content[0] # is true only if we add citations=None and text=None
+            # test_text = TextBlock(text=final_message.content[1].text, type="text")
+            # test_text == final_message.content[1] # is true
+            # test_content = [test_thinking, test_text]
+            # test_content == final_message.content # is true
+            # So we can reconstruct the final message from the content blocks
+            final_message = stream.get_final_message()
+            print(final_message)
 
     def _execute_chat_completion(
         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
