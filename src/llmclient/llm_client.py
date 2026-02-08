@@ -2,8 +2,9 @@
 
 import json
 import time
+import re
 
-from typing import Generator, Any, cast
+from typing import Generator, Any
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 from abc import ABC, abstractmethod
@@ -283,6 +284,34 @@ class LLMClientLocal(LLMClientBase):
         response.raise_for_status()
         return response.json()
 
+    def maybe_extract_hidden_state(self, full_thinking: str) -> str:
+        """
+        Extracts the content of the <hidden_state> tag from the given text.
+
+        Args:
+            full_thinking (str): The text to extract the hidden state from.
+
+        Returns:
+            str: The content of the <hidden_state> tag if warmstart is used
+        """
+        if self.reasoning_warmstart is not None and full_thinking is not None:
+            # Use findall to get every instance of content between <state> tags
+            # re.DOTALL is crucial for multi-line content
+            pattern = re.compile(
+                r"<hidden_state>(.*?)</hidden_state>",
+                re.DOTALL | re.IGNORECASE,
+            )
+            all_states = pattern.findall(full_thinking)
+
+            if not all_states:
+                full_thinking = ""
+
+            # Join them with a newline or a specific separator
+            # .strip() cleans up the whitespace from the model's output
+            full_thinking = "\n".join([s.strip() for s in all_states if s.strip()])
+
+        return full_thinking
+
     def adjust_reasoning_mistral24b(
         self, messages: list[Message], payload: dict[str, Any]
     ) -> tuple[list[Message], dict[str, Any]]:
@@ -355,6 +384,11 @@ class LLMClientLocal(LLMClientBase):
             messages, payload = self.adjust_reasoning_mistral24b(messages, payload)
         elif self.model_name == "gemma-3-r1-27b":
             messages, payload = self.adjust_reasoning_gemma3_r1(messages, payload)
+
+        if self.reasoning_warmstart is not None:
+            for msg in messages:
+                if msg.role == MessageRole.ASSISTANT and msg.content.thinking:
+                    msg.content.text = f"<hidden_state>{msg.content.thinking}</hidden_state>\n\n{msg.content.text}"
 
         return messages, payload
 
@@ -457,11 +491,14 @@ class LLMClientLocal(LLMClientBase):
                         # Don't emit the tags
                         # yield StreamResponse(type=StreamType.THINKING, delta=TAG_END)
 
-                        # Send the full thinking object
+                        # Send the full thinking object or, if we're using prefill with
+                        # hidden_state, just send hidden state
                         yield StreamResponse(
                             type=StreamType.THINKING_END,
                             delta="",
-                            full_thinking=accumulated_thinking.strip(),
+                            full_thinking=self.maybe_extract_hidden_state(
+                                accumulated_thinking.strip()
+                            ),
                         )
 
                         buffer = after
@@ -542,6 +579,26 @@ class LLMClientLocal(LLMClientBase):
 class LLMClientDeepSeek(LLMClientBase):
     """
     LLMClient implementation for DeepSeek using the OpenAI SDK.
+    https://api-docs.deepseek.com/api/create-chat-completion
+    with beta we can also use prefill (=prefix)
+    Assistant message parameters:
+    name
+    string
+    An optional name for the participant. Provides the model information to differentiate
+    between participants of the same role.
+
+    prefix
+    bool
+    (Beta) Set this to true to force the model to start its answer by the content of the
+    supplied prefix in this assistant message.
+    You must set base_url="https://api.deepseek.com/beta" to use this feature.
+
+    reasoning_content
+    string
+    nullable
+    (Beta) Used for the deepseek-reasoner model in the Chat Prefix Completion feature
+    as the input for the CoT in the last assistant message. When using this feature,
+    the prefix parameter must be set to true.
     """
 
     def __init__(

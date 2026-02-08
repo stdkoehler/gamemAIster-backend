@@ -48,8 +48,8 @@ I always should consider the player character for narrative and mechanical impli
 If the player rolled and provided a result upon my request, I must consider the impact (number of *player's successes* must at least match *difficulty* to succeed). If the player suggested an action, I also must determine if a roll is required. What are the stakes based on VtM V5's rules?
 I should not overdo asking for rolls, specifically I shouldn't ask for a similar roll multiple times in short succession.
 In the history, look for the most recent <hidden_state></hidden_state> block to understand the current narrative momentum and hidden secrets.
-After my current reasoning, I MUST provide a new, updated <hidden_state></hidden_state> block. This should be a concise (1-2 sentences) "snapshot" of the hidden state of the world the isn't directly observable by the player, but is crucial for the narrative.
-Let's briefly provide the current hidden states: <hidden_state>
+If will now update the hidden state as a concise (2-3 sentences) "snapshot" of the hidden state of the world the isn't directly observable by the player, but is crucial for the narrative.
+Let's briefly provide the updated hidden by combining the previous hidden states and the current momentum: <hidden_state>
 """
 
 REASONING_WARMSTART = {

@@ -731,19 +731,6 @@ class SummaryChat:
             else:
                 raise ValueError(f"Unknown stream type: {chunk.type}")
 
-        # Don't store the prefilled warmstart prompt to avoid constant repetition
-        # Carefull, we can only do this for a LLM that is not tamper protected
-        if (
-            self._llm_client_chat.reasoning_warmstart is not None
-            and full_thinking is not None
-        ):
-            full_thinking = full_thinking.replace(
-                self._llm_client_chat.reasoning_warmstart.replace(
-                    "<think>", ""
-                ).strip(),
-                "",
-            ).strip()
-
         interaction = Interaction(
             user_input=(
                 user_input if user_input is not None else self._memory.last_user_input()
