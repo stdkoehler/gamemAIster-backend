@@ -300,16 +300,13 @@ class Gamemaster:
             mission_id=prompt.mission_id,
         )
 
-        # if frontend sends previous interaction, we want to update it
-        # (adapted user_prompt for regeneration, adapted llm_output for correction)
-        interaction = (
-            Interaction(
-                prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output
-            )
-            if prompt.prev_interaction is not None
-            else None
+        # frontend is ground truth for last interaction
+        interaction = Interaction(
+            prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output
         )
-        for chunk in chat.predict(prompt.prompt, interaction):
+        for chunk in chat.predict(
+            last_interaction=interaction, user_input=prompt.prompt
+        ):
             yield json.dumps({"type": chunk[0], "content": chunk[1]}) + "\n"
 
     def generate_mission(self, background: str) -> api_schema_mission.Mission:

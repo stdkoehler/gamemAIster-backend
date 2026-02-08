@@ -586,75 +586,17 @@ class SummaryChat:
         chunk = chunk.lstrip()
         return chunk
 
-    def predict(
-        self, user_input: str | None, last_interaction: Interaction | None = None
-    ) -> Generator[tuple[str, str], None, None]:
+    def _build_messages(self, user_input: str, is_regenerate: bool) -> list[Message]:
         """
-        Orchestrates the LLM generation process, handling new turns, history corrections,
-        and regenerations.
-
-        Operational Modes:
-        ------------------
-        1. New Turn (user_input=str, last_interaction=None):
-           - Standard chat flow.
-           - We take the current history and append the new `user_input`.
-           - Generates a new response and appends a new Interaction to memory.
-
-        2. Correction + New Turn (user_input=str, last_interaction=Interaction):
-           - The user wants to continue conversation but first "steer" the previous turn.
-           - We first update the *previous* turn in memory using `last_interaction` (usually
-             changing the previous `llm_output`).
-           - Security Note: While the text is updated, the original `llm_thinking` and
-             signature are preserved to avoid tampering detection.
-           - We then generate a response to the NEW `user_input` and append a new Interaction.
-
-        3. Regeneration (user_input=None, last_interaction=Interaction):
-           - The user wants to retry the last turn.
-           - `user_input` must be None to trigger this mode.
-           - `last_interaction` is mandatory here as it contains the updated user prompt.
-           - Flow: Update memory with the new prompt -> Remove old AI response from context
-             -> Generate fresh response (text + new thinking) -> Overwrite the last Interaction.
-
-        TODO:
-           can we make that a bit more elegent. There's a lot of implicit logic going on.
-           It's also a bit weird that we provide the updated user prompt for regeneration
-           via last_interaction instead of user_input (possibly simpler logic flow
-           but a bit counter intuitive).
-
+        Builds the messages to be sent to the LLM, including system prompt, summary,
+        entities, scenes, and history.
         Args:
-            user_input (str | None): The new message. If None, triggers regeneration (Case 3).
-            last_interaction (Interaction | None): The previous interaction object. Used to update
-                                                   history before generation (Case 2 & 3).
-
-        Yields:
-            tuple[str, str]: Streamed chunks of the LLM's thinking process and final text response.
-
-        Raises:
-            ValueError: If `user_input` is None (Regen) but `last_interaction` is also None.
+            user_input (str): The new user input to be added to the messages.
+            is_regenerate (bool): Whether this is a regeneration (True) or a new turn (False).
+        Returns:
+            list[Message]: The list of messages to be sent to the LLM.
         """
-        # no user input directly means we want to regenerate with the previous input
-        is_regenerate = True if user_input is None else False
 
-        # update last interaction - player changed interaction in frontend
-        # (adapted user_prompt for regeneration OR adapted llm_output for corrected
-        # llm_output with new user prompt)
-        # Case 1 "REGEN": user input is None, then last_interaction must be set
-        #   last_interaction has the adapted user_input, its output doesn't matter
-        #   because we regenerate it
-        # Case 2 "GEN WITH CORRECT": user_input is set and last_interaction is set
-        #   user_input is prompted for new llm_output, however, the last_interaction
-        #   contains altered previous llm_output (correction of llm_output)
-        #   we may send the adapted message accordingly to the llm but we may not
-        #   change the llm_thinking, because this is protected by signature
-        #   (for llm apis llm_thinking is not allowed be changed to avoid jailbreaks)
-        if last_interaction is not None:
-            # frontend interaction object has llm_thinking and llm_thinking_signature
-            # set to None, update_last will not touch the original
-            # frontend is always sending last interaction, even if nothing was edited
-            self._memory.update_last(last_interaction)
-
-        # print("Current Summary:")
-        # print(self._memory.summary)
         system_prompt = self._role.format(
             MISSION=self._mission, BACKGROUND=self._background
         )
@@ -698,16 +640,43 @@ class SummaryChat:
             # we want to regenerate the last LLM answer, delete it from messages
             messages = messages[:-1]
         else:
-            if user_input is not None:
-                messages.append(
-                    Message(
-                        role=MessageRole.USER, content=MessageContent(text=user_input)
-                    )
-                )
-            else:
-                raise ValueError(
-                    "user_input is None but last_interaction is also None. Cannot proceed."
-                )
+            messages.append(
+                Message(role=MessageRole.USER, content=MessageContent(text=user_input))
+            )
+
+        return messages
+
+    def predict(
+        self,
+        last_interaction: Interaction,
+        user_input: str | None = None,
+    ) -> Generator[tuple[str, str], None, None]:
+        """
+        Orchestrates the LLM generation process, handling new turns, history corrections,
+        and regenerations.
+
+        Args:
+            last_interaction (Interaction): The previous interaction object. Used to update
+                history before generation. This is always sent by the frontend because
+                the frontend is the source of truth for the last interaction (e.g. if the
+                user edited the previous LLM output or user input)
+            user_input (str | None): The new user input. If None, triggers regeneration
+                with user input from last_interaction.
+
+
+        Yields:
+            tuple[str, str]: Streamed chunks of the LLM's thinking process and final text response.
+        """
+        is_regenerate = False
+        # always update last_interaction -> frontend is ground truth
+        self._memory.update_last(last_interaction)
+        if user_input is None:
+            is_regenerate = True
+            user_input = last_interaction.user_input
+
+        messages = self._build_messages(
+            user_input=user_input, is_regenerate=is_regenerate
+        )
 
         llm_response = ""
         full_thinking = None
@@ -732,19 +701,12 @@ class SummaryChat:
                 raise ValueError(f"Unknown stream type: {chunk.type}")
 
         interaction = Interaction(
-            user_input=(
-                user_input if user_input is not None else self._memory.last_user_input()
-            ),
+            user_input=user_input,
             llm_output=llm_response,
             llm_thinking=full_thinking,
             llm_thinking_signature=signature,
         )
 
-        # Case 1 "REGEN": the llm turn is regenerated, we replace the last interaction
-        #   (this includes thinking and thinking signature)
-        # Case 2 "GEN WITH CORRECT": er only changed the llm_output for the previous
-        #   we updated the llm_output already at the beginning of predict
-        #   (but not thinking and signature - that is important)
         if is_regenerate:
             # we create an updated valid entry for interaction including llm_thinking
             # update_last will change llm_thinking and llm_thinking_signature when they
