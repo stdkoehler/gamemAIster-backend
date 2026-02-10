@@ -648,20 +648,21 @@ class SummaryChat:
 
     def predict(
         self,
-        last_interaction: Interaction,
         user_input: str | None = None,
+        last_interaction: Interaction | None = None,
     ) -> Generator[tuple[str, str], None, None]:
         """
         Orchestrates the LLM generation process, handling new turns, history corrections,
         and regenerations.
 
         Args:
-            last_interaction (Interaction): The previous interaction object. Used to update
-                history before generation. This is always sent by the frontend because
-                the frontend is the source of truth for the last interaction (e.g. if the
-                user edited the previous LLM output or user input)
             user_input (str | None): The new user input. If None, triggers regeneration
                 with user input from last_interaction.
+            last_interaction (Interaction | None): The previous interaction object. Used to update
+                history before generation. This is always sent by the frontend because
+                the frontend is the source of truth for the last interaction (e.g. if the
+                user edited the previous LLM output or user input).
+                Can be None if this is the first turn and there is no history yet.
 
 
         Yields:
@@ -669,9 +670,14 @@ class SummaryChat:
         """
         is_regenerate = False
         # always update last_interaction -> frontend is ground truth
-        self._memory.update_last(last_interaction)
+        if last_interaction is not None:
+            self._memory.update_last(last_interaction)
         if user_input is None:
             is_regenerate = True
+            if last_interaction is None:
+                raise ValueError(
+                    "user_input is None but last_interaction is also None."
+                )
             user_input = last_interaction.user_input
 
         messages = self._build_messages(

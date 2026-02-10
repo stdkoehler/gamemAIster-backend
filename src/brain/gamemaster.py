@@ -301,11 +301,15 @@ class Gamemaster:
         )
 
         # frontend is ground truth for last interaction
-        interaction = Interaction(
-            prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output
-        )
+        if prompt.prev_interaction is not None:
+            interaction = Interaction(
+                prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output
+            )
+        else:
+            interaction = None
         for chunk in chat.predict(
-            last_interaction=interaction, user_input=prompt.prompt
+            user_input=prompt.prompt,
+            last_interaction=interaction,
         ):
             yield json.dumps({"type": chunk[0], "content": chunk[1]}) + "\n"
 
