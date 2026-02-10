@@ -14,7 +14,6 @@ from src.brain.chat import SummaryChat
 from src.llmclient.llm_client import (
     LLMClientBase,
     LLMClientClaude,
-    LLMClientGemini,
     LLMClientLocal,
     LLMClientDeepSeek,
     LLMClientMiniMax,
@@ -99,21 +98,21 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    elif llm_type == "GEMINI":
-        api_key = os.getenv("API_KEY_GEMINI")
-        if api_key is None:
-            raise ValueError("Gemini API key not set")
-        return Gamemaster(
-            user_id=user_id,
-            llm_client_chat=LLMClientGemini(
-                api_key=api_key, model="gemini-2.5-pro-exp-03-25"
-            ),
-            llm_client_reasoning=LLMClientGemini(
-                api_key=api_key, model="gemini-2.5-pro-exp-03-25"
-            ),
-            game_type=game_type,
-            mission_options=mission_options,
-        )
+    # elif llm_type == "GEMINI":
+    #     api_key = os.getenv("API_KEY_GEMINI")
+    #     if api_key is None:
+    #         raise ValueError("Gemini API key not set")
+    #     return Gamemaster(
+    #         user_id=user_id,
+    #         llm_client_chat=LLMClientGemini(
+    #             api_key=api_key, model="gemini-2.5-pro-exp-03-25"
+    #         ),
+    #         llm_client_reasoning=LLMClientGemini(
+    #             api_key=api_key, model="gemini-2.5-pro-exp-03-25"
+    #         ),
+    #         game_type=game_type,
+    #         mission_options=mission_options,
+    #     )
     elif llm_type == "CLAUDE":
         api_key = os.getenv("API_KEY_CLAUDE")
         if api_key is None:

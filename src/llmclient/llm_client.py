@@ -1,7 +1,6 @@
 """LLM Client"""
 
 import json
-import time
 import re
 
 from typing import Generator, Any
@@ -15,14 +14,15 @@ import requests
 from sseclient import SSEClient
 import openai
 import tiktoken
-from google import genai
-from google.genai.types import (
-    GenerateContentConfig,
-    Content,
-    UserContent,
-    ModelContent,
-    ThinkingConfig,
-)
+
+# from google import genai
+# from google.genai.types import (
+#     GenerateContentConfig,
+#     Content,
+#     UserContent,
+#     ModelContent,
+#     ThinkingConfig,
+# )
 import anthropic
 from anthropic.types import (
     MessageParam,
@@ -290,7 +290,7 @@ class LLMClientLocal(LLMClientBase):
         response.raise_for_status()
         return response.json()
 
-    def maybe_extract_hidden_state(self, full_thinking: str) -> str:
+    def _maybe_extract_hidden_state(self, full_thinking: str) -> str:
         """
         Extracts the content of the <hidden_state> tag from the given text.
 
@@ -318,7 +318,7 @@ class LLMClientLocal(LLMClientBase):
 
         return full_thinking
 
-    def adjust_reasoning_mistral24b(
+    def _adjust_reasoning_mistral24b(
         self, messages: list[Message], payload: dict[str, Any]
     ) -> tuple[list[Message], dict[str, Any]]:
         """
@@ -362,7 +362,7 @@ class LLMClientLocal(LLMClientBase):
             )
         ] + user_msgs, payload
 
-    def adjust_reasoning_gemma3_r1(
+    def _adjust_reasoning_gemma3_r1(
         self, messages: list[Message], payload: dict[str, Any]
     ) -> tuple[list[Message], dict[str, Any]]:
         """
@@ -382,15 +382,17 @@ class LLMClientLocal(LLMClientBase):
             )
         return messages, payload
 
-    def adjust_reasoning(
+    def _adjust_reasoning(
         self, messages: list[Message], payload: dict[str, Any]
     ) -> tuple[list[Message], dict[str, Any]]:
         """different models need different reasoning adjustments"""
         if self.model_name == "mistral-24b-hermes":
-            messages, payload = self.adjust_reasoning_mistral24b(messages, payload)
+            messages, payload = self._adjust_reasoning_mistral24b(messages, payload)
         elif self.model_name == "gemma-3-r1-27b":
-            messages, payload = self.adjust_reasoning_gemma3_r1(messages, payload)
+            messages, payload = self._adjust_reasoning_gemma3_r1(messages, payload)
 
+        # Only previously extracted hidden state is stored as thinking in db for multi-turn preservation,
+        # Prefix the Assistant's messages with the thinking in hidden state
         if self.reasoning_warmstart is not None:
             for msg in messages:
                 if msg.role == MessageRole.ASSISTANT and msg.content.thinking:
@@ -398,7 +400,7 @@ class LLMClientLocal(LLMClientBase):
 
         return messages, payload
 
-    def message_to_dict(self, message: Message) -> dict[str, str]:
+    def _message_to_dict(self, message: Message) -> dict[str, str]:
         """Convert Message object to dictionary format for API compatibility."""
         return {"role": message.role.value, "content": message.content.text}
 
@@ -408,11 +410,11 @@ class LLMClientLocal(LLMClientBase):
         payload = asdict(config)
 
         if reasoning:
-            messages, payload = self.adjust_reasoning(messages, payload)
+            messages, payload = self._adjust_reasoning(messages, payload)
 
         payload.update(
             {
-                "messages": [self.message_to_dict(msg) for msg in messages],
+                "messages": [self._message_to_dict(msg) for msg in messages],
                 "stream": True,
             }
         )
@@ -502,7 +504,7 @@ class LLMClientLocal(LLMClientBase):
                         yield StreamResponse(
                             type=StreamType.THINKING_END,
                             delta="",
-                            full_thinking=self.maybe_extract_hidden_state(
+                            full_thinking=self._maybe_extract_hidden_state(
                                 accumulated_thinking.strip()
                             ),
                         )
@@ -546,11 +548,11 @@ class LLMClientLocal(LLMClientBase):
         payload = asdict(config)
 
         if reasoning:
-            messages, payload = self.adjust_reasoning(messages, payload)
+            messages, payload = self._adjust_reasoning(messages, payload)
 
         payload.update(
             {
-                "messages": [self.message_to_dict(msg) for msg in messages],
+                "messages": [self._message_to_dict(msg) for msg in messages],
                 "stream": False,
             }
         )
@@ -615,57 +617,162 @@ class LLMClientDeepSeek(LLMClientBase):
     ):
         super().__init__(config)
         self._client = openai.OpenAI(
-            base_url="https://api.deepseek.com", api_key=api_key
+            base_url="https://api.deepseek.com/beta", api_key=api_key
         )
         self._model = model
 
+    def _maybe_extract_hidden_state(self, full_thinking: str) -> str:
+        """
+        Extracts the content of the <hidden_state> tag from the given text.
+
+        Args:
+            full_thinking (str): The text to extract the hidden state from.
+
+        Returns:
+            str: The content of the <hidden_state> tag if warmstart is used
+        """
+        if self.reasoning_warmstart is not None and full_thinking is not None:
+            # Use findall to get every instance of content between <state> tags
+            # re.DOTALL is crucial for multi-line content
+            pattern = re.compile(
+                r"<hidden_state>(.*?)</hidden_state>",
+                re.DOTALL | re.IGNORECASE,
+            )
+            all_states = pattern.findall(full_thinking)
+
+            if not all_states:
+                full_thinking = ""
+
+            # Join them with a newline or a specific separator
+            # .strip() cleans up the whitespace from the model's output
+            full_thinking = "\n".join([s.strip() for s in all_states if s.strip()])
+
+        return full_thinking
+
+    def _message_to_dict(self, message: Message) -> dict[str, str]:
+        """Convert Message object to dictionary format for API compatibility."""
+        return {"role": message.role.value, "content": message.content.text}
+
+    def _adjust_reasoning(
+        self, messages: list[Message], payload: dict[str, Any]
+    ) -> tuple[list[Message], dict[str, Any]]:
+        # Only previously extracted hidden state is stored as thinking in db for multi-turn preservation,
+        # Prefix the Assistant's messages with the thinking in hidden state
+        if self.reasoning_warmstart is not None:
+            for msg in messages:
+                if msg.role == MessageRole.ASSISTANT and msg.content.thinking:
+                    msg.content.text = f"<hidden_state>{msg.content.thinking}</hidden_state>\n\n{msg.content.text}"
+
+        return messages, payload
+
     def _execute_chat_completion_stream(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
-    ) -> Generator[str, None, None]:
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
+    ) -> Generator[StreamResponse, None, None]:
         try:
+            payload = asdict(config)
+            if reasoning:
+                messages, payload = self._adjust_reasoning(messages, payload)
+
+            messages_dicts: list[dict[str, Any]] = [
+                self._message_to_dict(msg) for msg in messages
+            ]
+            if reasoning and self.reasoning_warmstart is not None:
+                messages_dicts.append(
+                    {
+                        "role": "assistant",
+                        "reasoning_content": self.reasoning_warmstart,
+                        "prefix": True,
+                    }
+                )
+
+            accumulated_thinking = ""
+            accumulated_text = ""
+            in_reasoning = False
+            reasoning_ended = False
 
             stream_response = self._client.chat.completions.create(
                 model=self._model,
-                messages=messages,  # type: ignore
+                messages=messages_dicts,  # type: ignore
                 max_tokens=config.max_tokens,  # type: ignore
                 temperature=config.temperature,  # type: ignore
                 top_p=config.top_p,  # type: ignore
                 stream=True,
+                extra_body=(
+                    {"thinking": {"type": "enabled"}}
+                    if reasoning
+                    else {"thinking": {"type": "disabled"}}
+                ),
             )
             for event in stream_response:
-                content = event.choices[0].delta.content  # type: ignore
-                yield content if content is not None else ""
+                delta = event.choices[0].delta  # type: ignore
+                if delta.reasoning_content is not None:  # type: ignore
+                    if not in_reasoning:
+                        in_reasoning = True
+                    accumulated_thinking += delta.reasoning_content  # type: ignore
+                    yield StreamResponse(
+                        type=StreamType.THINKING,
+                        delta=delta.reasoning_content,  # type: ignore
+                    )
+                if delta.content is not None:
+                    if in_reasoning and not reasoning_ended:
+                        reasoning_ended = True
+                        in_reasoning = False
+                        yield StreamResponse(
+                            type=StreamType.THINKING_END,
+                            delta="",
+                            full_thinking=self._maybe_extract_hidden_state(
+                                accumulated_thinking.strip()
+                            ),
+                        )
+                    accumulated_text += delta.content
+                    yield StreamResponse(type=StreamType.TEXT, delta=delta.content)
+
+                if event.choices[0] and event.choices[0].finish_reason is not None:  # type: ignore
+                    if in_reasoning:
+                        yield StreamResponse(
+                            type=StreamType.THINKING_END,
+                            delta="",
+                            full_thinking=self._maybe_extract_hidden_state(
+                                accumulated_thinking.strip()
+                            ),
+                        )
+                    yield StreamResponse(
+                        type=StreamType.TEXT_END,
+                        delta="",
+                        full_text=accumulated_text.strip(),
+                    )
+
         except openai.APIError:
             print("Api Error")
 
     def _execute_chat_completion(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> str:
-        response = None
-        while response is None:
-            completion = self._client.chat.completions.create(
-                model=self._model,
-                messages=messages,  # type: ignore
-                max_tokens=config.max_tokens,  # type: ignore
-                temperature=config.temperature,  # type: ignore
-                top_p=config.top_p,  # type: ignore
-            )
-            try:
-                response = completion.choices[0].message.content
-                # DeepSeek specific reasoning extraction
-                if (
-                    hasattr(completion.choices[0].message, "model_extra")
-                    and completion.choices[0].message.model_extra
-                ):
-                    reasoning_text = completion.choices[0].message.model_extra.get(
-                        "reasoning_content"
-                    )
-                    if reasoning_text:
-                        print(f"### Reasoning\n{reasoning_text}")
-            except (TypeError, IndexError):
-                print("Empty LLM response, retrying...")
-                time.sleep(2)
-        return response or ""
+
+        messages_dicts: list[dict[str, Any]] = [
+            self._message_to_dict(msg) for msg in messages
+        ]
+
+        completion = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages_dicts,  # type: ignore
+            max_tokens=config.max_tokens,  # type: ignore
+            temperature=config.temperature,  # type: ignore
+            top_p=config.top_p,  # type: ignore
+            extra_body=(
+                {"thinking": {"type": "enabled"}}
+                if reasoning
+                else {"thinking": {"type": "disabled"}}
+            ),
+        )
+
+        if reasoning:
+            if completion.choices[0].message.reasoning_content is not None:  # type: ignore
+                print(
+                    f"### Reasoning\n{completion.choices[0].message.reasoning_content}"  # type: ignore
+                )
+
+        return completion.choices[0].message.content or ""  # type: ignore
 
     def count_tokens(self, text: str) -> int:
         """
@@ -682,114 +789,6 @@ class LLMClientDeepSeek(LLMClientBase):
             "gpt-4o"
         )  # DeepSeek uses similar tokenization
         return len(encoding.encode(text))
-
-    def stop_generation(self) -> None:
-        """
-        Stops the generation process.
-        """
-
-
-# --- 2. Gemini Client (Google GenAI SDK) ---
-
-
-class LLMClientGemini(LLMClientBase):
-    """
-    LLMClient implementation using Google Gemini via the google-genai SDK.
-    """
-
-    def __init__(
-        self,
-        api_key: str,
-        model: str = "gemini-3-flash-preview",
-        config: LLMConfig | None = None,
-    ):
-        super().__init__(config)
-        self._client = genai.Client(api_key=api_key)
-        self._model = model
-
-    def _generate_contents(
-        self, messages: list[dict[str, str]]
-    ) -> tuple[str, list[Content]]:
-        """
-        Generates content using the Google Gemini model.
-        Args:
-            messages (list[dict[str, str]]): List of messages to be sent to the model.
-
-        Returns:
-            str: The system instruction extracted from the messages.
-            list[Content]: List of content objects representing user and model messages.
-        """
-        try:
-            system_instruction = next(m for m in messages if m["role"] == "system")[
-                "content"
-            ]
-        except StopIteration:
-            system_instruction = "You're an helpful assistant"
-
-        contents: list[Content] = []
-        for m in messages:
-            if m["role"] == "user":
-                contents.append(UserContent(m["content"]))
-            elif m["role"] == "assistant":
-                contents.append(ModelContent(m["content"]))
-        return system_instruction, contents
-
-    def _get_gen_config(
-        self, system_instruction: str, reasoning: bool, config: LLMConfig
-    ) -> GenerateContentConfig:
-        thinking_cfg = (
-            None
-            if reasoning
-            else ThinkingConfig(thinking_budget=0, include_thoughts=False)
-        )
-        return GenerateContentConfig(
-            system_instruction=system_instruction,
-            max_output_tokens=config.max_tokens,
-            temperature=config.temperature,
-            top_p=config.top_p,
-            top_k=config.top_k,
-            thinking_config=thinking_cfg,
-        )
-
-    def _execute_chat_completion_stream(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
-    ) -> Generator[str, None, None]:
-        sys_inst, contents = self._generate_contents(messages)
-        gen_config = self._get_gen_config(sys_inst, reasoning, config)
-
-        response = self._client.models.generate_content_stream(
-            model=self._model, contents=contents, config=gen_config
-        )
-        for chunk in response:
-            yield chunk.text or ""
-
-    def _execute_chat_completion(
-        self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
-    ) -> str:
-        sys_inst, contents = self._generate_contents(messages)
-        gen_config = self._get_gen_config(sys_inst, reasoning, config)
-
-        response = self._client.models.generate_content(
-            model=self._model, contents=contents, config=gen_config
-        )
-        return response.text or ""
-
-    def count_tokens(self, text: str) -> int:
-        """
-        Counts the number of tokens in a given text by API call.
-
-        Args:
-            text (str): The text to count the tokens in.
-
-        Returns:
-            int: The number of tokens in the text.
-
-        """
-        try:
-            enc = tiktoken.encoding_for_model(self._model)
-        except KeyError:
-            enc = tiktoken.get_encoding("cl100k_base")
-        return len(enc.encode(text))
 
     def stop_generation(self) -> None:
         """
@@ -1079,8 +1078,6 @@ class LLMClientOpenRouter(LLMClientBase):
         api_key: str,
         model: str = "anthropic/claude-sonnet-4",
         config: LLMConfig | None = None,
-        site_url: str | None = None,
-        site_name: str | None = None,
     ):
         """
         Initialize OpenRouter client.
@@ -1089,8 +1086,6 @@ class LLMClientOpenRouter(LLMClientBase):
             api_key: OpenRouter API key
             model: Model identifier (e.g., "anthropic/claude-sonnet-4")
             config: Optional LLM configuration
-            site_url: Optional site URL for OpenRouter rankings
-            site_name: Optional site name for OpenRouter rankings
         """
         super().__init__(config=config, model_name=model)
         self._api_key = api_key
@@ -1212,7 +1207,9 @@ class LLMClientOpenRouter(LLMClientBase):
 
         # Use max_tokens to determine reasoning budget
         # Allocate up to 50% for reasoning (medium effort)
-        max_tokens = config.max_tokens or 4096
+        max_tokens: int = (
+            config.max_tokens if isinstance(config.max_tokens, int) else 4096
+        )
         reasoning_max_tokens = min(max_tokens // 2, 32000)
 
         return {
@@ -1330,7 +1327,7 @@ class LLMClientOpenRouter(LLMClientBase):
             if thinking:
                 print(f"### Reasoning\n{thinking}")
 
-        return message.get("content", "")
+        return message.get("content", "")  # type: ignore
 
     def _execute_chat_completion_stream(
         self, messages: list[Message], reasoning: bool, config: LLMConfig
@@ -1551,4 +1548,108 @@ class LLMClientOpenRouter(LLMClientBase):
         Stop generation is not supported by OpenRouter API.
         This is a no-op for API compatibility.
         """
-        pass
+
+
+# class LLMClientGemini(LLMClientBase):
+#     """
+#     LLMClient implementation using Google Gemini via the google-genai SDK.
+#     """
+
+#     def __init__(
+#         self,
+#         api_key: str,
+#         model: str = "gemini-3-flash-preview",
+#         config: LLMConfig | None = None,
+#     ):
+#         super().__init__(config)
+#         self._client = genai.Client(api_key=api_key)
+#         self._model = model
+
+#     def _generate_contents(
+#         self, messages: list[dict[str, str]]
+#     ) -> tuple[str, list[Content]]:
+#         """
+#         Generates content using the Google Gemini model.
+#         Args:
+#             messages (list[dict[str, str]]): List of messages to be sent to the model.
+
+#         Returns:
+#             str: The system instruction extracted from the messages.
+#             list[Content]: List of content objects representing user and model messages.
+#         """
+#         try:
+#             system_instruction = next(m for m in messages if m["role"] == "system")[
+#                 "content"
+#             ]
+#         except StopIteration:
+#             system_instruction = "You're an helpful assistant"
+
+#         contents: list[Content] = []
+#         for m in messages:
+#             if m["role"] == "user":
+#                 contents.append(UserContent(m["content"]))
+#             elif m["role"] == "assistant":
+#                 contents.append(ModelContent(m["content"]))
+#         return system_instruction, contents
+
+#     def _get_gen_config(
+#         self, system_instruction: str, reasoning: bool, config: LLMConfig
+#     ) -> GenerateContentConfig:
+#         thinking_cfg = (
+#             None
+#             if reasoning
+#             else ThinkingConfig(thinking_budget=0, include_thoughts=False)
+#         )
+#         return GenerateContentConfig(
+#             system_instruction=system_instruction,
+#             max_output_tokens=config.max_tokens,
+#             temperature=config.temperature,
+#             top_p=config.top_p,
+#             top_k=config.top_k,
+#             thinking_config=thinking_cfg,
+#         )
+
+#     def _execute_chat_completion_stream(
+#         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+#     ) -> Generator[str, None, None]:
+#         sys_inst, contents = self._generate_contents(messages)
+#         gen_config = self._get_gen_config(sys_inst, reasoning, config)
+
+#         response = self._client.models.generate_content_stream(
+#             model=self._model, contents=contents, config=gen_config
+#         )
+#         for chunk in response:
+#             yield chunk.text or ""
+
+#     def _execute_chat_completion(
+#         self, messages: list[dict[str, str]], reasoning: bool, config: LLMConfig
+#     ) -> str:
+#         sys_inst, contents = self._generate_contents(messages)
+#         gen_config = self._get_gen_config(sys_inst, reasoning, config)
+
+#         response = self._client.models.generate_content(
+#             model=self._model, contents=contents, config=gen_config
+#         )
+#         return response.text or ""
+
+#     def count_tokens(self, text: str) -> int:
+#         """
+#         Counts the number of tokens in a given text by API call.
+
+#         Args:
+#             text (str): The text to count the tokens in.
+
+#         Returns:
+#             int: The number of tokens in the text.
+
+#         """
+#         try:
+#             enc = tiktoken.encoding_for_model(self._model)
+#         except KeyError:
+#             enc = tiktoken.get_encoding("cl100k_base")
+#         return len(enc.encode(text))
+
+#     def stop_generation(self) -> None:
+#         """
+#         Stops the generation process.
+#         """
