@@ -61,6 +61,9 @@ class MessageContent:
     thinking_signature: str | None = None
     """Unique signature for the thinking content, if applicable."""
 
+    reasoning_details: list[dict[str, Any]] | None = None
+    """Complete reasoning_details array (for OpenRouter multi-turn reasoning preservation)."""
+
 
 @dataclass
 class Message:
@@ -103,6 +106,9 @@ class StreamResponse:
 
     full_text: str | None = None
     """Complete text content to be handled by the backend."""
+
+    reasoning_details: list[dict[str, Any]] | None = None
+    """Complete reasoning_details array from the provider (for OpenRouter interleaved reasoning)."""
 
 
 class LLMClientBase(ABC):
@@ -1047,3 +1053,502 @@ class LLMClientMiniMax(LLMClientAnthropicBase):
         super().__init__(
             api_key, model, base_url="https://api.minimax.io/anthropic", config=config
         )
+
+
+class LLMClientOpenRouter(LLMClientBase):
+    """
+    LLMClient implementation for OpenRouter API.
+
+    OpenRouter provides a unified API for multiple LLM providers with normalized
+    reasoning token support. This client handles:
+
+    1. Reasoning configuration (effort, max_tokens, exclude)
+    2. Reasoning details parsing (text, summary, encrypted types)
+    3. Preserving reasoning blocks for multi-turn conversations
+    4. Streaming with SSE parsing
+
+    Model Examples:
+        - "deepseek/deepseek-r1" - DeepSeek reasoning model
+        - "anthropic/claude-sonnet-4" - Claude with reasoning
+        - "openai/gpt-5-mini" - OpenAI reasoning model
+        - "google/gemini-flash-thinking" - Gemini thinking model
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "anthropic/claude-sonnet-4",
+        config: LLMConfig | None = None,
+        site_url: str | None = None,
+        site_name: str | None = None,
+    ):
+        """
+        Initialize OpenRouter client.
+
+        Args:
+            api_key: OpenRouter API key
+            model: Model identifier (e.g., "anthropic/claude-sonnet-4")
+            config: Optional LLM configuration
+            site_url: Optional site URL for OpenRouter rankings
+            site_name: Optional site name for OpenRouter rankings
+        """
+        super().__init__(config=config, model_name=model)
+        self._api_key = api_key
+        self._model = model
+        self._base_url = "https://openrouter.ai/api/v1"
+        self._chat_url = f"{self._base_url}/chat/completions"
+
+        # Build headers
+        self._headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+    def _convert_messages(
+        self, messages: list[Message]
+    ) -> tuple[str | None, list[dict[str, Any]]]:
+        """
+        Convert internal Message format to OpenRouter API format.
+
+        This handles:
+        - System message extraction
+        - Preserving reasoning_details for multi-turn reasoning
+        - Applying thinking feedback policy
+
+        Args:
+            messages: List of messages in internal format
+
+        Returns:
+            Tuple of (system_message, converted_messages)
+        """
+        converted = []
+        system_message = None
+
+        # Get thinking feedback policy
+        raw_policy = self.get_logic_config().keep_thinking_turns
+        policy = (
+            raw_policy
+            if isinstance(raw_policy, ThinkingFeebackPolicy)
+            else ThinkingFeebackPolicy.never()
+        )
+
+        # Map assistant message indices to "turns ago"
+        assistant_indices = [
+            i for i, msg in enumerate(messages) if msg.role == MessageRole.ASSISTANT
+        ]
+        num_assistant_msgs = len(assistant_indices)
+        turn_map = {
+            idx: (num_assistant_msgs - rank)
+            for rank, idx in enumerate(assistant_indices)
+        }
+
+        for i, msg in enumerate(messages):
+            if msg.role == MessageRole.SYSTEM:
+                system_message = msg.content.text
+                continue
+
+            if msg.role == MessageRole.USER:
+                converted.append(
+                    {
+                        "role": "user",
+                        "content": msg.content.text,
+                    }
+                )
+
+            elif msg.role == MessageRole.ASSISTANT:
+                turns_ago = turn_map[i]
+
+                # Build assistant message
+                assistant_msg: dict[str, Any] = {
+                    "role": "assistant",
+                    "content": msg.content.text,
+                }
+
+                # Add reasoning_details if policy allows
+                # https://openrouter.ai/docs/guides/best-practices/reasoning-tokens#example-preserving-reasoning-blocks-with-openrouter-and-claude
+                if policy.should_keep(turns_ago) and msg.content.thinking:
+                    # Reconstruct reasoning_details in OpenRouter format
+                    if self.model_name == "anthropic/claude-sonnet-4":
+                        if msg.content.reasoning_details:
+                            # Use the exact reasoning_details from the original response
+                            assistant_msg["reasoning_details"] = (
+                                msg.content.reasoning_details
+                            )
+                        elif msg.content.thinking:
+                            # Fallback: reconstruct for backward compatibility
+                            assistant_msg["reasoning_details"] = [
+                                {
+                                    "type": "reasoning.text",
+                                    "text": msg.content.thinking,
+                                    "signature": msg.content.thinking_signature,
+                                    "id": f"reasoning-{i}",
+                                    "format": "anthropic-claude-v1",
+                                }
+                            ]
+                    else:
+                        raise ValueError(
+                            f"No reasoning feedback implemented for model {self.model_name}"
+                        )
+
+                converted.append(assistant_msg)
+
+        return system_message, converted
+
+    def _build_reasoning_config(
+        self, reasoning: bool, config: LLMConfig
+    ) -> dict[str, Any] | None:
+        """
+        Build OpenRouter reasoning configuration.
+
+        Args:
+            reasoning: Whether reasoning is enabled
+            config: LLM configuration with max_tokens
+
+        Returns:
+            Reasoning config dict or None if reasoning disabled
+        """
+        if not reasoning:
+            return None
+
+        # Use max_tokens to determine reasoning budget
+        # Allocate up to 50% for reasoning (medium effort)
+        max_tokens = config.max_tokens or 4096
+        reasoning_max_tokens = min(max_tokens // 2, 32000)
+
+        return {
+            "max_tokens": max(reasoning_max_tokens, 1024),  # Min 1024 tokens
+            "exclude": False,  # Include reasoning in response by default
+        }
+
+    def _parse_reasoning_details(
+        self, reasoning_details: list[dict[str, Any]] | None
+    ) -> tuple[str, str | None]:
+        """
+        Parse OpenRouter reasoning_details array into thinking text and signature.
+
+        OpenRouter returns reasoning in different formats:
+        - reasoning.text: Raw thinking text
+        - reasoning.summary: High-level summary
+        - reasoning.encrypted: Protected/redacted reasoning
+
+        Args:
+            reasoning_details: Array of reasoning detail objects
+
+        Returns:
+            Tuple of (thinking_text, signature)
+        """
+        if not reasoning_details:
+            return "", None
+
+        thinking_parts = []
+        signature = None
+
+        for detail in reasoning_details:
+            detail_type = detail.get("type", "")
+
+            if detail_type == "reasoning.text":
+                text = detail.get("text", "")
+                if text:
+                    thinking_parts.append(text)
+                # Use signature from first reasoning.text block
+                if signature is None:
+                    signature = detail.get("signature")
+
+            elif detail_type == "reasoning.summary":
+                summary = detail.get("summary", "")
+                if summary:
+                    thinking_parts.append(f"[Summary: {summary}]")
+
+            elif detail_type == "reasoning.encrypted":
+                # Encrypted/redacted reasoning
+                thinking_parts.append("[REDACTED]")
+
+        thinking_text = "\n".join(thinking_parts)
+
+        return thinking_text, signature
+
+    def _execute_chat_completion(
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
+    ) -> str:
+        """
+        Execute non-streaming chat completion.
+
+        Args:
+            messages: Conversation messages
+            reasoning: Whether to enable reasoning
+            config: Resolved LLM configuration
+
+        Returns:
+            Response text
+        """
+        system_msg, converted_msgs = self._convert_messages(messages)
+
+        # Build payload
+        payload: dict[str, Any] = {
+            "model": self._model,
+            "messages": converted_msgs,
+            "max_tokens": config.max_tokens,
+            "temperature": config.temperature,
+            "stream": False,
+        }
+
+        # Add system message if present
+        if system_msg:
+            # OpenRouter uses the same format as OpenAI - system in messages array
+            payload["messages"].insert(
+                0,
+                {
+                    "role": "system",
+                    "content": system_msg,
+                },
+            )
+
+        # Add reasoning config
+        reasoning_config = self._build_reasoning_config(reasoning, config)
+        if reasoning_config:
+            payload["reasoning"] = reasoning_config
+
+        # Make API request
+        response = requests.post(
+            self._chat_url,
+            headers=self._headers,
+            json=payload,
+            timeout=600,
+        )
+        response.raise_for_status()
+        result = response.json()
+
+        # Extract response
+        choice = result["choices"][0]
+        message = choice["message"]
+
+        # Parse reasoning if present
+        if reasoning and "reasoning_details" in message:
+            thinking, _ = self._parse_reasoning_details(
+                message.get("reasoning_details")
+            )
+            if thinking:
+                print(f"### Reasoning\n{thinking}")
+
+        return message.get("content", "")
+
+    def _execute_chat_completion_stream(
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
+    ) -> Generator[StreamResponse, None, None]:
+        """
+        Execute streaming chat completion with reasoning support.
+
+        This handles OpenRouter's streaming format where reasoning_details
+        come in delta chunks that need to be accumulated.
+
+        Args:
+            messages: Conversation messages
+            reasoning: Whether to enable reasoning
+            config: Resolved LLM configuration
+
+        Yields:
+            StreamResponse objects for incremental updates
+        """
+        system_msg, converted_msgs = self._convert_messages(messages)
+
+        # Build payload
+        payload: dict[str, Any] = {
+            "model": self._model,
+            "messages": converted_msgs,
+            "max_tokens": config.max_tokens,
+            "temperature": config.temperature,
+            "stream": True,
+        }
+
+        # Add system message if present
+        if system_msg:
+            payload["messages"].insert(
+                0,
+                {
+                    "role": "system",
+                    "content": system_msg,
+                },
+            )
+
+        # Add reasoning config
+        reasoning_config = self._build_reasoning_config(reasoning, config)
+        if reasoning_config:
+            payload["reasoning"] = reasoning_config
+
+        # Make streaming request
+        response = requests.post(
+            self._chat_url,
+            headers=self._headers,
+            json=payload,
+            stream=True,
+            timeout=600,
+        )
+        response.raise_for_status()
+
+        # Parse SSE stream
+        client = SSEClient(response)  # type: ignore
+
+        # Accumulate reasoning and text
+        accumulated_thinking = ""
+        accumulated_text = ""
+        thinking_signature = None
+        in_reasoning = False
+        reasoning_ended = False
+        # Accumulate reasoning_details by consolidating deltas into complete blocks
+        # Key: (type, index) -> reasoning detail object
+        reasoning_blocks: dict[tuple[str, int], dict[str, Any]] = {}
+
+        for event in client.events():
+            if event.data == "[DONE]":
+                break
+
+            try:
+                chunk = json.loads(event.data)
+            except json.JSONDecodeError:
+                continue
+
+            if not chunk.get("choices"):
+                continue
+
+            delta = chunk["choices"][0].get("delta", {})
+
+            # Check if we have reasoning_details in this delta
+            has_reasoning = "reasoning_details" in delta and delta["reasoning_details"]
+            has_content = "content" in delta and delta["content"]
+
+            # Handle reasoning_details in delta
+            if has_reasoning:
+                reasoning_details = delta["reasoning_details"]
+
+                # Start of reasoning (first time we see reasoning_details)
+                if not in_reasoning:
+                    in_reasoning = True
+                    reasoning_ended = False
+                    yield StreamResponse(type=StreamType.THINKING, delta="")
+
+                    # Consolidate reasoning_details deltas into complete blocks
+                for detail in reasoning_details:
+                    detail_type = detail.get("type", "reasoning.text")
+                    detail_index = detail.get("index", 0)
+                    key = (detail_type, detail_index)
+
+                    if key not in reasoning_blocks:
+                        # Initialize new block with all available fields
+                        reasoning_blocks[key] = {
+                            "type": detail_type,
+                            "index": detail_index,
+                            "format": detail.get("format", "unknown"),
+                            "id": detail.get("id"),
+                        }
+
+                        # Initialize content fields based on type
+                        if detail_type == "reasoning.text":
+                            reasoning_blocks[key]["text"] = ""
+                            reasoning_blocks[key]["signature"] = None
+                        elif detail_type == "reasoning.summary":
+                            reasoning_blocks[key]["summary"] = ""
+                        elif detail_type == "reasoning.encrypted":
+                            reasoning_blocks[key]["data"] = ""
+
+                    # Update the block with delta content
+                    if detail_type == "reasoning.text":
+                        if "text" in detail:
+                            reasoning_blocks[key]["text"] += detail["text"]
+                        if "signature" in detail and detail["signature"]:
+                            reasoning_blocks[key]["signature"] = detail["signature"]
+                    elif detail_type == "reasoning.summary":
+                        if "summary" in detail:
+                            reasoning_blocks[key]["summary"] += detail["summary"]
+                    elif detail_type == "reasoning.encrypted":
+                        if "data" in detail:
+                            reasoning_blocks[key]["data"] += detail["data"]
+
+                    # Update id if provided
+                    if "id" in detail and detail["id"]:
+                        reasoning_blocks[key]["id"] = detail["id"]
+
+                # Parse and accumulate reasoning
+                thinking_delta, sig = self._parse_reasoning_details(reasoning_details)
+                if thinking_delta:
+                    accumulated_thinking += thinking_delta
+                    yield StreamResponse(
+                        type=StreamType.THINKING,
+                        delta=thinking_delta,
+                    )
+                if sig and thinking_signature is None:
+                    thinking_signature = sig
+
+            # If we were in reasoning but this delta has NO reasoning_details,
+            # it means reasoning has ended
+            if in_reasoning and not has_reasoning and not reasoning_ended:
+                in_reasoning = False
+                reasoning_ended = True
+
+                # Convert reasoning_blocks dict to list for reasoning_details
+                final_reasoning_details = list(reasoning_blocks.values())
+
+                yield StreamResponse(
+                    type=StreamType.THINKING_END,
+                    delta="",
+                    signature=thinking_signature,
+                    full_thinking=accumulated_thinking,
+                    reasoning_details=final_reasoning_details,
+                )
+
+            # Handle content delta (can coexist with reasoning_details!)
+            if has_content:
+                content_delta = delta["content"]
+                accumulated_text += content_delta
+                yield StreamResponse(
+                    type=StreamType.TEXT,
+                    delta=content_delta,
+                )
+
+            # Handle finish_reason
+            finish_reason = chunk["choices"][0].get("finish_reason")
+            if finish_reason:
+                # Emit final thinking if we never emitted THINKING_END
+                if in_reasoning and not reasoning_ended:
+                    # Convert reasoning_blocks dict to list for reasoning_details
+                    final_reasoning_details = list(reasoning_blocks.values())
+                    yield StreamResponse(
+                        type=StreamType.THINKING_END,
+                        delta="",
+                        signature=thinking_signature,
+                        full_thinking=accumulated_thinking,
+                        reasoning_details=final_reasoning_details,
+                    )
+
+                # Emit final text
+                yield StreamResponse(
+                    type=StreamType.TEXT_END,
+                    delta="",
+                    full_text=accumulated_text,
+                )
+                break
+
+    def count_tokens(self, text: str) -> int:
+        """
+        Count tokens in text.
+
+        OpenRouter doesn't provide a token counting endpoint, so we use
+        a simple approximation based on character count.
+
+        For more accurate counting, consider using tiktoken for OpenAI models
+        or the respective tokenizer for other providers.
+
+        Args:
+            text: Text to count tokens for
+
+        Returns:
+            Approximate token count
+        """
+        # Rough approximation: ~4 characters per token
+        return len(text) // 4
+
+    def stop_generation(self) -> None:
+        """
+        Stop generation is not supported by OpenRouter API.
+        This is a no-op for API compatibility.
+        """
+        pass

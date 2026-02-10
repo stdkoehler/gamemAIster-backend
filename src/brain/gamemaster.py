@@ -18,6 +18,7 @@ from src.llmclient.llm_client import (
     LLMClientLocal,
     LLMClientDeepSeek,
     LLMClientMiniMax,
+    LLMClientOpenRouter,
     Message,
     MessageContent,
     MessageRole,
@@ -85,7 +86,7 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    if llm_type == "DEEPSEEK":
+    elif llm_type == "DEEPSEEK":
         api_key = os.getenv("API_KEY_DEEPSEEK")
         if api_key is None:
             raise ValueError("OpenRouter API key not set")
@@ -98,7 +99,7 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    if llm_type == "GEMINI":
+    elif llm_type == "GEMINI":
         api_key = os.getenv("API_KEY_GEMINI")
         if api_key is None:
             raise ValueError("Gemini API key not set")
@@ -113,7 +114,7 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    if llm_type == "CLAUDE":
+    elif llm_type == "CLAUDE":
         api_key = os.getenv("API_KEY_CLAUDE")
         if api_key is None:
             raise ValueError("Claude API key not set")
@@ -126,7 +127,7 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    if llm_type == "MINIMAX":
+    elif llm_type == "MINIMAX":
         api_key = os.getenv("API_KEY_MINIMAX")
         if api_key is None:
             raise ValueError("MiniMax API key not set")
@@ -135,6 +136,22 @@ def build_gamemaster(
             llm_client_chat=LLMClientMiniMax(api_key=api_key, model="MiniMax-M2.1"),
             llm_client_reasoning=LLMClientMiniMax(
                 api_key=api_key, model="MiniMax-M2.1"
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "OPENROUTER":
+        api_key = os.getenv("API_KEY_OPENROUTER")
+        open_router_model = os.getenv("OPENROUTER_MODEL", "stepfun/step-3.5-flash:free")
+        if api_key is None:
+            raise ValueError("OpenRouter API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientOpenRouter(
+                api_key=api_key, model=open_router_model
+            ),
+            llm_client_reasoning=LLMClientOpenRouter(
+                api_key=api_key, model=open_router_model
             ),
             game_type=game_type,
             mission_options=mission_options,
