@@ -614,8 +614,9 @@ class LLMClientDeepSeek(LLMClientBase):
         api_key: str,
         model: str = "deepseek-chat",
         config: LLMConfig | None = None,
+        reasoning_warmstart: str | None = None,
     ):
-        super().__init__(config)
+        super().__init__(config=config, reasoning_warmstart=reasoning_warmstart)
         self._client = openai.OpenAI(
             base_url="https://api.deepseek.com/beta", api_key=api_key
         )
@@ -676,16 +677,25 @@ class LLMClientDeepSeek(LLMClientBase):
             messages_dicts: list[dict[str, Any]] = [
                 self._message_to_dict(msg) for msg in messages
             ]
+
+            # In theory this works. However DeepSeek is often confused and either
+            # does not provide reasoning content or puts <think> tags in the normal
+            # text output: For now we should not use warmstart.
             if reasoning and self.reasoning_warmstart is not None:
                 messages_dicts.append(
                     {
                         "role": "assistant",
                         "reasoning_content": self.reasoning_warmstart,
+                        "content": "",
                         "prefix": True,
                     }
                 )
 
-            accumulated_thinking = ""
+            accumulated_thinking = (
+                self.reasoning_warmstart
+                if reasoning and self.reasoning_warmstart is not None
+                else ""
+            )
             accumulated_text = ""
             in_reasoning = False
             reasoning_ended = False

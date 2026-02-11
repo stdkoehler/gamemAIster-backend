@@ -334,10 +334,6 @@ Base NPC responses on their clan, generation, age, and political affiliations. P
 Anarchs may challenge authority directly, and elders may speak in riddles born of centuries of paranoia.
 Remember that every Kindred has their own agenda and ancient grudges that influence their actions.
 
-## Thinking
-When working in thinking mode with <think></think> tags, always provide a <hidden_state></hidden_state> block. This should be a concise (1-2 sentences) "snapshot" of the chronicle's hidden states. Updates to the hidden state may only be made inside the tags.
-hidden_state MUST ONLY CONTAIN information that is **not directly observable by the player** but crucial for the chronice's current and future development. DO NOT summarize and add obvious events.
-
 ## Formatting
 Maintain these formatting standards strictly for every response to ensure readability and immersion.
 ### Speech of characters

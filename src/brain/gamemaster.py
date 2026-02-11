@@ -40,8 +40,15 @@ from src.brain.json_tools import extract_json_schema
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
 
+# This helps the local LLM to think but it confuses the output of the true thinking
+# models, we need to inject that into the system prompt for local models
+"""
+## Thinking
+When working in thinking mode with <think></think> tags, always provide a <hidden_state></hidden_state> block. This should be a concise (1-2 sentences) "snapshot" of the chronicle's hidden states. Updates to the hidden state may only be made inside the tags.
+hidden_state MUST ONLY CONTAIN information that is **not directly observable by the player** but crucial for the chronice's current and future development. DO NOT summarize and add obvious events.
+"""
+
 VAMPIRE_WARMSTART = """
-<think>
 I MUST adhere to Vampire the Masquerade V5 lore and rules and ensure my response aligns with VtM's lore and atmosphere. At the same time my response MUST NOT be cliché or overly dramatic. I don't need to force the supernatural elements if they don't come naturally.
 I MUST NOT escalate the situation too quickly. The story pacing should feel natural and immersive.
 I always should consider the player character for narrative and mechanical implications: Is he human, ghoul, Kindred of a specific clan? If Kindred, always track Hunger and the Beast's influence.
@@ -67,11 +74,14 @@ def build_gamemaster(
     """
     llm_type = os.getenv("LLM")
     if llm_type == "LOCAL":
+        reasoning_warmstart = REASONING_WARMSTART.get(game_type, None)
         local_model = os.getenv("LOCAL_MODEL", None)
         client_story = LLMClientLocal(
             base_url="http://127.0.0.1:5000",
             model_name=local_model,
-            reasoning_warmstart=REASONING_WARMSTART.get(game_type, None),
+            reasoning_warmstart=(
+                "<think>" + reasoning_warmstart if reasoning_warmstart else None
+            ),
         )
         client_reasoning = LLMClientLocal(
             base_url="http://127.0.0.1:5000",
@@ -91,7 +101,11 @@ def build_gamemaster(
             raise ValueError("OpenRouter API key not set")
         return Gamemaster(
             user_id=user_id,
-            llm_client_chat=LLMClientDeepSeek(api_key=api_key, model="deepseek-chat"),
+            llm_client_chat=LLMClientDeepSeek(
+                api_key=api_key,
+                model="deepseek-reasoner",
+                # reasoning_warmstart="I'll update the <hidden_state>",
+            ),
             llm_client_reasoning=LLMClientDeepSeek(
                 api_key=api_key, model="deepseek-reasoner"
             ),
