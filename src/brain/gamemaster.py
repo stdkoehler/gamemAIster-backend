@@ -103,8 +103,8 @@ def build_gamemaster(
             user_id=user_id,
             llm_client_chat=LLMClientDeepSeek(
                 api_key=api_key,
-                model="deepseek-reasoner",
-                # reasoning_warmstart="I'll update the <hidden_state>",
+                model="deepseek-chat",
+                # reasoning_warmstart="<hidden_state>",
             ),
             llm_client_reasoning=LLMClientDeepSeek(
                 api_key=api_key, model="deepseek-reasoner"
