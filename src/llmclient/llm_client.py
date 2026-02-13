@@ -618,7 +618,7 @@ class LLMClientDeepSeek(LLMClientBase):
     ):
         super().__init__(config=config, reasoning_warmstart=reasoning_warmstart)
         self._client = openai.OpenAI(
-            base_url="https://api.deepseek.com/beta", api_key=api_key
+            base_url="https://api.deepseek.com", api_key=api_key
         )
         self._model = model
 
@@ -681,15 +681,15 @@ class LLMClientDeepSeek(LLMClientBase):
             # In theory this works. However DeepSeek is often confused and either
             # does not provide reasoning content or puts <think> tags in the normal
             # text output: For now we should not use warmstart.
-            if reasoning and self.reasoning_warmstart is not None:
-                messages_dicts.append(
-                    {
-                        "role": "assistant",
-                        "reasoning_content": self.reasoning_warmstart,
-                        "content": "",
-                        "prefix": True,
-                    }
-                )
+            # if reasoning and self.reasoning_warmstart is not None:
+            #     messages_dicts.append(
+            #         {
+            #             "role": "assistant",
+            #             "reasoning_content": self.reasoning_warmstart,
+            #             "content": "",
+            #             "prefix": True,
+            #         }
+            #     )
 
             accumulated_thinking = (
                 self.reasoning_warmstart
@@ -716,13 +716,47 @@ class LLMClientDeepSeek(LLMClientBase):
             for event in stream_response:
                 delta = event.choices[0].delta  # type: ignore
                 if delta.reasoning_content is not None:  # type: ignore
-                    if not in_reasoning:
-                        in_reasoning = True
-                    accumulated_thinking += delta.reasoning_content  # type: ignore
-                    yield StreamResponse(
-                        type=StreamType.THINKING,
-                        delta=delta.reasoning_content,  # type: ignore
-                    )
+                    content_chunk = delta.reasoning_content  # type: ignore
+
+                    # If we already finished reasoning but the model is still
+                    # sending data in the wrong slot, pivot it to TEXT.
+                    if reasoning_ended:
+                        accumulated_text += content_chunk
+                        yield StreamResponse(type=StreamType.TEXT, delta=content_chunk)
+                        continue
+
+                    # Check for the transition tag inside the reasoning slot
+                    if "</think>" in content_chunk:
+                        parts = content_chunk.split("</think>", 1)
+
+                        # Send the prefix to thinking
+                        if parts[0]:
+                            accumulated_thinking += parts[0]
+                            yield StreamResponse(
+                                type=StreamType.THINKING, delta=parts[0]
+                            )
+
+                        # Latch the state to 'Ended'
+                        reasoning_ended = True
+                        in_reasoning = False
+                        yield StreamResponse(
+                            type=StreamType.THINKING_END,
+                            delta="",
+                            full_thinking=accumulated_thinking.strip(),
+                        )
+
+                        # Send the suffix to text
+                        if parts[1]:
+                            accumulated_text += parts[1]
+                            yield StreamResponse(type=StreamType.TEXT, delta=parts[1])
+                    else:
+                        # Normal thinking flow
+                        if not in_reasoning:
+                            in_reasoning = True
+                        accumulated_thinking += content_chunk
+                        yield StreamResponse(
+                            type=StreamType.THINKING, delta=content_chunk
+                        )
                 if delta.content is not None:
                     if in_reasoning and not reasoning_ended:
                         reasoning_ended = True
