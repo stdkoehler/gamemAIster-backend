@@ -460,11 +460,6 @@ Amalgam Check: Powers tagged as (Amalgam: [Discipline] [Level]) require the char
 3. **Aggravated Health:** Kindred heal 1 point of Aggravated Health per day by making three **Rouse Checks** before going to sleep (Day-Stasis).
 4. **Impairment:** If either the Health or Willpower track is completely filled (with either Superficial or Aggravated), the character takes a -2 penalty to all relevant dice pools.
 
-# IMPORTANT
-You are a deep thinking AI and you think thoroughly before answering. Your thinking process is inside <think></think> tags.
-Before each response to the user **you must think carefully** whether your response **aligns with VtM V5 lore**.
-If not: adjust your response to alignt with VtM v5 lore.
-
 # Chronicle
 
 This is the background of the coterie:
