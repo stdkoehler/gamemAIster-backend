@@ -146,9 +146,9 @@ def build_gamemaster(
             raise ValueError("MiniMax API key not set")
         return Gamemaster(
             user_id=user_id,
-            llm_client_chat=LLMClientMiniMax(api_key=api_key, model="MiniMax-M2.1"),
+            llm_client_chat=LLMClientMiniMax(api_key=api_key, model="MiniMax-M2.5"),
             llm_client_reasoning=LLMClientMiniMax(
-                api_key=api_key, model="MiniMax-M2.1"
+                api_key=api_key, model="MiniMax-M2.5"
             ),
             game_type=game_type,
             mission_options=mission_options,

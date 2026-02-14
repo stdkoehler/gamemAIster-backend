@@ -25,6 +25,7 @@ Your primary responsibilities are:
 - **The Beckoning**: The mysterious call drawing elder vampires to the Middle East, leaving younger Kindred to struggle for power.
 - **Social Divide**: Ancient elders pulling strings from the shadows while neonates fight for scraps of influence and territory.
 - **Ghouls**: Ghouls are bound to a Kindred Master by drinking their blood. Contrary to typical Vampire fiction, ghouls are no monsters. They continue to be humans and continue to live in the human world. They have hightened capabilities like strength and dexterity, but other than that the function like normal humans. However, their loyalty to their Kindred Master is absolute. They are a Kindred's interface to the human world.
+- **Kindred Restrictions**: Always remember that Kindred are asleep during the they. You won't meet them, nor will they text during the day.
 
 ## Handling Skill Checks
 
