@@ -1,6 +1,5 @@
 """Chat Conversation Memory"""
 
-import copy
 import re
 import json
 from dataclasses import dataclass
@@ -11,8 +10,14 @@ from pydantic import ValidationError
 
 
 from src.llmclient.llm_parameters import LLMConfig
-from src.llmclient.llm_parameters_gemma import LLM_CONFIG_THINKING, LLM_CONFIG_STORY
-from src.llmclient.llm_client import LLMClientBase
+from src.llmclient.llm_config_registry import LLMTask
+from src.llmclient.llm_client import (
+    LLMClientBase,
+    StreamType,
+    MessageRole,
+    MessageContent,
+    Message,
+)
 from src.crud.crud import crud_instance
 
 from src.brain.data_types import Interaction, EntityResponse, Scene
@@ -94,27 +99,28 @@ class SummaryMemory:
 
         scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text}}}\n\n**Output:**\n```'
         messages = [
-            {
-                "role": "system",
-                "content": self._scene_template.replace("__RPG__", self._game_name),
-            },
-            {
-                "role": "user",
-                "content": scene_input.format(
-                    scenes=scenes_json, text=text_interaction
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(
+                    text=self._scene_template.replace("__RPG__", self._game_name)
                 ),
-            },
+            ),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=scene_input.format(scenes=scenes_json, text=text_interaction)
+                ),
+            ),
         ]
 
         ### Scene Prompt
-        log_prompt = "\n\n".join(msg["content"] for msg in messages)
-
-        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
-        # llm_config.temperature = 0.7
-        llm_config.max_tokens = 8192
+        log_prompt = "\n\n".join(msg.content.text for msg in messages)
 
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.SUMMARY,
         )
 
         # remove content between <think>  tags
@@ -149,7 +155,7 @@ class SummaryMemory:
                 processed_output="Validation Error",
             )
             raise ValueError(
-                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+                "LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
             logger.log_scene(
@@ -182,26 +188,30 @@ class SummaryMemory:
 
         entity_input = 'Extract entities from the following text and update the given entities:\n{{"text": {text},"entities": {entities}}}'
         messages = [
-            {
-                "role": "system",
-                "content": self._entity_template.replace("__RPG__", self._game_name),
-            },
-            {
-                "role": "user",
-                "content": entity_input.format(
-                    text=text_interaction, entities=entities_json
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(
+                    text=self._entity_template.replace("__RPG__", self._game_name)
                 ),
-            },
+            ),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=entity_input.format(
+                        text=text_interaction, entities=entities_json
+                    )
+                ),
+            ),
         ]
 
         ### Entity Prompt
-        log_prompt = "\n\n".join(msg["content"] for msg in messages)
-
-        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
-        llm_config.max_tokens = 8192
+        log_prompt = "\n\n".join(msg.content.text for msg in messages)
 
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.SUMMARY,
         )
 
         try:
@@ -227,7 +237,7 @@ class SummaryMemory:
                 processed_output="Validation Error",
             )
             raise ValueError(
-                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+                "LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
             logger.log_entity(
@@ -258,24 +268,25 @@ class SummaryMemory:
 
         summary_input = 'Summarize the following text:\n{{"previous_summary": {prev}, "current_events": {current}}}'
         messages = [
-            {
-                "role": "system",
-                "content": self._summary_template,
-            },
-            {
-                "role": "user",
-                "content": summary_input.format(prev=summary, current=text_interaction),
-            },
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(text=self._summary_template),
+            ),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=summary_input.format(prev=summary, current=text_interaction)
+                ),
+            ),
         ]
 
         ### Summary Prompt
-        log_prompt = "\n\n".join(msg["content"] for msg in messages)
-
-        llm_config = copy.deepcopy(LLM_CONFIG_THINKING)
-        llm_config.max_tokens = 8192
-
+        log_prompt = "\n\n".join(msg.content.text for msg in messages)
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.SUMMARY,
         )
 
         try:
@@ -302,7 +313,7 @@ class SummaryMemory:
                 processed_output="Validation Error",
             )
             raise ValueError(
-                f"LLM response is not valid JSON or doesn't validate as pydantic model"
+                "LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
         except KeyError as exc:
             logger.log_summary(
@@ -399,33 +410,29 @@ class SummaryMemory:
 
     def update_last(self, interaction: Interaction) -> None:
         """
-        Appdates the last interaction in memory.
+        Updates the last interaction in memory. If llm_thinking and llm_thinking_signature
+        are set, they will be updated as well, if they are None they will be kept as is.
+        (Important to address the LLM api constraint that llm_thinking must not be changed)
 
         Args:
             interaction (Interaction): The interaction that overwrites the last interaction
         """
         crud_instance.update_last_interaction(self._mission_id, interaction)
-        self._history[-1] = interaction
+        if interaction.llm_thinking is not None:
+            self._history[-1] = interaction
+        else:
+            # The frontend my send a updated last interaction without thinking content,
+            # in this case we want to keep the original thinking and signature to avoid
+            # tampering with the thinking content
+            last_interaction = crud_instance.get_interactions(self._mission_id)[-1]
+            self._history[-1] = Interaction(
+                user_input=interaction.user_input,
+                llm_output=interaction.llm_output,
+                llm_thinking=last_interaction.llm_thinking,
+                llm_thinking_signature=last_interaction.llm_thinking_signature,
+            )
 
         # self._try_summarize()
-
-    def interactions_complete(self) -> list[Interaction]:
-        """
-        Returns the complete history of interactions in the chat conversation.
-
-        Returns:
-            List[Interaction]: The complete history of interactions.
-        """
-        return self._history
-
-    def interactions_summarized(self) -> list[Interaction]:
-        """
-        Returns a list of interactions that have already been summarized in the chat conversation.
-
-        Returns:
-            List[Interaction]: The list of interactions that have been summarized.
-        """
-        return self._history[: self._n_summarized]
 
     def interactions_unsummarized(self) -> list[Interaction]:
         """
@@ -436,64 +443,55 @@ class SummaryMemory:
         """
         return self._history[self._n_summarized :]
 
-    def text_interactions_unsummarized(self) -> str:
+    def last_user_input(self) -> str:
         """
-        Returns the formatted text of the current interactions in the chat conversation.
+        Returns the user input of the last interaction in the chat conversation.
 
         Returns:
-            str: The formatted text of the current interactions.
+            str: The user input of the last interaction.
         """
-        return "\n".join(
-            interaction.format_interaction()
-            for interaction in self.interactions_unsummarized()
-        )
+        return self._history[-1].user_input
 
-    def text_interactions_unsummarized_regenerate(self) -> tuple[str, str]:
-        """
-        Returns the formatted text of the current interactions in the chat conversation, excluding the last interaction.
-
-        Returns:
-            tuple[str, str]: A tuple containing two strings:
-                - The formatted text of the current interactions, excluding the last interaction.
-                - The user input of the last interaction.
-        """
-        if not self._history:
-            return "", ""
-        unsummarized_interactions = self.interactions_unsummarized()
-        return (
-            "\n".join(
-                interaction.format_interaction()
-                for interaction in unsummarized_interactions[:-1]
-            ),
-            self._history[-1].user_input,
-        )
-
-    def text_interactions_complete(self) -> str:
-        """
-        Returns the formatted text of all interactions in the chat conversation.
-
-        Returns:
-            str: The formatted text of all interactions.
-        """
-        return "\n".join(
-            [
-                interaction.format_interaction()
-                for interaction in self.interactions_complete()
-            ]
-        )
-
-    def chat(self) -> list[dict[str, str]]:
+    def chat(self) -> list[Message]:
         messages = []
         for interaction in self._history:
-            messages.append({"role": "user", "content": interaction.user_input})
-            messages.append({"role": "assistant", "content": interaction.llm_output})
+            messages.append(
+                Message(
+                    role=MessageRole.USER,
+                    content=MessageContent(text=interaction.user_input),
+                )
+            )
+            messages.append(
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text=interaction.llm_output,
+                        thinking=interaction.llm_thinking,
+                        thinking_signature=interaction.llm_thinking_signature,
+                    ),
+                )
+            )
         return messages
 
-    def chat_unsummarized(self) -> list[dict[str, str]]:
+    def chat_unsummarized(self) -> list[Message]:
         messages = []
         for interaction in self.interactions_unsummarized():
-            messages.append({"role": "user", "content": interaction.user_input})
-            messages.append({"role": "assistant", "content": interaction.llm_output})
+            messages.append(
+                Message(
+                    role=MessageRole.USER,
+                    content=MessageContent(text=interaction.user_input),
+                )
+            )
+            messages.append(
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text=interaction.llm_output,
+                        thinking=interaction.llm_thinking,
+                        thinking_signature=interaction.llm_thinking_signature,
+                    ),
+                )
+            )
         return messages
 
     def get_summary(self) -> str:
@@ -588,58 +586,50 @@ class SummaryChat:
         chunk = chunk.lstrip()
         return chunk
 
-    def predict(
-        self, user_input: str | None, last_interaction: Interaction | None = None
-    ) -> Generator[str, None, None]:
+    def _build_messages(self, user_input: str, is_regenerate: bool) -> list[Message]:
         """
-        Predicts the AI language model's response to a given question in the chat conversation.
-        Predict is called on Sending of a new user input. The previous interaction will then be
-        persisted in the memory.
-
-        Predict will be calls when the Send button for Player is pushed. It takes into account
-        the data in the Gamemaster field of the UI which will be sent with last_interaction.
-
+        Builds the messages to be sent to the LLM, including system prompt, summary,
+        entities, scenes, and history.
         Args:
-            user_input (str | None): If it is None we either gegenerate the last interaction
-            last_interaction (Interaction | None): The previous interaction. If it is not None, we will update the previous interaction
+            user_input (str): The new user input to be added to the messages.
+            is_regenerate (bool): Whether this is a regeneration (True) or a new turn (False).
+        Returns:
+            list[Message]: The list of messages to be sent to the LLM.
         """
 
-        # update last interaction - player changed interaction in frontend
-        is_regenerate = True if user_input is None else False
-
-        if last_interaction is not None:
-            self._memory.update_last(last_interaction)
-
-        # regenerate with previous input
-        if user_input is None:
-            _, user_input = self._memory.text_interactions_unsummarized_regenerate()
-
-        # print("Current Summary:")
-        # print(self._memory.summary)
         system_prompt = self._role.format(
             MISSION=self._mission, BACKGROUND=self._background
         )
-        messages = [{"role": "system", "content": system_prompt}]
+        messages: list[Message] = [
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(text=system_prompt),
+            )
+        ]
 
         if self._memory.n_summarized > 0:
 
             # we have summarized interactions, we add summary, entities and the
             # unsummarized interactions
             messages.append(
-                {
-                    "role": "user",
-                    "content": self._summary_provider_template.format(
-                        SUMMARY=self._memory.summary,
-                        SCENES=self._memory.get_scenes_json(),
-                        ENTITIES=self._memory.get_entities_json(),
+                Message(
+                    role=MessageRole.USER,
+                    content=MessageContent(
+                        text=self._summary_provider_template.format(
+                            SUMMARY=self._memory.summary,
+                            SCENES=self._memory.get_scenes_json(),
+                            ENTITIES=self._memory.get_entities_json(),
+                        ),
                     ),
-                }
+                )
             )
             messages.append(
-                {
-                    "role": "assistant",
-                    "content": "[OOC: Thank you for the summary and entities. I will use them to continue the story.]",
-                }
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text="[OOC: Thank you for the summary and entities. I will use them to continue the story.]",
+                    ),
+                )
             )
 
             messages += self._memory.chat_unsummarized()
@@ -650,31 +640,83 @@ class SummaryChat:
             # we want to regenerate the last LLM answer, delete it from messages
             messages = messages[:-1]
         else:
-            messages.append({"role": "user", "content": user_input})
+            messages.append(
+                Message(role=MessageRole.USER, content=MessageContent(text=user_input))
+            )
 
-        llm_config = copy.deepcopy(LLM_CONFIG_STORY)
-        llm_config.stop = ["PL", "###", "/FIN"]
+        return messages
+
+    def predict(
+        self,
+        user_input: str | None = None,
+        last_interaction: Interaction | None = None,
+    ) -> Generator[tuple[str, str], None, None]:
+        """
+        Orchestrates the LLM generation process, handling new turns, history corrections,
+        and regenerations.
+
+        Args:
+            user_input (str | None): The new user input. If None, triggers regeneration
+                with user input from last_interaction.
+            last_interaction (Interaction | None): The previous interaction object. Used to update
+                history before generation. This is always sent by the frontend because
+                the frontend is the source of truth for the last interaction (e.g. if the
+                user edited the previous LLM output or user input).
+                Can be None if this is the first turn and there is no history yet.
+
+
+        Yields:
+            tuple[str, str]: Streamed chunks of the LLM's thinking process and final text response.
+        """
+        is_regenerate = False
+        # always update last_interaction -> frontend is ground truth
+        if last_interaction is not None:
+            self._memory.update_last(last_interaction)
+        if user_input is None:
+            is_regenerate = True
+            if last_interaction is None:
+                raise ValueError(
+                    "user_input is None but last_interaction is also None."
+                )
+            user_input = last_interaction.user_input
+
+        messages = self._build_messages(
+            user_input=user_input, is_regenerate=is_regenerate
+        )
 
         llm_response = ""
-        begun = False
+        full_thinking = None
+        signature = None
         for chunk in self._llm_client_chat.chat_completion_stream(
-            messages, llm_config=llm_config
+            messages,
+            config_override=LLMConfig(stop=["PL", "###", "/FIN"]),
+            reasoning=True,
+            task=LLMTask.STORY,
         ):
-            if not begun:
-                chunk = self._trim_chunk(chunk)
-                if chunk != "":
-                    begun = True
-            llm_response += chunk
-            yield chunk
+            if chunk.type == StreamType.THINKING:
+                yield ("thinking", chunk.delta)
+            elif chunk.type == StreamType.TEXT:
+                yield ("text", chunk.delta)
+            elif chunk.type == StreamType.THINKING_END:
+                full_thinking = chunk.full_thinking
+                signature = chunk.signature
+                yield ("thinking_end", chunk.delta)
+            elif chunk.type == StreamType.TEXT_END:
+                llm_response = chunk.full_text if chunk.full_text else ""
+            else:
+                raise ValueError(f"Unknown stream type: {chunk.type}")
 
-        # pattern = (
-        #     r"(?:What\ do\ you\ want\ to\ |What\ would\ you\ like\ to\ )\S[\S\s]*\?\s*"
-        # )
-        # llm_response = re.sub(pattern, "", llm_response)
-
-        interaction = Interaction(user_input=user_input, llm_output=llm_response)
+        interaction = Interaction(
+            user_input=user_input,
+            llm_output=llm_response,
+            llm_thinking=full_thinking,
+            llm_thinking_signature=signature,
+        )
 
         if is_regenerate:
+            # we create an updated valid entry for interaction including llm_thinking
+            # update_last will change llm_thinking and llm_thinking_signature when they
+            # are set
             self._memory.update_last(interaction)
         else:
             self._memory.append(interaction)

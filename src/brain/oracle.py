@@ -1,5 +1,4 @@
 import json
-import copy
 import random
 from typing import TypeAlias
 from pathlib import Path
@@ -7,8 +6,8 @@ from abc import ABC, abstractmethod
 
 from pydantic import BaseModel, RootModel
 
-from src.llmclient.llm_client import LLMClientBase
-from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
+from src.llmclient.llm_client import LLMClientBase, Message, MessageContent, MessageRole
+from src.llmclient.llm_config_registry import LLMTask
 from src.brain.json_tools import extract_json_schema
 
 MissionSeed: TypeAlias = dict[str, str | list[str]]
@@ -75,15 +74,20 @@ class BaseOracle(ABC):
 
     def _align(self, proposal: MissionSeed, background: str) -> MissionSeed:
         proposal["background"] = background
-        messages: list[dict[str, str]] = [
-            {"role": "system", "content": self._alignment_prompt},
-            {"role": "user", "content": json.dumps(proposal)},
+        messages: list[Message] = [
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(text=self._alignment_prompt),
+            ),
+            Message(
+                role=MessageRole.USER, content=MessageContent(text=json.dumps(proposal))
+            ),
         ]
 
-        llm_config = copy.deepcopy(LLM_CONFIG_ARCHITECT)
-
         response = self._llm_client.chat_completion(
-            messages=messages, reasoning=True, llm_config=llm_config
+            messages=messages,
+            reasoning=True,
+            task=LLMTask.ARCHITECT,
         )
         print("### LLM Alignment")
         print(proposal)

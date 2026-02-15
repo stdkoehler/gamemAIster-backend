@@ -39,6 +39,8 @@ class ConversationMemory(Base):
     )
     user_input: Mapped[str] = mapped_column(Text)
     llm_output: Mapped[str] = mapped_column(Text)
+    llm_thinking: Mapped[str | None] = mapped_column(Text, nullable=True)
+    llm_thinking_signature: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     __table_args__ = (
         UniqueConstraint(

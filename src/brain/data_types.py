@@ -1,22 +1,8 @@
 """Types"""
 
+import re
 from enum import Enum
 from pydantic import BaseModel
-
-
-class Actor(Enum):
-    """
-    An enumeration class representing the actors in a chat conversation.
-
-    Attributes:
-        USER (str): Represents the user in the conversation.
-        LLM (str): Represents the AI language model in the conversation.
-    """
-
-    SYSTEM = "<|im_start|>system"
-    SYSTEM_END = "<|im_end|>"
-    USER = "<|im_start|>user\n{msg}<|im_end|>"
-    LLM = "<|im_start|>assistant\n{msg}<|im_end|>"
 
 
 class Interaction:
@@ -27,25 +13,23 @@ class Interaction:
         _id (str): The unique identifier of the interaction.
         _user_input (str): The user input in the interaction.
         _llm_output (str): The AI language model output in the interaction.
+        _llm_thinking (str | None): The AI language model's internal thinking or reasoning.
+        _llm_thinking_signature (str | None): The signature or metadata related to the AI's thinking.
     """
 
-    def __init__(self, user_input: str, llm_output: str, id_: int | None = None):
+    def __init__(
+        self,
+        user_input: str,
+        llm_output: str,
+        llm_thinking: str | None = None,
+        llm_thinking_signature: str | None = None,
+        id_: int | None = None,
+    ):
         self._id = id_
         self._user_input = user_input
         self._llm_output = llm_output
-
-    def format_interaction(self) -> str:
-        """
-        Formats the interaction by combining the formatted user input and the
-        formatted AI language model output.
-
-        Returns:
-            str: The formatted interaction.
-        """
-        return (
-            f"{self.format_user_input(self._user_input)}\n"
-            f"{self.format_llm_output(self._llm_output)}"
-        )
+        self._llm_thinking = llm_thinking
+        self._llm_thinking_signature = llm_thinking_signature
 
     def format_interaction_summary(self) -> str:
         """
@@ -56,7 +40,19 @@ class Interaction:
         Returns:
             str: The formatted interaction.
         """
-        return f"Player: {self._user_input}\n" f"Gamemaster: {self._llm_output}"
+
+        def cleanse_text(text: str) -> str:
+            """Cleanses the text by removing OOC and "What do you do" sections."""
+            ooc_pattern = r"(?si)\s*[\[\(]OOC:.*?[\)\]]"
+            think_pattern = r"(?si)<think>.*?</think>"
+            wdyd_pattern = r"(?si)---(?:\s+)?\**What do you do.*"
+            text = re.sub(ooc_pattern, "", text)
+            text = re.sub(think_pattern, "", text)
+            return re.sub(wdyd_pattern, "", text)
+
+        clean_user_input = cleanse_text(self._user_input)
+        clean_llm_output = cleanse_text(self._llm_output)
+        return f"Player: {clean_user_input}\n" f"Gamemaster: {clean_llm_output}"
 
     @property
     def user_input(self) -> str:
@@ -67,38 +63,12 @@ class Interaction:
         return self._llm_output
 
     @property
-    def user_input_formatted(self) -> str:
-        return Interaction.format_user_input(self._user_input)
+    def llm_thinking(self) -> str | None:
+        return self._llm_thinking
 
     @property
-    def llm_output_formatted(self) -> str:
-        return Interaction.format_llm_output(self._llm_output)
-
-    @staticmethod
-    def format_user_input(user_input: str) -> str:
-        """
-        Formats the user input by combining it with the actor prefix.
-
-        Args:
-            user_input (str): The user input to be formatted.
-
-        Returns:
-            str: The formatted user input with the actor prefix.
-        """
-        return Actor.USER.value.format(msg=user_input)
-
-    @staticmethod
-    def format_llm_output(llm_output: str) -> str:
-        """
-        Formats the user input by combining it with the actor prefix.
-
-        Args:
-            llm_output (str): The llm output to be formatted.
-
-        Returns:
-            str: The formatted llm output with the llm prefix.
-        """
-        return Actor.LLM.value.format(msg=llm_output)
+    def llm_thinking_signature(self) -> str | None:
+        return self._llm_thinking_signature
 
 
 class Entity(BaseModel):

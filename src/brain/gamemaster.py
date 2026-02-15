@@ -1,18 +1,30 @@
 """WIP Gamemaster"""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import json
+import os
 
-import copy
 from typing import AsyncGenerator
 from pathlib import Path
 
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
-from src.llmclient.llm_client import LLMClientBase
-from src.llmclient.llm_parameters import LLMConfig
+from src.llmclient.llm_client import (
+    LLMClientBase,
+    LLMClientClaude,
+    LLMClientLocal,
+    LLMClientDeepSeek,
+    LLMClientMiniMax,
+    LLMClientOpenRouter,
+    Message,
+    MessageContent,
+    MessageRole,
+)
 
-from src.llmclient.llm_parameters_gemma import LLM_CONFIG_ARCHITECT
+from src.llmclient.llm_parameters import LLMConfig
+from src.llmclient.llm_config_registry import LLMTask
 
 from src.brain.oracle import (
     BaseOracle,
@@ -27,6 +39,138 @@ from src.brain.json_tools import extract_json_schema
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
+
+# This helps the local LLM to think but it confuses the output of the true thinking
+# models, we need to inject that into the system prompt for local models
+"""
+## Thinking
+When working in thinking mode with <think></think> tags, always provide a <hidden_state></hidden_state> block. This should be a concise (1-2 sentences) "snapshot" of the chronicle's hidden states. Updates to the hidden state may only be made inside the tags.
+hidden_state MUST ONLY CONTAIN information that is **not directly observable by the player** but crucial for the chronice's current and future development. DO NOT summarize and add obvious events.
+"""
+
+VAMPIRE_WARMSTART = """
+I MUST adhere to Vampire the Masquerade V5 lore and rules and ensure my response aligns with VtM's lore and atmosphere. At the same time my response MUST NOT be cliché or overly dramatic. I don't need to force the supernatural elements if they don't come naturally.
+I MUST NOT escalate the situation too quickly. The story pacing should feel natural and immersive.
+I always should consider the player character for narrative and mechanical implications: Is he human, ghoul, Kindred of a specific clan? If Kindred, always track Hunger and the Beast's influence.
+If the player rolled and provided a result upon my request, I must consider the impact (number of *player's successes* must at least match *difficulty* to succeed). If the player suggested an action, I also must determine if a roll is required. What are the stakes based on VtM V5's rules?
+I should not overdo asking for rolls, specifically I shouldn't ask for a similar roll multiple times in short succession.
+In the history, look for the most recent <hidden_state></hidden_state> block to understand the current narrative momentum and hidden secrets.
+If will now update the hidden state as a concise (2-3 sentences) "snapshot" of the hidden state of the world the isn't directly observable by the player, but is crucial for the narrative.
+Let's briefly provide the updated hidden by combining the previous hidden states and the current momentum: <hidden_state>
+"""
+
+REASONING_WARMSTART = {
+    api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE: VAMPIRE_WARMSTART,
+}
+
+
+def build_gamemaster(
+    user_id: str,
+    game_type: api_schema_mission.GameType,
+    mission_options: MissionOptions,
+) -> Gamemaster:
+    """
+    Factory helper to construct a `Gamemaster` with the configured LLM clients.
+    """
+    llm_type = os.getenv("LLM")
+    if llm_type == "LOCAL":
+        reasoning_warmstart = REASONING_WARMSTART.get(game_type, None)
+        local_model = os.getenv("LOCAL_MODEL", None)
+        client_story = LLMClientLocal(
+            base_url="http://127.0.0.1:5000",
+            model_name=local_model,
+            reasoning_warmstart=(
+                "<think>" + reasoning_warmstart if reasoning_warmstart else None
+            ),
+        )
+        client_reasoning = LLMClientLocal(
+            base_url="http://127.0.0.1:5000",
+            model_name=local_model,
+            reasoning_warmstart="<think>",
+        )
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=client_story,
+            llm_client_reasoning=client_reasoning,
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "DEEPSEEK":
+        api_key = os.getenv("API_KEY_DEEPSEEK")
+        if api_key is None:
+            raise ValueError("OpenRouter API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientDeepSeek(
+                api_key=api_key,
+                model="deepseek-chat",
+                # reasoning_warmstart="<hidden_state>",
+            ),
+            llm_client_reasoning=LLMClientDeepSeek(
+                api_key=api_key, model="deepseek-reasoner"
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    # elif llm_type == "GEMINI":
+    #     api_key = os.getenv("API_KEY_GEMINI")
+    #     if api_key is None:
+    #         raise ValueError("Gemini API key not set")
+    #     return Gamemaster(
+    #         user_id=user_id,
+    #         llm_client_chat=LLMClientGemini(
+    #             api_key=api_key, model="gemini-2.5-pro-exp-03-25"
+    #         ),
+    #         llm_client_reasoning=LLMClientGemini(
+    #             api_key=api_key, model="gemini-2.5-pro-exp-03-25"
+    #         ),
+    #         game_type=game_type,
+    #         mission_options=mission_options,
+    #     )
+    elif llm_type == "CLAUDE":
+        api_key = os.getenv("API_KEY_CLAUDE")
+        if api_key is None:
+            raise ValueError("Claude API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientClaude(api_key=api_key, model="claude-sonnet-4-5"),
+            llm_client_reasoning=LLMClientClaude(
+                api_key=api_key, model="claude-sonnet-4-5"
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "MINIMAX":
+        api_key = os.getenv("API_KEY_MINIMAX")
+        if api_key is None:
+            raise ValueError("MiniMax API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientMiniMax(api_key=api_key, model="MiniMax-M2.5"),
+            llm_client_reasoning=LLMClientMiniMax(
+                api_key=api_key, model="MiniMax-M2.5"
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "OPENROUTER":
+        api_key = os.getenv("API_KEY_OPENROUTER")
+        open_router_model = os.getenv("OPENROUTER_MODEL", "stepfun/step-3.5-flash:free")
+        if api_key is None:
+            raise ValueError("OpenRouter API key not set")
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientOpenRouter(
+                api_key=api_key, model=open_router_model
+            ),
+            llm_client_reasoning=LLMClientOpenRouter(
+                api_key=api_key, model=open_router_model
+            ),
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+
+    raise ValueError(f"Unknown LLM type: {llm_type}")
 
 
 @dataclass
@@ -166,12 +310,17 @@ class Gamemaster:
         """
         Provide summary chat
         """
+        logic_config = self._llm_client_chat.get_logic_config()
+
+        # prompt.prompt is new user input, None if regenerate previous interaction
+        # prompt.prev_interaction is previous interaction to update or new user prompt,
+        #    None if new interaction
 
         chat = SummaryChat(
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
-            last_k=5,
-            min_summary_tokens=2048,
+            last_k=logic_config.last_k,  # type: ignore
+            min_summary_tokens=logic_config.min_summary_tokens,  # type: ignore
             role=self._role,
             summary_template=self._summary_template,
             entity_template=self._entity_template,
@@ -181,15 +330,18 @@ class Gamemaster:
             mission_id=prompt.mission_id,
         )
 
-        interaction = (
-            Interaction(
+        # frontend is ground truth for last interaction
+        if prompt.prev_interaction is not None:
+            interaction = Interaction(
                 prompt.prev_interaction.user_input, prompt.prev_interaction.llm_output
             )
-            if prompt.prev_interaction is not None
-            else None
-        )
-        for chunk in chat.predict(prompt.prompt, interaction):
-            yield json.dumps({"text": chunk}) + "\n"
+        else:
+            interaction = None
+        for chunk in chat.predict(
+            user_input=prompt.prompt,
+            last_interaction=interaction,
+        ):
+            yield json.dumps({"type": chunk[0], "content": chunk[1]}) + "\n"
 
     def generate_mission(self, background: str) -> api_schema_mission.Mission:
         """
@@ -236,23 +388,22 @@ class Gamemaster:
         #     prompt=GENERATE_SESSION.format(question=oracle_topic),
         # )
 
-        llm_config_architect = copy.deepcopy(LLM_CONFIG_ARCHITECT)
         # max_tokens is the max tokens the LLM may generate in the response
         # total context window = input tokens + max_tokens
         # our input token is already quite large, so we limit max_tokens to 4096
         # (this includes thinking process for some local models, e.g. gemma3)
-        llm_config_architect.max_tokens = 8192  # 4096
-
+        # 4096
         llm_response = self._llm_client_reasoning.chat_completion(
             messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {"role": "user", "content": topic},
+                Message(
+                    role=MessageRole.SYSTEM,
+                    content=MessageContent(text=system_prompt),
+                ),
+                Message(role=MessageRole.USER, content=MessageContent(text=topic)),
             ],
             reasoning=True,
-            llm_config=llm_config_architect,
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.ARCHITECT,
         )
 
         print("### LLM Response")
