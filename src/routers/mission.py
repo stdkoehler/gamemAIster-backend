@@ -36,7 +36,9 @@ def new_mission(
     print("non_hero_mode:", payload.non_hero_mode)
     print("oracle:", payload.oracle)
 
-    mission = gamemaster.generate_mission(background=payload.background)
+    mission = gamemaster.generate_mission(
+        background=payload.background, detailed_background=payload.detailed_background
+    )
     mission = crud_instance.insert_mission(mission=mission)
 
     if mission.mission_id is not None:

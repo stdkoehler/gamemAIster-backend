@@ -59,8 +59,26 @@ If will now update the hidden state as a concise (2-3 sentences) "snapshot" of t
 Let's briefly provide the updated hidden by combining the previous hidden states and the current momentum: <hidden_state>
 """
 
+SHADOWRUN_WARMSTART = """
+I MUST adhere to Shadowrun 6th Edition lore and rules and ensure my response aligns with Shadowrun's lore and atmosphere.
+I MUST NOT escalate the situation too quickly. The story pacing should feel natural and immersive.
+In the history, look for the most recent <hidden_state></hidden_state> block to understand the current narrative momentum and hidden secrets.
+If will now update the hidden state as a concise (2-3 sentences) "snapshot" of the hidden state of the world the isn't directly observable by the player, but is crucial for the narrative.
+Let's briefly provide the updated hidden by combining the previous hidden states and the current momentum: <hidden_state>
+"""
+
+EXPANSE_WARMSTART = """
+I MUST adhere to The Expanse RPG lore and rules and ensure my response aligns with The Expanse's lore and atmosphere.
+I MUST NOT escalate the situation too quickly. The story pacing should feel natural and immersive.
+In the history, look for the most recent <hidden_state></hidden_state> block to understand the current narrative momentum and hidden secrets.
+If will now update the hidden state as a concise (2-3 sentences) "snapshot" of the hidden state of the world the isn't directly observable by the player, but is crucial for the narrative.
+Let's briefly provide the updated hidden by combining the previous hidden states and the current momentum: <hidden_state>
+"""
+
 REASONING_WARMSTART = {
     api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE: VAMPIRE_WARMSTART,
+    api_schema_mission.GameType.SHADOWRUN: SHADOWRUN_WARMSTART,
+    api_schema_mission.GameType.EXPANSE: EXPANSE_WARMSTART,
 }
 
 
@@ -343,42 +361,51 @@ class Gamemaster:
         ):
             yield json.dumps({"type": chunk[0], "content": chunk[1]}) + "\n"
 
-    def generate_mission(self, background: str) -> api_schema_mission.Mission:
+    def generate_mission(
+        self, background: str, detailed_background: str
+    ) -> api_schema_mission.Mission:
         """
         Generate a mission using the LLM client.
 
         Args:
             background (str): User supplied background information to seed the mission.
+            detailed_background (str): User supplied detailed background information to seed the mission.
         """
+        if detailed_background != "":
+            full_background = f"#--- Condensed Summary ---\n\n{background}\n\n#--- Detailed Background ---\n\n{detailed_background}"
+        else:
+            full_background = background
 
         if self._mission_options.oracle:
             oracle: BaseOracle
             if self._game_type == api_schema_mission.GameType.SHADOWRUN:
                 oracle = ShadowrunOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
                 oracle = VampireOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
                 oracle = CthulhuOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.SEVENTH_SEA:
                 oracle = SeventhSeaOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.EXPANSE:
                 oracle = ExpanseOracle(
                     llm_client=self._llm_client_reasoning,
                     non_hero_mode=self._mission_options.non_hero_mode,
                 )
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.CUSTOM:
                 oracle = CustomOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             else:
                 topic = ""
             system_prompt = self._mission_template
         else:
-            topic = json.dumps({"background": background}, ensure_ascii=False, indent=2)
+            topic = json.dumps(
+                {"background": full_background}, ensure_ascii=False, indent=2
+            )
             system_prompt = self._mission_template_non_oracle
 
         print("### GenerateMission")
@@ -402,7 +429,6 @@ class Gamemaster:
                 Message(role=MessageRole.USER, content=MessageContent(text=topic)),
             ],
             reasoning=True,
-            config_override=LLMConfig(max_tokens=8192),
             task=LLMTask.ARCHITECT,
         )
 
@@ -425,6 +451,7 @@ class Gamemaster:
                 "description": json_string,
                 "game_type": self._game_type,
                 "background": background,
+                "detailed_background": detailed_background,
                 "non_hero_mode": self._mission_options.non_hero_mode,
                 "oracle": self._mission_options.oracle,
             }

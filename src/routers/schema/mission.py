@@ -22,6 +22,7 @@ class Mission(BaseModel):
     description: str
     game_type: GameType
     background: str
+    detailed_background: str
     non_hero_mode: bool
     oracle: bool
 
@@ -45,6 +46,7 @@ class LoadMission(BaseModel):
 class NewMissionPayload(BaseModel):
     game_type: GameType
     background: str
+    detailed_background: str
     non_hero_mode: bool = False
     oracle: bool = True
 

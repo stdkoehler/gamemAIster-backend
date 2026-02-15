@@ -41,7 +41,7 @@ class ConfigRegistry:
                 llm=LLMConfig(max_tokens=2048),
                 logic=LLMLogicConfig(last_k=5, min_summary_tokens=2048),
             ),
-            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=4096)),
+            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=12000)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=2048)),
         },
         "LLMClientDeepSeek": {
@@ -49,7 +49,7 @@ class ConfigRegistry:
                 llm=LLMConfig(max_tokens=4096),
                 logic=LLMLogicConfig(last_k=15, min_summary_tokens=2048),
             ),
-            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=8192)),
+            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=16384)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=4096)),
         },
         "LLMClientMiniMax": {
@@ -61,7 +61,7 @@ class ConfigRegistry:
                     keep_thinking_turns=ThinkingFeebackPolicy.forever(),
                 ),
             ),
-            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=8192)),
+            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=16384)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=4096)),
         },
         # Add other clients here (e.g., LLMClientGemini)

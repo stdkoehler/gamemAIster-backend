@@ -568,6 +568,7 @@ class SummaryChat:
             raise ValueError("No mission could be loaded from database.")
         self._mission = mission.description
         self._background = mission.background
+        self._detailed_background = mission.detailed_background
         self._summary_provider_template = summary_provider_template
         self._memory = SummaryMemory(
             llm_client=llm_client_reasoning,
@@ -606,6 +607,16 @@ class SummaryChat:
                 content=MessageContent(text=system_prompt),
             )
         ]
+
+        if self._detailed_background != "":
+            messages.append(
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text=f"[OOC: This detailed background is **AUTHORITATIVE** and I must follow and consult it throughout the game.\n\n<DETAILED_BACKGROUND>{self._detailed_background}</DETAILED_BACKGROUND>]"
+                    ),
+                )
+            )
 
         if self._memory.n_summarized > 0:
 
