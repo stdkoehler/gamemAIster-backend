@@ -531,8 +531,14 @@ This is the detailed background of the coterie and the chronicle we're playing n
 </BACKGROUND>
 
 ## Detailed Background
-In the conversation you might or might not be receiving a detailed background of the coterie, the chronicle, the npcs etc.
-This detailed background will be provided in <DETAILED_BACKGROUND></DETAILED_BACKGROUND> tags. This detailed background is very important and to be followed.
-You MUST consider this, if it's provided in the following conversation.
+Following this system prompt, you will might receive a DETAILED_BACKGROUND message possibly containing:
+- Complete chronicle history and session summaries
+- Detailed NPC descriptions, motivations, and current status
+- Faction relationships and political tensions
+- Critical plot threads and unresolved mysteries
+
+If available, detailed context is **AUTHORITATIVE** and should be consulted throughout the game.
+As the conversation progresses and this context moves back in the window, continue to reference it for consistency in NPC behavior, plot continuity, and world state.
+This detailed background will be provided in <DETAILED_BACKGROUND></DETAILED_BACKGROUND> tags. You MUST consider this, if it's provided in the following conversation.
 
 

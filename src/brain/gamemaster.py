@@ -353,7 +353,11 @@ class Gamemaster:
             background (str): User supplied background information to seed the mission.
             detailed_background (str): User supplied detailed background information to seed the mission.
         """
-        full_background = f"{background}\n\n{detailed_background}"
+        if detailed_background != "":
+            full_background = f"#--- Condensed Summary ---\n\n{background}\n\n#--- Detailed Background ---\n\n{detailed_background}"
+        else:
+            full_background = background
+
         if self._mission_options.oracle:
             oracle: BaseOracle
             if self._game_type == api_schema_mission.GameType.SHADOWRUN:
