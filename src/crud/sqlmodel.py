@@ -26,6 +26,7 @@ class MissionDescription(Base):
         Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE"), primary_key=True
     )
     background: Mapped[str] = mapped_column(Text)
+    detailed_background: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
 
 

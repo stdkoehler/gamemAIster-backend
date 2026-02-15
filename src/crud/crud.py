@@ -105,6 +105,7 @@ class CRUD:
                 mission_id=db_mission.mission_id,
                 description=mission.description,
                 background=mission.background,
+                detailed_background=mission.detailed_background,
             )
             session.add(db_mission_description)
             session.commit()
@@ -145,6 +146,7 @@ class CRUD:
             description=result.MissionDescription.description,
             game_type=api_schema_mission.GameType(result.Mission.game_type),
             background=result.MissionDescription.background,
+            detailed_background=result.MissionDescription.detailed_background,
             non_hero_mode=result.Mission.non_hero_mode,
             oracle=result.Mission.oracle,
         )
@@ -172,6 +174,7 @@ class CRUD:
                     description=result.MissionDescription.description,
                     game_type=api_schema_mission.GameType(result.Mission.game_type),
                     background=result.MissionDescription.background,
+                    detailed_background=result.MissionDescription.detailed_background,
                     non_hero_mode=result.Mission.non_hero_mode,
                     oracle=result.Mission.oracle,
                 )

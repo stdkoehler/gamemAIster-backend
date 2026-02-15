@@ -343,42 +343,47 @@ class Gamemaster:
         ):
             yield json.dumps({"type": chunk[0], "content": chunk[1]}) + "\n"
 
-    def generate_mission(self, background: str) -> api_schema_mission.Mission:
+    def generate_mission(
+        self, background: str, detailed_background: str
+    ) -> api_schema_mission.Mission:
         """
         Generate a mission using the LLM client.
 
         Args:
             background (str): User supplied background information to seed the mission.
+            detailed_background (str): User supplied detailed background information to seed the mission.
         """
-
+        full_background = f"{background}\n\n{detailed_background}"
         if self._mission_options.oracle:
             oracle: BaseOracle
             if self._game_type == api_schema_mission.GameType.SHADOWRUN:
                 oracle = ShadowrunOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.VAMPIRE_THE_MASQUERADE:
                 oracle = VampireOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.CALL_OF_CTHULHU:
                 oracle = CthulhuOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.SEVENTH_SEA:
                 oracle = SeventhSeaOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.EXPANSE:
                 oracle = ExpanseOracle(
                     llm_client=self._llm_client_reasoning,
                     non_hero_mode=self._mission_options.non_hero_mode,
                 )
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.CUSTOM:
                 oracle = CustomOracle(llm_client=self._llm_client_reasoning)
-                topic = oracle.mission(background)
+                topic = oracle.mission(full_background)
             else:
                 topic = ""
             system_prompt = self._mission_template
         else:
-            topic = json.dumps({"background": background}, ensure_ascii=False, indent=2)
+            topic = json.dumps(
+                {"background": full_background}, ensure_ascii=False, indent=2
+            )
             system_prompt = self._mission_template_non_oracle
 
         print("### GenerateMission")
@@ -425,6 +430,7 @@ class Gamemaster:
                 "description": json_string,
                 "game_type": self._game_type,
                 "background": background,
+                "detailed_background": detailed_background,
                 "non_hero_mode": self._mission_options.non_hero_mode,
                 "oracle": self._mission_options.oracle,
             }
