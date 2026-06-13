@@ -89,19 +89,36 @@ class _FlexBase(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class _MissionOutput(_FlexBase):
+    """Common base for all mission LLM outputs — exposes .title so callers
+    don't need to know the nested structure of each game type."""
+
+    @property
+    def title(self) -> str:
+        raise NotImplementedError
+
+
 class _MissionMeta(_FlexBase):
     title: str
 
 
-class _MissionBody(_FlexBase):
+class _MissionBody(_MissionOutput):
     """Top-level output for all games except Shadowrun, and the nested
     'mission' object for Shadowrun."""
 
     meta: _MissionMeta
 
+    @property
+    def title(self) -> str:
+        return self.meta.title
 
-class _ShadowrunMissionOutput(_FlexBase):
+
+class _ShadowrunMissionOutput(_MissionOutput):
     mission: _MissionBody
+
+    @property
+    def title(self) -> str:
+        return self.mission.meta.title
 
 
 # ---------------------------------------------------------------------------
@@ -115,10 +132,11 @@ _GT = api_schema_mission.GameType
 @dataclass(frozen=True)
 class _GameConfig:
     game_name: str
-    system_prompt: str           # relative to prompt_templates/
-    mission_prompt: str          # relative to prompt_templates/
+    system_prompt: str              # relative to prompt_templates/
+    mission_prompt: str             # relative to prompt_templates/
     mission_prompt_non_oracle: str
     oracle_class: type[BaseOracle]
+    mission_result_type: type[_MissionOutput]
 
 
 _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
@@ -128,6 +146,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="shadowrun/shadowrun_mission_prompt.txt",
         mission_prompt_non_oracle="shadowrun/shadowrun_mission_prompt.txt",
         oracle_class=ShadowrunOracle,
+        mission_result_type=_ShadowrunMissionOutput,
     ),
     (_GT.VAMPIRE_THE_MASQUERADE, False): _GameConfig(
         game_name="Vampire the Masquerade 5th Edition",
@@ -135,6 +154,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="vampire/vampire_mission_prompt.txt",
         mission_prompt_non_oracle="vampire/vampire_non_oracle_mission_prompt.txt",
         oracle_class=VampireOracle,
+        mission_result_type=_MissionBody,
     ),
     (_GT.CALL_OF_CTHULHU, False): _GameConfig(
         game_name="Call of Cthulhu 7th Edition",
@@ -142,6 +162,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="cthulhu/cthulhu_mission_prompt.txt",
         mission_prompt_non_oracle="cthulhu/cthulhu_non_oracle_mission_prompt.txt",
         oracle_class=CthulhuOracle,
+        mission_result_type=_MissionBody,
     ),
     (_GT.SEVENTH_SEA, False): _GameConfig(
         game_name="Seventh Sea 2nd Edition",
@@ -149,6 +170,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="seventh_sea/seventh_sea_mission_prompt.txt",
         mission_prompt_non_oracle="seventh_sea/seventh_sea_non_oracle_mission_prompt.txt",
         oracle_class=SeventhSeaOracle,
+        mission_result_type=_MissionBody,
     ),
     (_GT.EXPANSE, False): _GameConfig(
         game_name="The Expanse RPG",
@@ -156,6 +178,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="expanse/expanse_mission_prompt.txt",
         mission_prompt_non_oracle="expanse/expanse_mission_prompt.txt",
         oracle_class=ExpanseOracle,
+        mission_result_type=_MissionBody,
     ),
     (_GT.EXPANSE, True): _GameConfig(
         game_name="The Expanse RPG",
@@ -163,6 +186,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="expanse/expanse_mission_prompt_non_hero.txt",
         mission_prompt_non_oracle="expanse/expanse_mission_prompt_non_hero.txt",
         oracle_class=ExpanseNonHeroOracle,
+        mission_result_type=_MissionBody,
     ),
     (_GT.CUSTOM, False): _GameConfig(
         game_name="Custom RPG",
@@ -170,6 +194,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="custom/custom_mission_prompt.txt",
         mission_prompt_non_oracle="custom/custom_mission_prompt.txt",
         oracle_class=CustomOracle,
+        mission_result_type=_MissionBody,
     ),
     (_GT.CUSTOM, True): _GameConfig(
         game_name="Custom RPG",
@@ -177,6 +202,7 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="custom/custom_mission_prompt.txt",
         mission_prompt_non_oracle="custom/custom_mission_prompt.txt",
         oracle_class=CustomOracle,
+        mission_result_type=_MissionBody,
     ),
 }
 
@@ -431,25 +457,15 @@ class Gamemaster:
             Message(role=MessageRole.USER, content=MessageContent(text=topic)),
         ]
 
-        if self._game_type == api_schema_mission.GameType.SHADOWRUN:
-            parsed = parse_with_retry(
-                messages=messages,
-                result_type=_ShadowrunMissionOutput,
-                llm_client=self._llm_client_reasoning,
-                reasoning=True,
-                task=LLMTask.ARCHITECT,
-            )
-            name = parsed.mission.meta.title
-        else:
-            parsed = parse_with_retry(
-                messages=messages,
-                result_type=_MissionBody,
-                llm_client=self._llm_client_reasoning,
-                reasoning=True,
-                task=LLMTask.ARCHITECT,
-            )
-            name = parsed.meta.title
-
+        game_cfg = _GAME_CONFIGS[(self._game_type, self._mission_options.non_hero_mode)]
+        parsed = parse_with_retry(
+            messages=messages,
+            result_type=game_cfg.mission_result_type,
+            llm_client=self._llm_client_reasoning,
+            reasoning=True,
+            task=LLMTask.ARCHITECT,
+        )
+        name = parsed.title
         description = json.dumps(parsed.model_dump(), ensure_ascii=False, indent=2)
         print("### Result")
         print(description)

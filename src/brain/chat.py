@@ -47,7 +47,7 @@ class _SceneList(BaseModel):
     scenes: list[Scene]
 
 
-@dataclass
+@dataclass(frozen=True)
 class _SummaryState:
     """
     Snapshot of all summarization-derived state.

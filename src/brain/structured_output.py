@@ -32,12 +32,12 @@ def parse_with_retry(
     last_error: Exception | None = None
 
     for attempt in range(max_retries + 1):
-        response = llm_client.chat_completion(
-            messages=current_messages,
-            reasoning=reasoning,
-            task=task,
-        )
         try:
+            response = llm_client.chat_completion(
+                messages=current_messages,
+                reasoning=reasoning,
+                task=task,
+            )
             json_str = extract_json_schema(response)
             return result_type.model_validate_json(json_str)
         except (ValidationError, ValueError) as exc:

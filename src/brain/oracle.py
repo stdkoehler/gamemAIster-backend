@@ -4,7 +4,7 @@ import json
 import random
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Generic, TypeVar
+from typing import ClassVar, Generic, TypeVar
 
 from pydantic import BaseModel, RootModel
 
@@ -66,18 +66,19 @@ class ExpanseProposal(FactionBasedProposal):
     pass
 
 
-class VampireAligned(BaseModel):
+class FactionEpochAligned(BaseModel):
     factions: list[str]
     incitingIncident: str
     themes: list[str]
     epoch: str
 
 
-class SeventhSeaAligned(BaseModel):
-    factions: list[str]
-    incitingIncident: str
-    themes: list[str]
-    epoch: str
+class VampireAligned(FactionEpochAligned):
+    pass
+
+
+class SeventhSeaAligned(FactionEpochAligned):
+    pass
 
 
 class ExpanseAligned(BaseModel):
@@ -119,6 +120,7 @@ class CustomProposal(BaseModel):
     characterRole: str
     startingSituation: str
     seasonalContext: str
+    culturalFoci: str
 
 
 class CustomAligned(BaseModel):
@@ -126,6 +128,7 @@ class CustomAligned(BaseModel):
     characterRole: str
     startingSituation: str
     seasonalContext: str
+    culturalFoci: str
 
 
 # ---------------------------------------------------------------------------
@@ -219,14 +222,20 @@ class FactionBasedOracle(BaseOracle[FactionBasedProposal, TFactionAligned]):
     """
     Shared assembly logic for game systems whose oracle seed is
     factions + incitingIncident + themes.
+
+    Subclasses set _proposal_type to their game-specific Proposal class so
+    _assemble_proposal_seed returns the right concrete type without duplicating
+    the pool-sampling logic in every oracle.
     """
+
+    _proposal_type: ClassVar[type[FactionBasedProposal]] = FactionBasedProposal
 
     def _assemble_proposal_seed(self) -> FactionBasedProposal:
         k = random.randint(1, 2)
         factions = random.sample([c.name for c in self._pools["factions"]], k=k)
         incident = self._weighted_choice(self._pools["inciting_incidents"])
         theme = self._weighted_choice(self._pools["themes"])
-        return FactionBasedProposal(
+        return self._proposal_type(
             factions=factions,
             incitingIncident=incident,
             themes=[theme],
@@ -257,6 +266,8 @@ class ShadowrunOracle(BaseOracle[ShadowrunProposal, ShadowrunAligned]):
 
 
 class VampireOracle(FactionBasedOracle[VampireAligned]):
+    _proposal_type = VampireProposal
+
     def __init__(self, llm_client: LLMClientBase) -> None:
         super().__init__(
             llm_client=llm_client,
@@ -267,6 +278,8 @@ class VampireOracle(FactionBasedOracle[VampireAligned]):
 
 
 class SeventhSeaOracle(FactionBasedOracle[SeventhSeaAligned]):
+    _proposal_type = SeventhSeaProposal
+
     def __init__(self, llm_client: LLMClientBase) -> None:
         super().__init__(
             llm_client=llm_client,
@@ -277,6 +290,8 @@ class SeventhSeaOracle(FactionBasedOracle[SeventhSeaAligned]):
 
 
 class ExpanseOracle(FactionBasedOracle[ExpanseAligned]):
+    _proposal_type = ExpanseProposal
+
     def __init__(self, llm_client: LLMClientBase) -> None:
         super().__init__(
             llm_client=llm_client,
@@ -384,6 +399,7 @@ class CustomOracle(BaseOracle[CustomProposal, CustomAligned]):
             characterRole=self._weighted_choice(self._pools["characterRoles"]),
             startingSituation=self._weighted_choice(self._pools["startingSituations"]),
             seasonalContext=self._weighted_choice(self._pools["seasonalContexts"]),
+            culturalFoci=self._weighted_choice(self._pools["culturalFoci"]),
         )
 
 

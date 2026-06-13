@@ -26,10 +26,14 @@ def test_update_entities(crud_instance):
     crud_instance.insert_mission(
         mission=Mission(
             mission_id=mission_id,
+            user_id="test_user",
             name="Test Mission",
             description="This is a test mission.",
             game_type="shadowrun",
             background="Test background",
+            detailed_background="",
+            non_hero_mode=False,
+            oracle=False,
         )
     )
 
@@ -92,10 +96,14 @@ def test_update_entities_with_deletion(crud_instance):
     crud_instance.insert_mission(
         mission=Mission(
             mission_id=mission_id,
+            user_id="test_user",
             name="Deletion Test Mission",
             description="This mission tests entity deletion.",
             game_type="shadowrun",
             background="Test background",
+            detailed_background="",
+            non_hero_mode=False,
+            oracle=False,
         )
     )
 
@@ -142,10 +150,14 @@ def test_update_scenes(crud_instance):
     crud_instance.insert_mission(
         mission=Mission(
             mission_id=mission_id,
+            user_id="test_user",
             name="Scene Test Mission",
             description="This mission tests scene CRUD.",
             game_type="shadowrun",
             background="Test background",
+            detailed_background="",
+            non_hero_mode=False,
+            oracle=False,
         )
     )
 
