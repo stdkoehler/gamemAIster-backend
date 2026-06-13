@@ -41,9 +41,6 @@ def new_mission(
     )
     mission = crud_instance.insert_mission(mission=mission)
 
-    if mission.mission_id is not None:
-        crud_instance.get_mission_description(mission_id=mission.mission_id)
-
     return mission
 
 
