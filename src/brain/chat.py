@@ -47,6 +47,20 @@ class _SceneList(BaseModel):
     scenes: list[Scene]
 
 
+@dataclass
+class _SummaryState:
+    """
+    Snapshot of all summarization-derived state.
+    Written as a single reference swap so readers always see a consistent
+    picture — never a partially-updated mix of old summary + new entities.
+    """
+
+    summary: str
+    n_summarized: int
+    entities: list
+    scenes: list
+
+
 class SummaryMemory:
     """
     A class representing the history of interactions in a chat conversation.
@@ -80,14 +94,17 @@ class SummaryMemory:
         self._scene_template = scene_template
         self._game_name = game_name
         self._last_k = last_k
-        self._n_summarized = 0
         self._mission_id = mission_id
         self._min_summary_tokens = min_summary_tokens
 
         self._summarize_lock = threading.Lock()
-        self._summary, self._n_summarized = crud_instance.get_summary(self._mission_id)
-        self._entities = crud_instance.get_entities(self._mission_id)
-        self._scenes = crud_instance.get_scenes(self._mission_id)
+        summary, n_summarized = crud_instance.get_summary(self._mission_id)
+        self._state = _SummaryState(
+            summary=summary,
+            n_summarized=n_summarized,
+            entities=crud_instance.get_entities(self._mission_id),
+            scenes=crud_instance.get_scenes(self._mission_id),
+        )
         self._history = crud_instance.get_interactions(self._mission_id)
 
     def __len__(self) -> int:
@@ -101,7 +118,7 @@ class SummaryMemory:
         Returns:
             str: The summary of the chat conversation.
         """
-        return self._summary
+        return self._state.summary
 
     # ------------------------------------------------------------------
     # Shared LLM call + parse + log pattern
@@ -288,7 +305,7 @@ class SummaryMemory:
         if not self._summarize_lock.acquire(blocking=False):
             return
         try:
-            eligible_history = self._history[self._n_summarized : -self._last_k]
+            eligible_history = self._history[self._state.n_summarized : -self._last_k]
             if not eligible_history:
                 return
 
@@ -315,7 +332,7 @@ class SummaryMemory:
                     "Processing summary for",
                     n,
                     "interactions, leading to n_summarized =",
-                    self._n_summarized + n,
+                    self._state.n_summarized + n,
                 )
 
                 text = re.sub(r"---\s*What do you do\?\s*", "", text)
@@ -327,16 +344,23 @@ class SummaryMemory:
                     f_summary = executor.submit(self.summarize, text)
                 entity_response = f_entities.result()
                 scene_response = f_scenes.result()
-                self._summary = f_summary.result()
+                new_summary = f_summary.result()
+                new_n_summarized = self._state.n_summarized + len(interaction_candidates)
 
-                self._n_summarized += len(interaction_candidates)
                 crud_instance.update_summary(
-                    self._mission_id, self._summary, self._n_summarized
+                    self._mission_id, new_summary, new_n_summarized
                 )
                 crud_instance.update_entities(self._mission_id, entity_response)
                 crud_instance.update_scenes(self._mission_id, scene_response)
-                self._entities = crud_instance.get_entities(self._mission_id)
-                self._scenes = crud_instance.get_scenes(self._mission_id)
+
+                # Single reference swap — readers see either the old or the new
+                # state in full, never a partially-updated mix.
+                self._state = _SummaryState(
+                    summary=new_summary,
+                    n_summarized=new_n_summarized,
+                    entities=crud_instance.get_entities(self._mission_id),
+                    scenes=crud_instance.get_scenes(self._mission_id),
+                )
             else:
                 print(
                     "Skipping summary for",
@@ -419,7 +443,7 @@ class SummaryMemory:
         Returns:
             List[Interaction]: The list of current interactions.
         """
-        return self._history[self._n_summarized :]
+        return self._history[self._state.n_summarized :]
 
     def last_user_input(self) -> str:
         """
@@ -444,7 +468,7 @@ class SummaryMemory:
         Returns:
             int: The number of interactions that have been summarized.
         """
-        return self._n_summarized
+        return self._state.n_summarized
 
     def get_summary(self) -> str:
         """
@@ -453,7 +477,7 @@ class SummaryMemory:
         Returns:
             str: The current summary of the chat conversation.
         """
-        return self._summary
+        return self._state.summary
 
     def get_entities_json(self) -> str:
         """
@@ -462,7 +486,7 @@ class SummaryMemory:
         Returns:
             str: The current entities in JSON format.
         """
-        return json.dumps([entity.model_dump() for entity in self._entities])
+        return json.dumps([entity.model_dump() for entity in self._state.entities])
 
     def get_scenes_json(self) -> str:
         """
@@ -474,7 +498,7 @@ class SummaryMemory:
         return json.dumps(
             [
                 scene.model_dump(exclude={"characters", "completed"})
-                for scene in self._scenes
+                for scene in self._state.scenes
             ]
         )
 
