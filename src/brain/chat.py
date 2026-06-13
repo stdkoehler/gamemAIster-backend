@@ -2,6 +2,7 @@
 
 import re
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Callable, Generator, TypeVar
 import threading
@@ -83,6 +84,7 @@ class SummaryMemory:
         self._mission_id = mission_id
         self._min_summary_tokens = min_summary_tokens
 
+        self._summarize_lock = threading.Lock()
         self._summary, self._n_summarized = crud_instance.get_summary(self._mission_id)
         self._entities = crud_instance.get_entities(self._mission_id)
         self._scenes = crud_instance.get_scenes(self._mission_id)
@@ -117,6 +119,11 @@ class SummaryMemory:
         and log the outcome. Raises ValueError on any parse failure.
         `strip_think` removes <think>…</think> blocks before JSON extraction —
         needed when a model embeds visible thinking before the JSON output.
+
+        Use this for fire-and-forget background tasks (summarization) where
+        logging parse failures matters more than retry resilience.
+        For synchronous blocking calls that should retry on failure, use
+        parse_with_retry from structured_output instead.
         """
         log_prompt = "\n\n".join(msg.content.text for msg in messages)
         response = self._llm_client.chat_completion(
@@ -276,61 +283,72 @@ class SummaryMemory:
         _min_summary_tokens, ensuring we don't process too little (saving cost)
         or too much (saving input space).
         """
-        eligible_history = self._history[self._n_summarized : -self._last_k]
-        if not eligible_history:
+        # Non-blocking: if a summarization is already running, skip rather than
+        # queue a redundant one — the next append() will catch up.
+        if not self._summarize_lock.acquire(blocking=False):
             return
+        try:
+            eligible_history = self._history[self._n_summarized : -self._last_k]
+            if not eligible_history:
+                return
 
-        def get_formatted_text(candidates: list[Interaction]) -> str:
-            return "\n".join([c.format_interaction_summary() for c in candidates])
+            def get_formatted_text(candidates: list[Interaction]) -> str:
+                return "\n".join([c.format_interaction_summary() for c in candidates])
 
-        # Find the smallest 'n' that satisfies the token threshold
-        n = 0
-        current_tokens = 0
-        text = ""
+            # Find the smallest 'n' that satisfies the token threshold
+            n = 0
+            current_tokens = 0
+            text = ""
 
-        while n < len(eligible_history):
-            n += 1
-            interaction_candidates = eligible_history[:n]
-            text = get_formatted_text(interaction_candidates)
-            current_tokens = self._llm_client.count_tokens(text)
+            while n < len(eligible_history):
+                n += 1
+                interaction_candidates = eligible_history[:n]
+                text = get_formatted_text(interaction_candidates)
+                current_tokens = self._llm_client.count_tokens(text)
 
-            # Stop as soon as we have enough content to justify the cost
+                # Stop as soon as we have enough content to justify the cost
+                if current_tokens > self._min_summary_tokens:
+                    break
+
             if current_tokens > self._min_summary_tokens:
-                break
+                print(
+                    "Processing summary for",
+                    n,
+                    "interactions, leading to n_summarized =",
+                    self._n_summarized + n,
+                )
 
-        # Final Gate: We only proceed if we actually met the threshold
-        # (or if we reached the end of eligible history and want to force a summary)
-        if current_tokens > self._min_summary_tokens:
-            print(
-                "Processing summary for",
-                n,
-                "interactions, leading to n_summarized =",
-                self._n_summarized + n,
-            )
+                text = re.sub(r"---\s*What do you do\?\s*", "", text)
 
-            text = re.sub(r"---\s*What do you do\?\s*", "", text)
-            entity_response = self.extract_entities(text)
-            scene_response = self.scene_summary(text)
-            self._summary = self.summarize(text)
+                # All three calls take the same input and are independent — run in parallel
+                with ThreadPoolExecutor(max_workers=3) as executor:
+                    f_entities = executor.submit(self.extract_entities, text)
+                    f_scenes = executor.submit(self.scene_summary, text)
+                    f_summary = executor.submit(self.summarize, text)
+                entity_response = f_entities.result()
+                scene_response = f_scenes.result()
+                self._summary = f_summary.result()
 
-            self._n_summarized += len(interaction_candidates)
-            crud_instance.update_summary(
-                self._mission_id, self._summary, self._n_summarized
-            )
-            crud_instance.update_entities(self._mission_id, entity_response)
-            crud_instance.update_scenes(self._mission_id, scene_response)
-            self._entities = crud_instance.get_entities(self._mission_id)
-            self._scenes = crud_instance.get_scenes(self._mission_id)
-        else:
-            print(
-                "Skipping summary for",
-                n,
-                "interactions (only",
-                current_tokens,
-                "tokens / threshold of",
-                self._min_summary_tokens,
-                ").",
-            )
+                self._n_summarized += len(interaction_candidates)
+                crud_instance.update_summary(
+                    self._mission_id, self._summary, self._n_summarized
+                )
+                crud_instance.update_entities(self._mission_id, entity_response)
+                crud_instance.update_scenes(self._mission_id, scene_response)
+                self._entities = crud_instance.get_entities(self._mission_id)
+                self._scenes = crud_instance.get_scenes(self._mission_id)
+            else:
+                print(
+                    "Skipping summary for",
+                    n,
+                    "interactions (only",
+                    current_tokens,
+                    "tokens / threshold of",
+                    self._min_summary_tokens,
+                    ").",
+                )
+        finally:
+            self._summarize_lock.release()
 
     def append(self, interaction: Interaction) -> None:
         """

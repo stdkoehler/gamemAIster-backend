@@ -22,6 +22,11 @@ def parse_with_retry(
     """
     Call the LLM and validate the response against a Pydantic model.
     On validation failure, appends the error to the conversation and retries.
+
+    Use this for synchronous, blocking operations (oracle seeds, mission generation)
+    where retry resilience matters more than logging individual attempts.
+    For fire-and-forget background tasks that need parse-failure logging, use
+    SummaryMemory._call_structured instead.
     """
     current_messages = list(messages)
     last_error: Exception | None = None
