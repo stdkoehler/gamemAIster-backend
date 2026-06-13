@@ -233,11 +233,46 @@ class LLMClientBase(ABC):
 
         """
 
-    @abstractmethod
     def stop_generation(self) -> None:
+        """Stop the current generation. Override in clients that support mid-stream cancellation."""
+
+    # ------------------------------------------------------------------
+    # Shared helpers
+    # ------------------------------------------------------------------
+
+    def _maybe_extract_hidden_state(self, full_thinking: str) -> str:
         """
-        Stops the generation process.
+        Extracts the content of the <hidden_state> tag from the given text.
+        Only active when reasoning_warmstart is set — local models that use
+        hidden_state-based multi-turn reasoning store only the extracted state,
+        not the full thinking trace.
         """
+        if self.reasoning_warmstart is not None and full_thinking is not None:
+            pattern = re.compile(
+                r"<hidden_state>(.*?)</hidden_state>",
+                re.DOTALL | re.IGNORECASE,
+            )
+            all_states = pattern.findall(full_thinking)
+            if not all_states:
+                return ""
+            return "\n".join([s.strip() for s in all_states if s.strip()])
+        return full_thinking
+
+    def _message_to_dict(self, message: Message) -> dict[str, str]:
+        """Convert Message to the basic {role, content} dict understood by OpenAI-compatible APIs."""
+        return {"role": message.role.value, "content": message.content.text}
+
+    @staticmethod
+    def _build_turn_map(messages: list[Message]) -> dict[int, int]:
+        """
+        Maps each assistant message's list index to how many turns ago it appeared.
+        Used to apply thinking-feedback policies that limit how far back we inject thinking.
+        """
+        assistant_indices = [
+            i for i, msg in enumerate(messages) if msg.role == MessageRole.ASSISTANT
+        ]
+        num = len(assistant_indices)
+        return {idx: (num - rank) for rank, idx in enumerate(assistant_indices)}
 
 
 class LLMClientLocal(LLMClientBase):
@@ -289,34 +324,6 @@ class LLMClientLocal(LLMClientBase):
         )
         response.raise_for_status()
         return response.json()
-
-    def _maybe_extract_hidden_state(self, full_thinking: str) -> str:
-        """
-        Extracts the content of the <hidden_state> tag from the given text.
-
-        Args:
-            full_thinking (str): The text to extract the hidden state from.
-
-        Returns:
-            str: The content of the <hidden_state> tag if warmstart is used
-        """
-        if self.reasoning_warmstart is not None and full_thinking is not None:
-            # Use findall to get every instance of content between <state> tags
-            # re.DOTALL is crucial for multi-line content
-            pattern = re.compile(
-                r"<hidden_state>(.*?)</hidden_state>",
-                re.DOTALL | re.IGNORECASE,
-            )
-            all_states = pattern.findall(full_thinking)
-
-            if not all_states:
-                full_thinking = ""
-
-            # Join them with a newline or a specific separator
-            # .strip() cleans up the whitespace from the model's output
-            full_thinking = "\n".join([s.strip() for s in all_states if s.strip()])
-
-        return full_thinking
 
     def _adjust_reasoning_mistral24b(
         self, messages: list[Message], payload: dict[str, Any]
@@ -399,10 +406,6 @@ class LLMClientLocal(LLMClientBase):
                     msg.content.text = f"<hidden_state>{msg.content.thinking}</hidden_state>\n\n{msg.content.text}"
 
         return messages, payload
-
-    def _message_to_dict(self, message: Message) -> dict[str, str]:
-        """Convert Message object to dictionary format for API compatibility."""
-        return {"role": message.role.value, "content": message.content.text}
 
     def _execute_chat_completion_stream(
         self, messages: list[Message], reasoning: bool, config: LLMConfig
@@ -581,7 +584,7 @@ class LLMClientLocal(LLMClientBase):
         requests.post(self._stop_generation_url, timeout=60)
 
 
-# --- 1. DeepSeek Client (OpenAI-Compatible SDK) ---
+# --- DeepSeek Client (OpenAI-Compatible SDK) ---
 
 
 class LLMClientDeepSeek(LLMClientBase):
@@ -621,38 +624,6 @@ class LLMClientDeepSeek(LLMClientBase):
             base_url="https://api.deepseek.com", api_key=api_key
         )
         self._model = model
-
-    def _maybe_extract_hidden_state(self, full_thinking: str) -> str:
-        """
-        Extracts the content of the <hidden_state> tag from the given text.
-
-        Args:
-            full_thinking (str): The text to extract the hidden state from.
-
-        Returns:
-            str: The content of the <hidden_state> tag if warmstart is used
-        """
-        if self.reasoning_warmstart is not None and full_thinking is not None:
-            # Use findall to get every instance of content between <state> tags
-            # re.DOTALL is crucial for multi-line content
-            pattern = re.compile(
-                r"<hidden_state>(.*?)</hidden_state>",
-                re.DOTALL | re.IGNORECASE,
-            )
-            all_states = pattern.findall(full_thinking)
-
-            if not all_states:
-                full_thinking = ""
-
-            # Join them with a newline or a specific separator
-            # .strip() cleans up the whitespace from the model's output
-            full_thinking = "\n".join([s.strip() for s in all_states if s.strip()])
-
-        return full_thinking
-
-    def _message_to_dict(self, message: Message) -> dict[str, str]:
-        """Convert Message object to dictionary format for API compatibility."""
-        return {"role": message.role.value, "content": message.content.text}
 
     def _adjust_reasoning(
         self, messages: list[Message], payload: dict[str, Any]
@@ -834,13 +805,8 @@ class LLMClientDeepSeek(LLMClientBase):
         )  # DeepSeek uses similar tokenization
         return len(encoding.encode(text))
 
-    def stop_generation(self) -> None:
-        """
-        Stops the generation process.
-        """
 
-
-# --- 3. Claude & MiniMax Client (Anthropic SDK) ---
+# --- Claude & MiniMax Client (Anthropic SDK) ---
 
 
 class LLMClientAnthropicBase(LLMClientBase):
@@ -893,17 +859,7 @@ class LLMClientAnthropicBase(LLMClientBase):
             else ThinkingFeebackPolicy.never()
         )
 
-        # assistant messages to turn map for reasoning feedback policy
-        # maps message index to "turns ago" for the assistant messages only, so we can
-        # apply the feedback policy
-        assistant_indices = [
-            i for i, msg in enumerate(messages) if msg.role == MessageRole.ASSISTANT
-        ]
-        num_assistant_msgs = len(assistant_indices)
-        turn_map = {
-            idx: (num_assistant_msgs - rank)
-            for rank, idx in enumerate(assistant_indices)
-        }
+        turn_map = self._build_turn_map(messages)
 
         for i, msg in enumerate(messages):
             if msg.role == MessageRole.SYSTEM:
@@ -1062,11 +1018,6 @@ class LLMClientAnthropicBase(LLMClientBase):
         """
         return len(tiktoken.get_encoding("cl100k_base").encode(text))
 
-    def stop_generation(self) -> None:
-        """
-        Stops the generation process.
-        """
-
 
 class LLMClientClaude(LLMClientAnthropicBase):
     """
@@ -1171,15 +1122,7 @@ class LLMClientOpenRouter(LLMClientBase):
             else ThinkingFeebackPolicy.never()
         )
 
-        # Map assistant message indices to "turns ago"
-        assistant_indices = [
-            i for i, msg in enumerate(messages) if msg.role == MessageRole.ASSISTANT
-        ]
-        num_assistant_msgs = len(assistant_indices)
-        turn_map = {
-            idx: (num_assistant_msgs - rank)
-            for rank, idx in enumerate(assistant_indices)
-        }
+        turn_map = self._build_turn_map(messages)
 
         for i, msg in enumerate(messages):
             if msg.role == MessageRole.SYSTEM:
@@ -1308,66 +1251,49 @@ class LLMClientOpenRouter(LLMClientBase):
 
         return thinking_text, signature
 
-    def _execute_chat_completion(
-        self, messages: list[Message], reasoning: bool, config: LLMConfig
-    ) -> str:
-        """
-        Execute non-streaming chat completion.
-
-        Args:
-            messages: Conversation messages
-            reasoning: Whether to enable reasoning
-            config: Resolved LLM configuration
-
-        Returns:
-            Response text
-        """
-        system_msg, converted_msgs = self._convert_messages(messages)
-
-        # Build payload
+    def _build_request_payload(
+        self,
+        converted_msgs: list[dict[str, Any]],
+        system_msg: str | None,
+        config: LLMConfig,
+        reasoning: bool,
+        stream: bool,
+    ) -> dict[str, Any]:
+        # OpenRouter puts system in the messages array (same as OpenAI), not a top-level param
+        messages: list[dict[str, Any]] = list(converted_msgs)
+        if system_msg:
+            messages.insert(0, {"role": "system", "content": system_msg})
         payload: dict[str, Any] = {
             "model": self._model,
-            "messages": converted_msgs,
+            "messages": messages,
             "max_tokens": config.max_tokens,
             "temperature": config.temperature,
-            "stream": False,
+            "stream": stream,
         }
-
-        # Add system message if present
-        if system_msg:
-            # OpenRouter uses the same format as OpenAI - system in messages array
-            payload["messages"].insert(
-                0,
-                {
-                    "role": "system",
-                    "content": system_msg,
-                },
-            )
-
-        # Add reasoning config
         reasoning_config = self._build_reasoning_config(reasoning, config)
         if reasoning_config:
             payload["reasoning"] = reasoning_config
+        return payload
 
-        # Make API request
+    def _execute_chat_completion(
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
+    ) -> str:
+        system_msg, converted_msgs = self._convert_messages(messages)
+        payload = self._build_request_payload(
+            converted_msgs, system_msg, config, reasoning, stream=False
+        )
+
         response = requests.post(
-            self._chat_url,
-            headers=self._headers,
-            json=payload,
-            timeout=600,
+            self._chat_url, headers=self._headers, json=payload, timeout=600
         )
         response.raise_for_status()
         result = response.json()
 
-        # Extract response
         choice = result["choices"][0]
         message = choice["message"]
 
-        # Parse reasoning if present
         if reasoning and "reasoning_details" in message:
-            thinking, _ = self._parse_reasoning_details(
-                message.get("reasoning_details")
-            )
+            thinking, _ = self._parse_reasoning_details(message.get("reasoning_details"))
             if thinking:
                 print(f"### Reasoning\n{thinking}")
 
@@ -1377,44 +1303,13 @@ class LLMClientOpenRouter(LLMClientBase):
         self, messages: list[Message], reasoning: bool, config: LLMConfig
     ) -> Generator[StreamResponse, None, None]:
         """
-        Execute streaming chat completion with reasoning support.
-
-        This handles OpenRouter's streaming format where reasoning_details
-        come in delta chunks that need to be accumulated.
-
-        Args:
-            messages: Conversation messages
-            reasoning: Whether to enable reasoning
-            config: Resolved LLM configuration
-
-        Yields:
-            StreamResponse objects for incremental updates
+        Handles OpenRouter's streaming format where reasoning_details come in delta
+        chunks that need to be accumulated and may interleave with content deltas.
         """
         system_msg, converted_msgs = self._convert_messages(messages)
-
-        # Build payload
-        payload: dict[str, Any] = {
-            "model": self._model,
-            "messages": converted_msgs,
-            "max_tokens": config.max_tokens,
-            "temperature": config.temperature,
-            "stream": True,
-        }
-
-        # Add system message if present
-        if system_msg:
-            payload["messages"].insert(
-                0,
-                {
-                    "role": "system",
-                    "content": system_msg,
-                },
-            )
-
-        # Add reasoning config
-        reasoning_config = self._build_reasoning_config(reasoning, config)
-        if reasoning_config:
-            payload["reasoning"] = reasoning_config
+        payload = self._build_request_payload(
+            converted_msgs, system_msg, config, reasoning, stream=True
+        )
 
         # Make streaming request
         response = requests.post(
@@ -1586,12 +1481,6 @@ class LLMClientOpenRouter(LLMClientBase):
         """
         # Rough approximation: ~4 characters per token
         return len(text) // 4
-
-    def stop_generation(self) -> None:
-        """
-        Stop generation is not supported by OpenRouter API.
-        This is a no-op for API compatibility.
-        """
 
 
 # class LLMClientGemini(LLMClientBase):
