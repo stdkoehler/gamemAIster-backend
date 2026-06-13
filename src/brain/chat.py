@@ -3,10 +3,10 @@
 import re
 import json
 from dataclasses import dataclass
-from typing import Generator
+from typing import Callable, Generator, TypeVar
 import threading
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 
 from src.llmclient.llm_parameters import LLMConfig
@@ -29,6 +29,21 @@ logger = SQLLogger()  # Defaults to SQLite in current directory
 
 # strip beginning linebreaks, spaces, GM, :
 strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
+
+T = TypeVar("T")
+
+
+# ---------------------------------------------------------------------------
+# Private parse targets for structured LLM responses
+# ---------------------------------------------------------------------------
+
+
+class _Summary(BaseModel):
+    summary: str
+
+
+class _SceneList(BaseModel):
+    scenes: list[Scene]
 
 
 class SummaryMemory:
@@ -86,6 +101,74 @@ class SummaryMemory:
         """
         return self._summary
 
+    # ------------------------------------------------------------------
+    # Shared LLM call + parse + log pattern
+    # ------------------------------------------------------------------
+
+    def _call_structured(
+        self,
+        messages: list[Message],
+        parse: Callable[[str], T],
+        log_fn: Callable[..., None],
+        strip_think: bool = False,
+    ) -> T:
+        """
+        Call the LLM, extract JSON from the response, validate it with `parse`,
+        and log the outcome. Raises ValueError on any parse failure.
+        `strip_think` removes <think>…</think> blocks before JSON extraction —
+        needed when a model embeds visible thinking before the JSON output.
+        """
+        log_prompt = "\n\n".join(msg.content.text for msg in messages)
+        response = self._llm_client.chat_completion(
+            messages=messages,
+            reasoning=True,
+            config_override=LLMConfig(max_tokens=8192),
+            task=LLMTask.SUMMARY,
+        )
+        text = (
+            re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
+            if strip_think
+            else response
+        )
+
+        try:
+            json_str = extract_json_schema(text)
+        except ValueError as exc:
+            log_fn(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json="",
+                processed_output="JSON Parsing Error",
+            )
+            raise ValueError(
+                f"LLM response does not contain valid JSON:\n{text}"
+            ) from exc
+
+        try:
+            result = parse(json_str)
+        except (json.decoder.JSONDecodeError, ValidationError, KeyError) as exc:
+            log_fn(
+                llm_input=log_prompt,
+                raw_output=response,
+                extracted_json=json_str,
+                processed_output="Validation Error",
+            )
+            raise ValueError(
+                "LLM response is not valid JSON or doesn't validate as pydantic model"
+            ) from exc
+
+        log_fn(
+            llm_input=log_prompt,
+            raw_output=response,
+            extracted_json=json_str,
+            processed_output=json_str,
+        )
+        return result  # type: ignore[return-value]
+
+    # ------------------------------------------------------------------
+    # Structured extraction methods
+    # ------------------------------------------------------------------
+
     def scene_summary(self, text_interaction: str) -> list[Scene]:
         """
         Returns the scene summary of the chat conversation.
@@ -113,69 +196,14 @@ class SummaryMemory:
             ),
         ]
 
-        ### Scene Prompt
-        log_prompt = "\n\n".join(msg.content.text for msg in messages)
-
-        response = self._llm_client.chat_completion(
+        scene_list = self._call_structured(
             messages=messages,
-            reasoning=True,
-            config_override=LLMConfig(max_tokens=8192),
-            task=LLMTask.SUMMARY,
+            parse=lambda s: _SceneList.model_validate_json(s).scenes,
+            log_fn=logger.log_scene,
+            strip_think=True,
         )
-
-        # remove content between <think>  tags
-        response_wo_think = re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
-        try:
-            json_string = extract_json_schema(response_wo_think)
-        except ValueError as exc:
-            logger.log_scene(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json="",
-                processed_output="JSON Parsing Error",
-            )
-            raise ValueError(
-                f"LLM response does not contain valid JSON:\n{response_wo_think}"
-            ) from exc
-
-        try:
-            data = json.loads(json_string)
-            scene_response: list[Scene] = [
-                Scene.model_validate(scene) for scene in data["scenes"]
-            ]
-            # only update last scene and newly created scenes
-            scene_response = [
-                scene for scene in scene_response if scene.id >= last_scene_id
-            ]
-        except (json.decoder.JSONDecodeError, ValidationError) as exc:
-            logger.log_scene(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json=json_string,
-                processed_output="Validation Error",
-            )
-            raise ValueError(
-                "LLM response is not valid JSON or doesn't validate as pydantic model"
-            ) from exc
-        except KeyError as exc:
-            logger.log_scene(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json=json_string,
-                processed_output=str(exc),
-            )
-            raise ValueError(
-                f"LLM response is missing required keys: {json_string}"
-            ) from exc
-
-        logger.log_scene(
-            llm_input=log_prompt,
-            raw_output=response,
-            extracted_json=json_string,
-            processed_output=json_string,
-        )
-
-        return scene_response
+        # only update last scene and newly created scenes
+        return [scene for scene in scene_list if scene.id >= last_scene_id]
 
     def extract_entities(self, text_interaction: str) -> EntityResponse:
 
@@ -204,60 +232,11 @@ class SummaryMemory:
             ),
         ]
 
-        ### Entity Prompt
-        log_prompt = "\n\n".join(msg.content.text for msg in messages)
-
-        response = self._llm_client.chat_completion(
+        return self._call_structured(
             messages=messages,
-            reasoning=True,
-            config_override=LLMConfig(max_tokens=8192),
-            task=LLMTask.SUMMARY,
+            parse=EntityResponse.model_validate_json,
+            log_fn=logger.log_entity,
         )
-
-        try:
-            json_string = extract_json_schema(response)
-        except ValueError as exc:
-            logger.log_entity(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json="",
-                processed_output="JSON Parsing Error",
-            )
-            raise ValueError(
-                f"LLM response does not contain valid JSON:\n{response}"
-            ) from exc
-
-        try:
-            entity_response = EntityResponse.model_validate_json(json_string)
-        except (json.decoder.JSONDecodeError, ValidationError) as exc:
-            logger.log_entity(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json=json_string,
-                processed_output="Validation Error",
-            )
-            raise ValueError(
-                "LLM response is not valid JSON or doesn't validate as pydantic model"
-            ) from exc
-        except KeyError as exc:
-            logger.log_entity(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json=json_string,
-                processed_output=str(exc),
-            )
-            raise ValueError(
-                f"LLM response is missing required keys: {json_string}"
-            ) from exc
-
-        logger.log_entity(
-            llm_input=log_prompt,
-            raw_output=response,
-            extracted_json=json_string,
-            processed_output=json_string,
-        )
-
-        return entity_response
 
     def summarize(self, text_interaction: str) -> str:
         """
@@ -280,60 +259,15 @@ class SummaryMemory:
             ),
         ]
 
-        ### Summary Prompt
-        log_prompt = "\n\n".join(msg.content.text for msg in messages)
-        response = self._llm_client.chat_completion(
+        return self._call_structured(
             messages=messages,
-            reasoning=True,
-            config_override=LLMConfig(max_tokens=8192),
-            task=LLMTask.SUMMARY,
+            parse=lambda s: _Summary.model_validate_json(s).summary,
+            log_fn=logger.log_summary,
         )
 
-        try:
-            json_string = extract_json_schema(response)
-        except ValueError as exc:
-            logger.log_summary(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json="",
-                processed_output="JSON Parsing Error",
-            )
-            raise ValueError(
-                f"LLM response does not contain valid JSON:\n{response}"
-            ) from exc
-
-        try:
-            summary_obj: dict[str, str] = json.loads(json_string)
-            new_summary = summary_obj["summary"]
-        except (json.decoder.JSONDecodeError, ValidationError) as exc:
-            logger.log_summary(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json=json_string,
-                processed_output="Validation Error",
-            )
-            raise ValueError(
-                "LLM response is not valid JSON or doesn't validate as pydantic model"
-            ) from exc
-        except KeyError as exc:
-            logger.log_summary(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json=json_string,
-                processed_output=str(exc),
-            )
-            raise ValueError(
-                f"LLM response is missing required keys: {json_string}"
-            ) from exc
-
-        logger.log_summary(
-            llm_input=log_prompt,
-            raw_output=response,
-            extracted_json=json_string,
-            processed_output=json_string,
-        )
-
-        return new_summary
+    # ------------------------------------------------------------------
+    # History management
+    # ------------------------------------------------------------------
 
     def _try_summarize(self) -> None:
         """
@@ -434,6 +368,32 @@ class SummaryMemory:
 
         # self._try_summarize()
 
+    # ------------------------------------------------------------------
+    # Message building helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _interactions_to_messages(interactions: list[Interaction]) -> list[Message]:
+        messages = []
+        for interaction in interactions:
+            messages.append(
+                Message(
+                    role=MessageRole.USER,
+                    content=MessageContent(text=interaction.user_input),
+                )
+            )
+            messages.append(
+                Message(
+                    role=MessageRole.ASSISTANT,
+                    content=MessageContent(
+                        text=interaction.llm_output,
+                        thinking=interaction.llm_thinking,
+                        thinking_signature=interaction.llm_thinking_signature,
+                    ),
+                )
+            )
+        return messages
+
     def interactions_unsummarized(self) -> list[Interaction]:
         """
         Returns the current interactions (that have not been summarized yet) in the chat conversation.
@@ -453,46 +413,20 @@ class SummaryMemory:
         return self._history[-1].user_input
 
     def chat(self) -> list[Message]:
-        messages = []
-        for interaction in self._history:
-            messages.append(
-                Message(
-                    role=MessageRole.USER,
-                    content=MessageContent(text=interaction.user_input),
-                )
-            )
-            messages.append(
-                Message(
-                    role=MessageRole.ASSISTANT,
-                    content=MessageContent(
-                        text=interaction.llm_output,
-                        thinking=interaction.llm_thinking,
-                        thinking_signature=interaction.llm_thinking_signature,
-                    ),
-                )
-            )
-        return messages
+        return self._interactions_to_messages(self._history)
 
     def chat_unsummarized(self) -> list[Message]:
-        messages = []
-        for interaction in self.interactions_unsummarized():
-            messages.append(
-                Message(
-                    role=MessageRole.USER,
-                    content=MessageContent(text=interaction.user_input),
-                )
-            )
-            messages.append(
-                Message(
-                    role=MessageRole.ASSISTANT,
-                    content=MessageContent(
-                        text=interaction.llm_output,
-                        thinking=interaction.llm_thinking,
-                        thinking_signature=interaction.llm_thinking_signature,
-                    ),
-                )
-            )
-        return messages
+        return self._interactions_to_messages(self.interactions_unsummarized())
+
+    @property
+    def n_summarized(self) -> int:
+        """
+        Returns the number of interactions that have been summarized.
+
+        Returns:
+            int: The number of interactions that have been summarized.
+        """
+        return self._n_summarized
 
     def get_summary(self) -> str:
         """
@@ -525,16 +459,6 @@ class SummaryMemory:
                 for scene in self._scenes
             ]
         )
-
-    @property
-    def n_summarized(self) -> int:
-        """
-        Returns the number of interactions that have been summarized.
-
-        Returns:
-            int: The number of interactions that have been summarized.
-        """
-        return self._n_summarized
 
 
 class SummaryChat:
