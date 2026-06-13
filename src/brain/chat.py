@@ -72,11 +72,6 @@ class SummaryMemory:
         _n_summarized (int): The number of interactions that have been summarized.
     """
 
-    @dataclass
-    class SummaryInteractions:
-        count: int
-        text: str
-
     def __init__(
         self,
         llm_client: LLMClientBase,

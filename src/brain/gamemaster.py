@@ -215,7 +215,7 @@ def build_gamemaster(
     elif llm_type == "DEEPSEEK":
         api_key = os.getenv("API_KEY_DEEPSEEK")
         if api_key is None:
-            raise ValueError("OpenRouter API key not set")
+            raise ValueError("DeepSeek API key not set")
         return Gamemaster(
             user_id=user_id,
             llm_client_chat=LLMClientDeepSeek(

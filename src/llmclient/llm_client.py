@@ -959,20 +959,15 @@ class LLMClientAnthropicBase(LLMClientBase):
                 elif event.type == "message_stop":
                     break
 
-            # final_message.content is what we have to send back to MiniMaxM2.1 for multi-turn thinking
-            # [
-            #     ThinkingBlock(signature, thinking, type="thinking")
-            #     TextBlock(text, type="text")
-            # ]
-            # test_thinking = ThinkingBlock(signature=final_message.content[0].signature, thinking=final_message.content[0].thinking, type="thinking", citations=None, text=None)
-            # test_thinking == final_message.content[0] # is true only if we add citations=None and text=None
-            # test_text = TextBlock(text=final_message.content[1].text, type="text")
-            # test_text == final_message.content[1] # is true
-            # test_content = [test_thinking, test_text]
-            # test_content == final_message.content # is true
-            # So we can reconstruct the final message from the content blocks
-            final_message = stream.get_final_message()
-            print(final_message)
+            # To feed thinking back in subsequent turns (required for MiniMax M2.1 and
+            # Claude extended thinking), reconstruct the content list from the final message:
+            #   final_message = stream.get_final_message()
+            #   content = [
+            #     ThinkingBlock(signature=..., thinking=..., type="thinking", citations=None, text=None),
+            #     TextBlock(text=..., type="text"),
+            #   ]
+            # citations=None and text=None are required for ThinkingBlock equality with the API response.
+            # The reconstructed list can then be passed as the assistant turn's content in the next call.
 
     def _execute_chat_completion(
         self, messages: list[Message], reasoning: bool, config: LLMConfig

@@ -131,11 +131,12 @@ class ConfigRegistry:
     def get_llm_logic_config(cls, model_identifier: str) -> LLMLogicConfig:
         """
         Retrieves internal logic parameters for a specific model.
-        Currently pulls from the SUMMARY task resolution as these are general model limits.
+
+        Logic config (last_k, min_summary_tokens, keep_thinking_turns) is stored on
+        the SUMMARY task entry because these are model-level settings, not task-specific.
+        If you ever need per-task logic config, this will need to change.
         """
         client_map = cls._MATRIX.get(model_identifier, cls._MATRIX["LLMClientLocal"])
-
-        # We assume SUMMARY holds the 'General' logic for the model
         task_resolution = client_map.get(LLMTask.SUMMARY)
 
         if (
