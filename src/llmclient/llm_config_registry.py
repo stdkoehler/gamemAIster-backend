@@ -64,6 +64,18 @@ class ConfigRegistry:
             LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=16384)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=4096)),
         },
+        "LLMClientClaude": {
+            LLMTask.SUMMARY: TaskResolution(
+                llm=LLMConfig(max_tokens=4096),
+                logic=LLMLogicConfig(
+                    last_k=15,
+                    min_summary_tokens=2048,
+                    keep_thinking_turns=ThinkingFeebackPolicy.forever(),
+                ),
+            ),
+            LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=16000)),
+            LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=8192)),
+        },
         # Add other clients here (e.g., LLMClientGemini)
     }
 
