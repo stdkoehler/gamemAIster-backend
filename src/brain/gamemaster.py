@@ -29,13 +29,16 @@ from src.llmclient.llm_config_registry import LLMTask
 from src.brain.oracle import (
     BaseOracle,
     CustomOracle,
+    ExpanseNonHeroOracle,
     ExpanseOracle,
     SeventhSeaOracle,
     ShadowrunOracle,
     VampireOracle,
     CthulhuOracle,
 )
-from src.brain.json_tools import extract_json_schema
+from src.brain.structured_output import parse_with_retry
+
+from pydantic import BaseModel, ConfigDict
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
@@ -80,6 +83,33 @@ REASONING_WARMSTART = {
     api_schema_mission.GameType.SHADOWRUN: SHADOWRUN_WARMSTART,
     api_schema_mission.GameType.EXPANSE: EXPANSE_WARMSTART,
 }
+
+
+# ---------------------------------------------------------------------------
+# Minimal models for mission title extraction.
+# extra="allow" preserves all LLM-generated fields so model_dump() can
+# reconstruct the full JSON for Mission.description without needing full
+# mission schemas.
+# ---------------------------------------------------------------------------
+
+
+class _FlexBase(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+
+class _MissionMeta(_FlexBase):
+    title: str
+
+
+class _MissionBody(_FlexBase):
+    """Top-level output for all games except Shadowrun, and the nested
+    'mission' object for Shadowrun."""
+
+    meta: _MissionMeta
+
+
+class _ShadowrunMissionOutput(_FlexBase):
+    mission: _MissionBody
 
 
 def build_gamemaster(
@@ -391,10 +421,10 @@ class Gamemaster:
                 oracle = SeventhSeaOracle(llm_client=self._llm_client_reasoning)
                 topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.EXPANSE:
-                oracle = ExpanseOracle(
-                    llm_client=self._llm_client_reasoning,
-                    non_hero_mode=self._mission_options.non_hero_mode,
-                )
+                if self._mission_options.non_hero_mode:
+                    oracle = ExpanseNonHeroOracle(llm_client=self._llm_client_reasoning)
+                else:
+                    oracle = ExpanseOracle(llm_client=self._llm_client_reasoning)
                 topic = oracle.mission(full_background)
             elif self._game_type == api_schema_mission.GameType.CUSTOM:
                 oracle = CustomOracle(llm_client=self._llm_client_reasoning)
@@ -411,54 +441,50 @@ class Gamemaster:
         print("### GenerateMission")
         print(topic)
 
-        # llm_response = self._llm_client.completion(
-        #     prompt=GENERATE_SESSION.format(question=oracle_topic),
-        # )
-
         # max_tokens is the max tokens the LLM may generate in the response
         # total context window = input tokens + max_tokens
         # our input token is already quite large, so we limit max_tokens to 4096
         # (this includes thinking process for some local models, e.g. gemma3)
-        # 4096
-        llm_response = self._llm_client_reasoning.chat_completion(
-            messages=[
-                Message(
-                    role=MessageRole.SYSTEM,
-                    content=MessageContent(text=system_prompt),
-                ),
-                Message(role=MessageRole.USER, content=MessageContent(text=topic)),
-            ],
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
-        )
+        # the limit is configured per-task in LLMTask.ARCHITECT
+        messages = [
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(text=system_prompt),
+            ),
+            Message(role=MessageRole.USER, content=MessageContent(text=topic)),
+        ]
 
-        print("### LLM Response")
-        print(llm_response)
+        if self._game_type == api_schema_mission.GameType.SHADOWRUN:
+            parsed = parse_with_retry(
+                messages=messages,
+                result_type=_ShadowrunMissionOutput,
+                llm_client=self._llm_client_reasoning,
+                reasoning=True,
+                task=LLMTask.ARCHITECT,
+            )
+            name = parsed.mission.meta.title
+        else:
+            parsed = parse_with_retry(
+                messages=messages,
+                result_type=_MissionBody,
+                llm_client=self._llm_client_reasoning,
+                reasoning=True,
+                task=LLMTask.ARCHITECT,
+            )
+            name = parsed.meta.title
 
-        json_string = extract_json_schema(llm_response)
+        description = json.dumps(parsed.model_dump(), ensure_ascii=False, indent=2)
+        print("### Result")
+        print(description)
 
-        try:
-            data = json.loads(json_string)
-            print("### Result")
-            print(data)
-            if self._game_type == api_schema_mission.GameType.SHADOWRUN:
-                name = data["mission"]["meta"]["title"]
-            else:
-                name = data["meta"]["title"]
-            mission = {
-                "user_id": self._user_id,
-                "name": name,
-                "description": json_string,
-                "game_type": self._game_type,
-                "background": background,
-                "detailed_background": detailed_background,
-                "non_hero_mode": self._mission_options.non_hero_mode,
-                "oracle": self._mission_options.oracle,
-            }
-            return api_schema_mission.Mission.model_validate(mission)
-        except json.decoder.JSONDecodeError as exc:
-            raise ValueError(f"LLM response is not valid JSON: {json_string}") from exc
-        except KeyError as exc:
-            raise ValueError(
-                f"LLM response is missing required keys: {json_string}"
-            ) from exc
+        mission = {
+            "user_id": self._user_id,
+            "name": name,
+            "description": description,
+            "game_type": self._game_type,
+            "background": background,
+            "detailed_background": detailed_background,
+            "non_hero_mode": self._mission_options.non_hero_mode,
+            "oracle": self._mission_options.oracle,
+        }
+        return api_schema_mission.Mission.model_validate(mission)
