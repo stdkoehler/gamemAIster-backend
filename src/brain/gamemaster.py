@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import os
+import re
 
 from typing import AsyncGenerator
 from pathlib import Path
@@ -100,6 +101,27 @@ class _MissionMeta(_FlexBase):
 
 class _MissionBody(_FlexBase):
     meta: _MissionMeta
+
+
+# ---------------------------------------------------------------------------
+# Prompt loading with optional example-count trimming.
+# ---------------------------------------------------------------------------
+
+# Matches all heading styles used across prompt files:
+#   "# Example 1"  (Cthulhu)
+#   "## Example #1" (Shadowrun)
+#   "## Example 1"  (Vampire, 7th Sea, Expanse)
+_EXAMPLE_HEADING = re.compile(r"^#{1,3} Example", re.MULTILINE)
+
+
+def _load_prompt(path: Path, max_examples: int | None = None) -> str:
+    text = path.read_text(encoding="utf-8")
+    if max_examples is None:
+        return text
+    positions = [m.start() for m in _EXAMPLE_HEADING.finditer(text)]
+    if not positions or max_examples >= len(positions):
+        return text
+    return text[: positions[max_examples]].rstrip()
 
 
 # ---------------------------------------------------------------------------
@@ -322,9 +344,12 @@ class Gamemaster:
         self._game_name = cfg.game_name
 
         prompt_dir = Path(__file__).parent / "prompt_templates"
+        # Local models get fewer few-shot examples to reduce context size and
+        # improve instruction-following; cloud models receive the full prompt.
+        max_examples = 1 if isinstance(llm_client_reasoning, LLMClientLocal) else None
         self._role = (prompt_dir / cfg.system_prompt).read_text(encoding="utf-8")
-        self._mission_template = (prompt_dir / cfg.mission_prompt).read_text(encoding="utf-8")
-        self._mission_template_non_oracle = (prompt_dir / cfg.mission_prompt_non_oracle).read_text(encoding="utf-8")
+        self._mission_template = _load_prompt(prompt_dir / cfg.mission_prompt, max_examples)
+        self._mission_template_non_oracle = _load_prompt(prompt_dir / cfg.mission_prompt_non_oracle)
 
         with open(prompt_dir / "text_summary_prompt.txt", "r", encoding="utf-8") as f:
             self._summary_template = f.read()
