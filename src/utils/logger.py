@@ -1,35 +1,19 @@
-""" generate python logger that logs output as json """
-
 import logging
-from pythonjsonlogger import jsonlogger
 
 
-def configure_logger(name: str):
-    """
-    Configures a logger with the specified name and sets the log level to DEBUG.
-    It also adds a console handler that logs messages to the console.
-    The log messages are formatted as JSON using the pythonjsonlogger.JsonFormatter class.
-
-    Args:
-        name (str): The name of the logger.
-
-    Returns:
-        logging.Logger: The configured logger.
-
-    Example:
-        >>> logger = configure_logger('my_logger')
-        >>> logger.debug('This is a debug message')
-        >>> logger.info('This is an info message')
-    """
-
+def configure_logger(name: str) -> logging.Logger:
+    """Return a console logger with compact single-line output."""
     logger = logging.getLogger(name)
+    if logger.handlers:
+        return logger
     logger.setLevel(logging.DEBUG)
-    formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(message)s")
-
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
-    console_handler.setFormatter(formatter)
-
-    logger.addHandler(console_handler)
-
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s | %(levelname)-5s | %(name)-12s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
+    logger.addHandler(handler)
     return logger

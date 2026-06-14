@@ -8,6 +8,12 @@ from dataclasses import asdict, dataclass
 from enum import StrEnum
 from abc import ABC, abstractmethod
 
+from src.utils.logger import configure_logger
+from src.utils.sqllogger import SQLLogger
+
+_log = configure_logger("llm_client")
+_sql_logger = SQLLogger()
+
 from urllib.parse import urljoin
 
 import requests
@@ -758,7 +764,7 @@ class LLMClientDeepSeek(LLMClientBase):
                     )
 
         except openai.APIError:
-            print("Api Error")
+            _log.error("API error | provider=openai")
 
     def _execute_chat_completion(
         self, messages: list[Message], reasoning: bool, config: LLMConfig
@@ -782,10 +788,10 @@ class LLMClientDeepSeek(LLMClientBase):
         )
 
         if reasoning:
-            if completion.choices[0].message.reasoning_content is not None:  # type: ignore
-                print(
-                    f"### Reasoning\n{completion.choices[0].message.reasoning_content}"  # type: ignore
-                )
+            reasoning_content = completion.choices[0].message.reasoning_content  # type: ignore
+            if reasoning_content is not None:
+                _log.debug("Reasoning | provider=openai-compat | chars=%d", len(reasoning_content))
+                _sql_logger.log_reasoning(provider="openai-compat", content=reasoning_content)
 
         return completion.choices[0].message.content or ""  # type: ignore
 
@@ -996,7 +1002,8 @@ class LLMClientAnthropicBase(LLMClientBase):
                 (c.thinking for c in response.content if c.type == "thinking"), None
             )
             if thinking_content:
-                print(f"### Reasoning\n{thinking_content}")
+                _log.debug("Reasoning | provider=claude | chars=%d", len(thinking_content))
+                _sql_logger.log_reasoning(provider="claude", content=thinking_content)
 
         return next(c.text for c in response.content if c.type == "text")
 
@@ -1290,7 +1297,8 @@ class LLMClientOpenRouter(LLMClientBase):
         if reasoning and "reasoning_details" in message:
             thinking, _ = self._parse_reasoning_details(message.get("reasoning_details"))
             if thinking:
-                print(f"### Reasoning\n{thinking}")
+                _log.debug("Reasoning | provider=openrouter | chars=%d", len(thinking))
+                _sql_logger.log_reasoning(provider="openrouter", content=thinking)
 
         return message.get("content", "")  # type: ignore
 

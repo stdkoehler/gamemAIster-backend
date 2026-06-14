@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import random
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar, Generic, TypeVar
 
@@ -27,6 +28,13 @@ class OracleConfig(RootModel[dict[str, list[Candidate]]]):
     Root-level dict so we can accept any pool name (clients, factions, …)
     each mapping to a list of Candidate objects.
     """
+
+
+@dataclass
+class OracleResult:
+    roll: str     # JSON of the random proposal drawn from pools
+    aligned: str  # JSON of the LLM-aligned result
+    topic: str    # Final JSON sent to the mission LLM (aligned + background)
 
 
 # ---------------------------------------------------------------------------
@@ -203,14 +211,15 @@ class BaseOracle(ABC, Generic[TProposal, TAligned]):
             task=LLMTask.ARCHITECT,
         )
 
-    def mission(self, background: str) -> str:
+    def mission(self, background: str) -> OracleResult:
         proposal = self._assemble_proposal_seed()
         aligned = self._align(proposal, background)
-        result = aligned.model_dump()
-        result["background"] = background
-        print("### Oracle Alignment")
-        print(result)
-        return json.dumps(result, ensure_ascii=False, indent=2)
+        topic = {**aligned.model_dump(), "background": background}
+        return OracleResult(
+            roll=json.dumps(proposal.model_dump(), ensure_ascii=False, indent=2),
+            aligned=json.dumps(aligned.model_dump(), ensure_ascii=False, indent=2),
+            topic=json.dumps(topic, ensure_ascii=False, indent=2),
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -461,12 +470,12 @@ def main() -> None:
     #     ),
     # )
     sr = CustomOracle(llm_client=llm_client_local)
-    print(
-        "Custom Seed:",
-        sr.mission(
-            "I'm Doromir, a farmer in Starigard. I have a dispute about farmland with my neighbor and need to resolve it."
-        ),
+    result = sr.mission(
+        "I'm Doromir, a farmer in Starigard. I have a dispute about farmland with my neighbor and need to resolve it."
     )
+    print("Roll:", result.roll)
+    print("Aligned:", result.aligned)
+    print("Topic:", result.topic)
 
 
 if __name__ == "__main__":

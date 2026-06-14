@@ -3,6 +3,10 @@
 import json
 from typing import Any
 
+from src.utils.logger import configure_logger
+
+_log = configure_logger("crud")
+
 import sqlalchemy
 from sqlalchemy import event, select, update, delete, and_
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -249,7 +253,7 @@ class CRUD:
                     )
                 session.commit()
             else:
-                print("No ConversationMemory found for the given mission_id.")
+                _log.warning("No ConversationMemory found | mission_id=%s", mission_id)
 
     def get_summary(self, mission_id: int) -> tuple[str, int]:
         with self._sessionmaker() as session:
@@ -364,7 +368,7 @@ class CRUD:
 
             except Exception as e:
                 session.rollback()
-                print(f"Error updating entities for mission {mission_id}: {e}")
+                _log.error("Entity update failed | mission_id=%s | error=%s", mission_id, e)
                 raise
 
     def get_scenes(self, mission_id: int) -> list[Scene]:

@@ -37,8 +37,13 @@ from src.brain.oracle import (
     CthulhuOracle,
 )
 from src.brain.structured_output import parse_with_retry
+from src.utils.logger import configure_logger
+from src.utils.sqllogger import SQLLogger
 
 from pydantic import BaseModel, ConfigDict
+
+_log = configure_logger("gamemaster")
+_sql_logger = SQLLogger()
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
@@ -400,16 +405,17 @@ class Gamemaster:
         if self._mission_options.oracle:
             cfg = _GAME_CONFIGS[(self._game_type, self._mission_options.non_hero_mode)]
             oracle = cfg.oracle_class(llm_client=self._llm_client_reasoning)
-            topic = oracle.mission(full_background)
+            oracle_result = oracle.mission(full_background)
+            topic = oracle_result.topic
             system_prompt = self._mission_template
         else:
+            oracle_result = None
             topic = json.dumps(
                 {"background": full_background}, ensure_ascii=False, indent=2
             )
             system_prompt = self._mission_template_non_oracle
 
-        print("### GenerateMission")
-        print(topic)
+        _log.info("GenerateMission | game_type=%s | oracle=%s | seed_len=%d", self._game_type, self._mission_options.oracle, len(topic))
 
         # max_tokens is the max tokens the LLM may generate in the response
         # total context window = input tokens + max_tokens
@@ -433,8 +439,16 @@ class Gamemaster:
         )
         name = parsed.meta.title
         description = json.dumps(parsed.model_dump(), ensure_ascii=False, indent=2)
-        print("### Result")
-        print(description)
+        _log.info("GenerateMission complete | title=%s | output_len=%d", name, len(description))
+        _sql_logger.log_mission(
+            game_type=str(self._game_type),
+            oracle_used=self._mission_options.oracle,
+            oracle_background=full_background,
+            oracle_roll=oracle_result.roll if oracle_result else "",
+            oracle_aligned=oracle_result.aligned if oracle_result else "",
+            llm_input=str(messages),
+            llm_output=description,
+        )
 
         mission = {
             "user_id": self._user_id,

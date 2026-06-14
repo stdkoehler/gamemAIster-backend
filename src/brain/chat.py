@@ -24,9 +24,11 @@ from src.crud.crud import crud_instance
 from src.brain.data_types import Interaction, EntityResponse, Scene
 from src.brain.json_tools import extract_json_schema
 
-from src.utils.sqllogger import SQLLogger
+from src.utils.sqllogger import SQLLogger, LogType
+from src.utils.logger import configure_logger
 
-logger = SQLLogger()  # Defaults to SQLite in current directory
+_log = configure_logger("chat")
+logger = SQLLogger()
 
 # strip beginning linebreaks, spaces, GM, :
 strip_pattern = re.compile(r"^(?::|\n|\s)*(GM)?:?")
@@ -123,7 +125,7 @@ class SummaryMemory:
         self,
         messages: list[Message],
         parse: Callable[[str], T],
-        log_fn: Callable[..., None],
+        log_type: LogType,
         strip_think: bool = False,
     ) -> T:
         """
@@ -153,12 +155,7 @@ class SummaryMemory:
         try:
             json_str = extract_json_schema(text)
         except ValueError as exc:
-            log_fn(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json="",
-                processed_output="JSON Parsing Error",
-            )
+            logger.log_llm_call(log_type, llm_input=log_prompt, llm_output=response, processed_output="JSON Parsing Error")
             raise ValueError(
                 f"LLM response does not contain valid JSON:\n{text}"
             ) from exc
@@ -166,22 +163,12 @@ class SummaryMemory:
         try:
             result = parse(json_str)
         except (json.decoder.JSONDecodeError, ValidationError, KeyError) as exc:
-            log_fn(
-                llm_input=log_prompt,
-                raw_output=response,
-                extracted_json=json_str,
-                processed_output="Validation Error",
-            )
+            logger.log_llm_call(log_type, llm_input=log_prompt, llm_output=response, extracted_json=json_str, processed_output="Validation Error")
             raise ValueError(
                 "LLM response is not valid JSON or doesn't validate as pydantic model"
             ) from exc
 
-        log_fn(
-            llm_input=log_prompt,
-            raw_output=response,
-            extracted_json=json_str,
-            processed_output=json_str,
-        )
+        logger.log_llm_call(log_type, llm_input=log_prompt, llm_output=response, extracted_json=json_str, processed_output=json_str)
         return result  # type: ignore[return-value]
 
     # ------------------------------------------------------------------
@@ -218,7 +205,7 @@ class SummaryMemory:
         scene_list = self._call_structured(
             messages=messages,
             parse=lambda s: _SceneList.model_validate_json(s).scenes,
-            log_fn=logger.log_scene,
+            log_type=LogType.SCENE,
             strip_think=True,
         )
         # only update last scene and newly created scenes
@@ -254,7 +241,7 @@ class SummaryMemory:
         return self._call_structured(
             messages=messages,
             parse=EntityResponse.model_validate_json,
-            log_fn=logger.log_entity,
+            log_type=LogType.ENTITY,
         )
 
     def summarize(self, text_interaction: str) -> str:
@@ -281,7 +268,7 @@ class SummaryMemory:
         return self._call_structured(
             messages=messages,
             parse=lambda s: _Summary.model_validate_json(s).summary,
-            log_fn=logger.log_summary,
+            log_type=LogType.SUMMARY,
         )
 
     # ------------------------------------------------------------------
@@ -323,12 +310,7 @@ class SummaryMemory:
                     break
 
             if current_tokens > self._min_summary_tokens:
-                print(
-                    "Processing summary for",
-                    n,
-                    "interactions, leading to n_summarized =",
-                    self._state.n_summarized + n,
-                )
+                _log.info("Summary | processing %d interactions | n_summarized→%d", n, self._state.n_summarized + n)
 
                 text = re.sub(r"---\s*What do you do\?\s*", "", text)
 
@@ -357,15 +339,7 @@ class SummaryMemory:
                     scenes=crud_instance.get_scenes(self._mission_id),
                 )
             else:
-                print(
-                    "Skipping summary for",
-                    n,
-                    "interactions (only",
-                    current_tokens,
-                    "tokens / threshold of",
-                    self._min_summary_tokens,
-                    ").",
-                )
+                _log.info("Summary | skip | %d interactions | %d tokens < %d threshold", n, current_tokens, self._min_summary_tokens)
         finally:
             self._summarize_lock.release()
 
@@ -693,7 +667,4 @@ class SummaryChat:
         else:
             self._memory.append(interaction)
 
-        print("### Prompt")
-        for mi in messages:
-            print(mi)
-            print("-------------")
+        _log.debug("Interaction | %d messages | last=%s", len(messages), messages[-1].role if messages else "-")
