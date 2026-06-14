@@ -22,6 +22,7 @@ From these elements, craft a compelling Call of Cthulhu investigation using the 
 
 ### Key Requirements:
 
+- The field `background` is the most important part. If the other fields (`location`, `hook`, `mythos elements`) do not align with `background`, `background` MUST be prioritized. You can try to weave in the other fields as inspiration, but `background` MUST be dominant for the generated scenario.
 - Ensure the scenario is consistent with Call of Cthulhu's tone (cosmic horror, investigation, declining sanity)
 - Create a mystery with multiple clues, witnesses, and locations to explore
 - Include appropriate Mythos elements that fit the story (which may or may not include cultists or rituals)
