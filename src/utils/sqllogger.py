@@ -72,6 +72,24 @@ class ReasoningLog(Base):
     __table_args__ = (Index("ix_reasoning_logs_correlation_id", "correlation_id"),)
 
 
+class ParseRepairLog(Base):
+    """Records each JSON repair attempt made by parse_with_retry."""
+
+    __tablename__ = "parse_repair_logs"
+
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    correlation_id = Column(Text)
+    model_type = Column(Text)       # Pydantic model class name
+    attempt = Column(Integer)       # 1-indexed repair attempt number
+    validation_error = Column(Text) # error that triggered the repair
+    bad_response = Column(Text)     # the LLM output that failed to parse
+    repair_output = Column(Text)    # what the repair LLM produced
+    success = Column(Text)          # "true" / "false"
+
+    __table_args__ = (Index("ix_parse_repair_logs_model_type", "model_type"),)
+
+
 class SQLLogger:
     def __init__(self) -> None:
         logs_dir = Path(__file__).parent.parent.parent / "logs"
@@ -140,4 +158,24 @@ class SQLLogger:
             label="reasoning_logs",
             provider=provider,
             content=content,
+        )
+
+    def log_parse_repair(
+        self,
+        model_type: str,
+        attempt: int,
+        validation_error: str,
+        bad_response: str,
+        repair_output: str,
+        success: bool,
+    ) -> str:
+        return self._write(
+            ParseRepairLog,
+            label="parse_repair_logs",
+            model_type=model_type,
+            attempt=attempt,
+            validation_error=validation_error,
+            bad_response=bad_response,
+            repair_output=repair_output,
+            success=str(success).lower(),
         )

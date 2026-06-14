@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -7,8 +8,37 @@ from pydantic import BaseModel, ValidationError
 from src.brain.json_tools import extract_json_schema
 from src.llmclient.llm_client import LLMClientBase, Message, MessageContent, MessageRole
 from src.llmclient.llm_config_registry import LLMTask
+from src.utils.logger import configure_logger
+from src.utils.sqllogger import SQLLogger
 
 TModel = TypeVar("TModel", bound=BaseModel)
+
+_log = configure_logger("structured_output")
+_sql_logger = SQLLogger()
+
+_REPAIR_SYSTEM_PROMPT = (
+    "You are a JSON repair assistant. Your only job is to fix malformed or invalid JSON "
+    "so it strictly conforms to the provided JSON Schema. "
+    "Output only the corrected JSON object — no explanation, no markdown fences, no extra text."
+)
+
+
+def _build_repair_messages(
+    result_type: type[TModel],
+    bad_response: str,
+    error: Exception,
+) -> list[Message]:
+    schema_str = json.dumps(result_type.model_json_schema(), indent=2)
+    user_text = (
+        f"The following JSON failed validation.\n\n"
+        f"Validation error:\n{error}\n\n"
+        f"Required JSON Schema:\n{schema_str}\n\n"
+        f"JSON to fix:\n{bad_response}"
+    )
+    return [
+        Message(role=MessageRole.SYSTEM, content=MessageContent(text=_REPAIR_SYSTEM_PROMPT)),
+        Message(role=MessageRole.USER, content=MessageContent(text=user_text)),
+    ]
 
 
 def parse_with_retry(
@@ -21,7 +51,8 @@ def parse_with_retry(
 ) -> TModel:
     """
     Call the LLM and validate the response against a Pydantic model.
-    On validation failure, appends the error to the conversation and retries.
+    On validation failure, retries with a focused repair prompt instead of
+    re-sending the full original prompt, which can be very large.
 
     Use this for synchronous, blocking operations (oracle seeds, mission generation)
     where retry resilience matters more than logging individual attempts.
@@ -30,37 +61,51 @@ def parse_with_retry(
     """
     current_messages = list(messages)
     last_error: Exception | None = None
+    response: str = ""
+    last_failure_response: str = ""
+    last_failure_error: Exception | None = None
 
     for attempt in range(max_retries + 1):
         try:
             response = llm_client.chat_completion(
                 messages=current_messages,
-                reasoning=reasoning,
+                reasoning=reasoning if attempt == 0 else False,
                 task=task,
             )
             json_str = extract_json_schema(response)
-            return result_type.model_validate_json(json_str)
+            result = result_type.model_validate_json(json_str)
+            if attempt > 0:
+                _log.info("ParseRepair succeeded | model=%s | attempt=%d", result_type.__name__, attempt)
+                _sql_logger.log_parse_repair(
+                    model_type=result_type.__name__,
+                    attempt=attempt,
+                    validation_error=str(last_failure_error),
+                    bad_response=last_failure_response,
+                    repair_output=response,
+                    success=True,
+                )
+            return result
         except (ValidationError, ValueError) as exc:
+            if attempt > 0:
+                _log.warning("ParseRepair failed | model=%s | attempt=%d | error=%s", result_type.__name__, attempt, exc)
+                _sql_logger.log_parse_repair(
+                    model_type=result_type.__name__,
+                    attempt=attempt,
+                    validation_error=str(last_failure_error),
+                    bad_response=last_failure_response,
+                    repair_output=response,
+                    success=False,
+                )
+            else:
+                _log.warning("ParseWithRetry initial failure | model=%s | error=%s", result_type.__name__, exc)
+            last_failure_response = response
+            last_failure_error = exc
             last_error = exc
             if attempt < max_retries:
-                current_messages.extend(
-                    [
-                        Message(
-                            role=MessageRole.ASSISTANT,
-                            content=MessageContent(text=response),
-                        ),
-                        Message(
-                            role=MessageRole.USER,
-                            content=MessageContent(
-                                text=(
-                                    f"Your previous response could not be parsed. "
-                                    f"Error: {exc}\n\n"
-                                    "Please correct your output and provide a valid JSON response."
-                                ),
-                            ),
-                        ),
-                    ]
-                )
+                # Replace the full original context with a minimal repair prompt.
+                # The original system prompt can be very large (examples, instructions, etc.)
+                # and re-sending it on every retry wastes tokens and time.
+                current_messages = _build_repair_messages(result_type, response, exc)
 
     raise ValueError(
         f"Failed to parse LLM response after {max_retries + 1} attempt(s). "
