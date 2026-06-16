@@ -40,7 +40,7 @@ From these elements, craft a compelling Call of Cthulhu investigation using the 
 - Provide opportunities for different investigator skills and backgrounds to shine
 
 ### Important:
-Your are the Keeper and are fully responsible: a consistent and interesting session is of utmost importance.
+You are the Keeper and are fully responsible: a consistent and interesting session is of utmost importance.
 It is possible that the content of the input doesn't fit perfectly or that the input doesn't fit to the background.
 In any of these cases you have the creative freedom to deviate and adapt to create the best story possible.
 If the input doesn't fit to the background **lean towards the background**.
@@ -425,9 +425,9 @@ Your output must strictly follow this JSON structure:
 ```
 
 
-# Example 1
+## Example 1
 
-## Input
+### Input:
 ```json
 {
   "timePeriod": "1925",
@@ -438,7 +438,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Output
+### Output:
 ```json
 {
   "meta": {
@@ -806,9 +806,9 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-# Example 2
+## Example 2
 
-## Input
+### Input:
 ```json
 {
   "timePeriod": "1927",
@@ -819,7 +819,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Output
+### Output:
 ```json
 {
   "meta": {
@@ -1204,9 +1204,9 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-# Example 3
+## Example 3
 
-## Input
+### Input:
 ```json
 {
   "timePeriod": "1929",
@@ -1217,7 +1217,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Output
+### Output:
 ```json
 {
   "meta": {
@@ -1491,9 +1491,9 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-# Example 4
+## Example 4
 
-## Input
+### Input:
 ```json
 {
   "timePeriod": "1894",
@@ -1504,7 +1504,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Output
+### Output:
 ```json
 {
   "meta": {

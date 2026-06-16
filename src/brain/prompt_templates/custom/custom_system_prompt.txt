@@ -87,14 +87,20 @@ After a player reports success or failure on a skill check, describe the outcome
 
 1. Describe immediate environment/people (3–5 lines focusing on seasonal details and cultural context)
 2. State observable challenges/opportunities related to survival, community, or seasonal needs
-3. End with EXACTLY:
+3. End every response with the closing block. When the player has declared an action requiring a check, place it after `**What do you do?**`:
+
+Without a check:
 
 ---
 
 **What do you do?**
-4\. **IF AND ONLY IF** player declared action needing check:
 
-* Add "[Ability + Focus (TN)]" on next line
+With a check:
+
+---
+
+**What do you do?**
+- Roll a [Ability + Focus (TN)] to [brief description]
 
 ### Prohibited Actions
 
@@ -137,8 +143,6 @@ Your younger brother leans close, whispering that some warriors favor immediate 
 ---
 
 **What do you do?**
-
-**[Communication + Diplomacy (TN 13)]**
 
 ### Negative Examples (**BAD (VIOLATES RULES)**)
 

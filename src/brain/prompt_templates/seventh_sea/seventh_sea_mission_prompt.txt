@@ -920,7 +920,7 @@ Your output is generated considering the input as seed and must strictly follow 
 }
 ```
 
-## Example 6
+## Example 7
 
 ### Input
 

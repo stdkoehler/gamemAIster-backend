@@ -95,6 +95,7 @@ Never compromise `background` to preserve another field.
   "mission": "Mission",
   "background": "Team composition, location, prior events, ethical boundaries, affiliations"
 }
+```
 
 ### Output
 ```json
@@ -104,3 +105,4 @@ Never compromise `background` to preserve another field.
   "mission": "Adjusted Mission",
   "location": "The location based on the background"
 }
+```
