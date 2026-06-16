@@ -139,6 +139,22 @@ class CustomAligned(BaseModel):
     culturalFoci: str
 
 
+class SlavicProposal(BaseModel):
+    region: str
+    characterRole: str
+    startingSituation: str
+    seasonalContext: str
+    culturalFoci: str
+
+
+class SlavicAligned(BaseModel):
+    region: str
+    characterRole: str
+    startingSituation: str
+    seasonalContext: str
+    culturalFoci: str
+
+
 # ---------------------------------------------------------------------------
 # Generic base
 # ---------------------------------------------------------------------------
@@ -404,6 +420,25 @@ class CustomOracle(BaseOracle[CustomProposal, CustomAligned]):
 
     def _assemble_proposal_seed(self) -> CustomProposal:
         return CustomProposal(
+            region=self._weighted_choice(self._pools["regions"]),
+            characterRole=self._weighted_choice(self._pools["characterRoles"]),
+            startingSituation=self._weighted_choice(self._pools["startingSituations"]),
+            seasonalContext=self._weighted_choice(self._pools["seasonalContexts"]),
+            culturalFoci=self._weighted_choice(self._pools["culturalFoci"]),
+        )
+
+
+class SlavicOracle(BaseOracle[SlavicProposal, SlavicAligned]):
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            aligned_type=SlavicAligned,
+            config_filename="slavic.json",
+            prompt_filename="slavic/slavic_background_mission_aligner.txt",
+        )
+
+    def _assemble_proposal_seed(self) -> SlavicProposal:
+        return SlavicProposal(
             region=self._weighted_choice(self._pools["regions"]),
             characterRole=self._weighted_choice(self._pools["characterRoles"]),
             startingSituation=self._weighted_choice(self._pools["startingSituations"]),

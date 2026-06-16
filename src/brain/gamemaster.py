@@ -34,6 +34,7 @@ from src.brain.oracle import (
     ExpanseOracle,
     SeventhSeaOracle,
     ShadowrunOracle,
+    SlavicOracle,
     VampireOracle,
     CthulhuOracle,
 )
@@ -183,6 +184,13 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="expanse/expanse_mission_prompt_non_hero.txt",
         mission_prompt_non_oracle="expanse/expanse_mission_prompt_non_hero.txt",
         oracle_class=ExpanseNonHeroOracle,
+    ),
+    (_GT.SLAVIC, False): _GameConfig(
+        game_name="Baltic Slavic 800 A.D.",
+        system_prompt="slavic/slavic_system_prompt.txt",
+        mission_prompt="slavic/slavic_mission_prompt.txt",
+        mission_prompt_non_oracle="slavic/slavic_mission_prompt.txt",
+        oracle_class=SlavicOracle,
     ),
     (_GT.CUSTOM, False): _GameConfig(
         game_name="Custom RPG",
