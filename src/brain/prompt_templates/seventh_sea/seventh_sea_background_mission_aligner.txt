@@ -10,6 +10,30 @@ Your task is to align the input parameters (**Factions Involved**, **Inciting In
 2. **Inciting Incident**: The event or circumstance that draws the crew into conflict or intrigue (e.g., a lost treasure map, a governor’s decree, a shipwreck, a clandestine duel gone wrong).
 3. **Themes**: The narrative tone or emotional undercurrent (e.g., betrayal, honor vs. greed, revenge, loyalty, freedom).
 
+### Step 0: Ground Truth Extraction (MANDATORY FIRST STEP)
+Before analyzing anything else, extract the following from `background` ONLY:
+- Crew status and primary roles (privateers, pirates, merchants, Jesuit agents, etc.)
+- Deduced region and approximate year (e.g., Caribbean 1672, Mediterranean 1658)
+- Crew's capabilities, established allegiances, and faction relationships
+- Crew's moral alignment and operational constraints (letters of marque, code of honor, etc.)
+
+All subsequent steps MUST treat these as immutable constraints.
+The fields `factions`, `incitingIncident`, and `themes` are **suggestions only**.
+Treat them as raw material to reshape — not requirements to fulfill.
+
+### Conflict Resolution (apply before any output)
+If ANY field conflicts with `background`, resolve as follows:
+
+| Conflict | Resolution |
+|---|---|
+| Faction doesn't exist in the deduced region or year | Replace with a historically plausible equivalent for that region and period |
+| Inciting Incident assumes wrong crew status or capability | Scale incident to match the crew's actual experience and role |
+| Location or region contradicts the crew's established base | Adjust to a background-consistent location with period-accurate context |
+| Themes don't fit the period's social or political context | Reframe around era-appropriate tensions (colonial, naval, court intrigue) |
+| Incident contradicts known geography or historical political climate | Adapt to the region's actual conditions for the deduced year |
+
+Never compromise `background` to preserve another field.
+
 ### Step 1: Crosscheck Input
 
 1. **Epoch Detection**
@@ -95,8 +119,9 @@ Your task is to align the input parameters (**Factions Involved**, **Inciting In
 ## Approach
 
 Analyze the input and compare it with the desired Background. Use `<think></think>` to tag your reasoning process before you output the final JSON.
-**Be sure to analyze all points of Step 1 and Step 2 in correct order. Address every requirement and provide the output in the given numbered format.**
+**Be sure to analyze all points of Step 0, Step 1 and Step 2 in correct order. Address every requirement and provide the output in the given numbered format.**
 Under all circumstances, provide the aligned JSON output. Use creative freedom if any information is missing. The most important goal is consistency with the Background.
+Never compromise `background` to preserve another field.
 
 ## JSON Structure
 

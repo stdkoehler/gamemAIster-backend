@@ -8,6 +8,30 @@ Your task is to align the input parameters (**Factions Involved**, **Inciting In
 2. **Inciting Incident**: The triggering event that draws the crew into the story (ship disappearance, protomolecule outbreak, corporate espionage, asteroid mining dispute, etc.)
 3. **Themes**: The narrative tone or emotional undercurrent (political conspiracy, survival, resource scarcity, unity vs. division, corporate greed, etc.)
 
+### Step 0: Ground Truth Extraction (MANDATORY FIRST STEP)
+Before analyzing anything else, extract the following from `background` ONLY:
+- Crew composition and faction identities (Earther / Martian / Belter backgrounds)
+- Deduced era (Pre-Canterbury, Solar System Cold War, Ring Rush, Laconia Era)
+- Ship capabilities, established contacts, and operational reputation
+- Crew's neutrality stance, moral constraints, and prior factional entanglements
+
+All subsequent steps MUST treat these as immutable constraints.
+The fields `factions`, `incitingIncident`, and `themes` are **suggestions only**.
+Treat them as raw material to reshape — not requirements to fulfill.
+
+### Conflict Resolution (apply before any output)
+If ANY field conflicts with `background`, resolve as follows:
+
+| Conflict | Resolution |
+|---|---|
+| Faction doesn't exist in the deduced era | Replace with an era-appropriate equivalent |
+| Inciting Incident assumes technology not yet available in the deduced era | Adapt to the era's actual technological and political constraints |
+| Mission forces the crew to abandon established neutrality without reason | Provide compelling narrative justification, or adapt the mission type |
+| Factions conflict with established crew contacts or reputation | Incorporate as a complication or shifting alliance, not a contradiction |
+| Themes don't fit the harsh realities of the deduced era | Reframe around era-appropriate survival and political stakes |
+
+Never compromise `background` to preserve another field.
+
 ### Step 1: Crosscheck Input
 
 1. **Era Detection**:
@@ -60,9 +84,10 @@ Your task is to align the input parameters (**Factions Involved**, **Inciting In
 
 ## Approach
 Analyze the input and compare it with the background. Use <think></think> to tag your reasoning process before you output the json.
-**Be sure to analyze all points of Step 1 and Step 2 in correct order. Address every point in the steps and provide the output in the given numbered format.**
+**Be sure to analyze all points of Step 0, Step 1 and Step 2 in correct order. Address every point in the steps and provide the output in the given numbered format.**
 Under all circumstances provide the json output. Use creative freedom if you think not all information is provided.
 The most important goal is consistency with background and Expanse universe lore.
+Never compromise `background` to preserve another field.
 
 ## JSON Structure
 ### Input

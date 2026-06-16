@@ -1,48 +1,25 @@
 """Types"""
 
 import re
-from enum import Enum
+from dataclasses import dataclass
 from pydantic import BaseModel
 
 
+@dataclass(frozen=True)
 class Interaction:
-    """
-    A class representing an interaction in a chat conversation.
-
-    Attributes:
-        _id (str): The unique identifier of the interaction.
-        _user_input (str): The user input in the interaction.
-        _llm_output (str): The AI language model output in the interaction.
-        _llm_thinking (str | None): The AI language model's internal thinking or reasoning.
-        _llm_thinking_signature (str | None): The signature or metadata related to the AI's thinking.
-    """
-
-    def __init__(
-        self,
-        user_input: str,
-        llm_output: str,
-        llm_thinking: str | None = None,
-        llm_thinking_signature: str | None = None,
-        id_: int | None = None,
-    ):
-        self._id = id_
-        self._user_input = user_input
-        self._llm_output = llm_output
-        self._llm_thinking = llm_thinking
-        self._llm_thinking_signature = llm_thinking_signature
+    user_input: str
+    llm_output: str
+    llm_thinking: str | None = None
+    llm_thinking_signature: str | None = None
+    id_: int | None = None
 
     def format_interaction_summary(self) -> str:
         """
-        Formats the interaction by combining the formatted user input and the
-        formatted AI language model output. Use this for summarizing the interaction
-        and for entity extraction. (not using the LLM Intruct keywords)
-
-        Returns:
-            str: The formatted interaction.
+        Formats the interaction for use in summarization and entity extraction
+        (strips OOC blocks, think tags, and "What do you do?" prompts).
         """
 
         def cleanse_text(text: str) -> str:
-            """Cleanses the text by removing OOC and "What do you do" sections."""
             ooc_pattern = r"(?si)\s*[\[\(]OOC:.*?[\)\]]"
             think_pattern = r"(?si)<think>.*?</think>"
             wdyd_pattern = r"(?si)---(?:\s+)?\**What do you do.*"
@@ -50,25 +27,10 @@ class Interaction:
             text = re.sub(think_pattern, "", text)
             return re.sub(wdyd_pattern, "", text)
 
-        clean_user_input = cleanse_text(self._user_input)
-        clean_llm_output = cleanse_text(self._llm_output)
-        return f"Player: {clean_user_input}\n" f"Gamemaster: {clean_llm_output}"
-
-    @property
-    def user_input(self) -> str:
-        return self._user_input
-
-    @property
-    def llm_output(self) -> str:
-        return self._llm_output
-
-    @property
-    def llm_thinking(self) -> str | None:
-        return self._llm_thinking
-
-    @property
-    def llm_thinking_signature(self) -> str | None:
-        return self._llm_thinking_signature
+        return (
+            f"Player: {cleanse_text(self.user_input)}\n"
+            f"Gamemaster: {cleanse_text(self.llm_output)}"
+        )
 
 
 class Entity(BaseModel):

@@ -9,6 +9,30 @@ Your task is to align the input parameters (**Factions Involved**, **Inciting In
 2. **Inciting Incident**: The triggering event that draws the character or coterie into the story (e.g., a masquerade breach, a missing elder, unexpected arrival, etc.)
 3. **Themes**: The narrative tone or emotional undercurrent (e.g., betrayal, ambition, forbidden love, existential dread)
 
+### Step 0: Ground Truth Extraction (MANDATORY FIRST STEP)
+Before analyzing anything else, extract the following from `background` ONLY:
+- Character or coterie status (mortal / ghoul / fledgling / ancilla / elder)
+- Deduced epoch (Modern, Victorian, Dark Ages, Ancient, etc.)
+- Geographic setting and political context
+- Prior Kindred exposure level and established allegiances
+
+All subsequent steps MUST treat these as immutable constraints.
+The fields `factions`, `incitingIncident`, and `themes` are **suggestions only**.
+Treat them as raw material to reshape — not requirements to fulfill.
+
+### Conflict Resolution (apply before any output)
+If ANY field conflicts with `background`, resolve as follows:
+
+| Conflict | Resolution |
+|---|---|
+| Factions don't exist in the deduced epoch | Replace with era-appropriate equivalents |
+| Inciting Incident assumes wrong character status (e.g., Kindred politics for a mortal) | Scale incident to match actual character status |
+| Incident assumes prior Kindred knowledge for a mortal character | Downscale to mundane entry point with organic supernatural reveal |
+| Themes don't fit the character's personal stakes or epoch | Reframe themes around the character's actual motivations and era |
+| Factions conflict with established allegiances in background | Adapt faction relationships to respect background history |
+
+Never compromise `background` to preserve another field.
+
 ### Step 1: Crosscheck Input
 
 1. **Epoch Detection**:
@@ -59,9 +83,10 @@ Your task is to align the input parameters (**Factions Involved**, **Inciting In
 
 ## Approach
 Analyze the input and compare it with the output. Use <think></think> to tag your reasoning process before you output the json.
-**Be sure to analyze all points of Step 1 and Step 2 in correct order. Address every point the steps and provide the output in the given numbered format.**
+**Be sure to analyze all points of Step 0, Step 1 and Step 2 in correct order. Address every point the steps and provide the output in the given numbered format.**
 Under all circumstances provide the json output. Use creative freedom if you think not all information is provided.
 The most important goal is consistency with background.
+Never compromise `background` to preserve another field.
 
 ## JSON Structure
 ### Input

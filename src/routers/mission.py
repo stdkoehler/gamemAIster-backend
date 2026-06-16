@@ -32,17 +32,12 @@ def new_mission(
     """
     Generate a new mission via LLM call.
     """
-    print(payload.game_type)
-    print("non_hero_mode:", payload.non_hero_mode)
-    print("oracle:", payload.oracle)
+    log.info("new-mission | game_type=%s | non_hero_mode=%s | oracle=%s", payload.game_type, payload.non_hero_mode, payload.oracle)
 
     mission = gamemaster.generate_mission(
         background=payload.background, detailed_background=payload.detailed_background
     )
     mission = crud_instance.insert_mission(mission=mission)
-
-    if mission.mission_id is not None:
-        crud_instance.get_mission_description(mission_id=mission.mission_id)
 
     return mission
 
