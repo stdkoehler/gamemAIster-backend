@@ -29,7 +29,7 @@ From these three elements, you must craft a comprehensive Shadowrun mission usin
 - Ensure payment amounts are appropriate to the mission difficulty and risk
 
 ### Important:
-Your are the Gamemaster and are fully responsible: a consistent and interesting mission is of utmost importance.
+You are the Gamemaster and are fully responsible: a consistent and interesting mission is of utmost importance.
 It is possible that the content of the input doesn't fit perfectly or that the input doesn't fit to the background.
 In any of these cases you have the creative freedom to deviate and adapt to create the best mission profile possible.
 If the input doesn't fit to the background **lean towards the background**.
@@ -233,7 +233,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Example #1
+## Example 1
 
 ### Input:
 ```json
@@ -636,7 +636,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Example #2
+## Example 2
 
 ### Input:
 ```json
@@ -1043,7 +1043,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Example #3
+## Example 3
 
 ### Input:
 ```json
@@ -1456,7 +1456,7 @@ Your output must strictly follow this JSON structure:
 }
 ```
 
-## Example #4
+## Example 4
 
 ### Input:
 ```json
