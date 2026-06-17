@@ -3,6 +3,7 @@
 from collections.abc import Generator
 import requests
 import io
+from enum import Enum
 
 from pydantic import BaseModel
 from fastapi import APIRouter, UploadFile, File
@@ -20,8 +21,30 @@ router = APIRouter(
 )
 
 
+class TtsVoice(str, Enum):
+    Callum = "Callum"
+    CaraGee = "CaraGee"
+    JoeyCocoDiaz = "JoeyCocoDiaz"
+    MelHudson = "MelHudson"
+    ShohrehAghdashloo = "ShohrehAghdashloo"
+    StephenFry = "StephenFry"
+    DavidStrathairn = "DavidStrathairn"
+    Drummer = "Drummer"
+    NeilGaiman = "NeilGaiman"
+    LeonardNimoy = "LeonardNimoy"
+    RayPorter = "RayPorter"
+    JasonCarl = "JasonCarl"
+    PoE2_Witch = "PoE2_Witch"
+    PoE2_Shambrin = "PoE2_Shambrin"
+    PoE2_Servi = "PoE2_Servi"
+    PoE2_Doryani = "PoE2_Doryani"
+    PoE2_Tavakai = "PoE2_Tavakai"
+    Cyberpunk_Brigitte = "Cyberpunk_Brigitte"
+
+
 class TtsRequest(BaseModel):
     text: str
+    voice: TtsVoice = TtsVoice.PoE2_Doryani
 
 
 @router.post("/tts")
@@ -32,7 +55,7 @@ def tts(request: TtsRequest) -> StreamingResponse:
     text = request.text.split("---")[0]
     response = requests.post(
         "http://127.0.0.1:8001/inference/text-to-speech",
-        json={"model": "JoeyCocoDiaz", "text": text},
+        json={"model": request.voice.value, "text": text},
         timeout=360,
     )
 
@@ -56,7 +79,7 @@ def tts_stream(request: TtsRequest) -> StreamingResponse:
         text = request.text.split("---")[0]
         with requests.post(
             "http://127.0.0.1:8001/inference/text-to-speech-stream-webm",
-            json={"model": "f5", "voice": "MelHudson", "text": text},
+            json={"model": "qwen_fast", "voice": request.voice.value, "text": text},
             timeout=360,
             stream=True,
         ) as r:
