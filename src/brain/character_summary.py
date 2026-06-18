@@ -32,7 +32,7 @@ def _vampire(c: dict) -> str:
         f"INT {a.get('Intelligence',0)} WIT {a.get('Wits',0)}"
     )
     tracks = f"HP {_track(c.get('health', {}))} WP {_track(c.get('willpower', {}))}"
-    hunger = f"Hunger {c.get('hunger', 0)}/5" if nature in ("vampire", "thin-blood") else ""
+    hunger = f"Hunger {c.get('hunger', 0)}/5" if nature in ("kindred", "thin-blood") else ""
     parts = [f"{c.get('name','?')} ({identity})", attrs, tracks]
     if hunger:
         parts.append(hunger)
