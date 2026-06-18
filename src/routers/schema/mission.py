@@ -42,6 +42,30 @@ class SaveMission(BaseModel):
 class LoadMission(BaseModel):
     mission: Mission
     interactions: list[InteractionSchema]
+    character_sheets: list[CharacterSheetSchema] = []
+
+
+class CharacterSheetSchema(BaseModel):
+    character_sheet_id: int
+    mission_id: int
+    name: str
+    game_type: str
+    content: dict
+    is_protagonist: bool = False
+
+
+class UpsertCharacterSheet(BaseModel):
+    character_sheet_id: int | None = None
+    mission_id: int
+    name: str
+    game_type: str
+    content: dict
+    is_protagonist: bool = False
+
+
+class DeleteCharacterSheet(BaseModel):
+    character_sheet_id: int
+    mission_id: int
 
 
 class NewMissionPayload(BaseModel):

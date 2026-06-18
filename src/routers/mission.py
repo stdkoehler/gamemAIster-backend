@@ -12,7 +12,7 @@ from src.utils.logger import configure_logger
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
-from src.routers.schema.mission import NewMissionPayload
+from src.routers.schema.mission import NewMissionPayload, UpsertCharacterSheet, DeleteCharacterSheet
 
 log = configure_logger("mission")
 
@@ -104,6 +104,7 @@ async def load_mission(
 
     if mission is not None:
         interactions = crud_instance.get_interactions(mission_id=mission_id)
+        character_sheets = crud_instance.get_character_sheets(mission_id=mission_id)
         return api_schema_mission.LoadMission(
             mission=mission,
             interactions=[
@@ -112,6 +113,58 @@ async def load_mission(
                 )
                 for interaction in interactions
             ],
+            character_sheets=character_sheets,
         )
 
     return None
+
+
+@router.get("/character-sheets/{mission_id}")
+async def get_character_sheets(
+    mission_id: int,
+    user: str = Depends(verify_user),
+) -> list[api_schema_mission.CharacterSheetSchema]:
+    """Fetch all character sheets for a mission."""
+    try:
+        crud_instance.verify_mission_user(mission_id=mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
+    return crud_instance.get_character_sheets(mission_id=mission_id)
+
+
+@router.post("/upsert-character-sheet")
+def upsert_character_sheet(
+    sheet: UpsertCharacterSheet,
+    user: str = Depends(verify_user),
+) -> api_schema_mission.CharacterSheetSchema:
+    """Create or update a character sheet for a mission."""
+    try:
+        crud_instance.verify_mission_user(mission_id=sheet.mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
+    try:
+        return crud_instance.upsert_character_sheet(sheet=sheet)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@router.post("/delete-character-sheet")
+def delete_character_sheet(
+    payload: DeleteCharacterSheet,
+    user: str = Depends(verify_user),
+) -> None:
+    """Delete a character sheet."""
+    try:
+        crud_instance.verify_mission_user(mission_id=payload.mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
+    crud_instance.delete_character_sheet(
+        character_sheet_id=payload.character_sheet_id,
+        mission_id=payload.mission_id,
+    )

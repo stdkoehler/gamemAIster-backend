@@ -86,6 +86,18 @@ class SceneMemory(Base):
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+class CharacterSheet(Base):
+    __tablename__ = "CharacterSheet"
+    character_sheet_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    mission_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("Mission.mission_id", ondelete="CASCADE")
+    )
+    name: Mapped[str] = mapped_column(String(100))
+    game_type: Mapped[str] = mapped_column(String(50))
+    content: Mapped[str] = mapped_column(Text)  # JSON blob
+    is_protagonist: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
 class ConversationSummaryMemory(Base):
     """
     Let the LLM create a Summary of the Conversation Memory:
