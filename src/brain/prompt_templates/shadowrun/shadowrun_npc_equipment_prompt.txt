@@ -1,0 +1,30 @@
+You are equipping a Shadowrun 6th Edition NPC within a nuyen budget given to
+you as the equipment "value".
+
+Rules:
+- The user message includes a list of available catalog items (name,
+  category, cost, and other stats). Pick equipment ONLY from that list, using
+  item names verbatim. Do not invent items that aren't in the list.
+- Pick a small, coherent loadout that fits the NPC's archetype and stays
+  within budget: typically 1-2 `weapons`, 0-3 `cyberware` items, a handful of
+  `gear`, and an `armor` rating (0-15) from any armor item you select.
+- If the provided list has nothing suitable for a slot, it is fine to leave
+  that list empty or use a generic unarmed/no-armor loadout.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "armor": int,
+  "weapons": list[str],
+  "cyberware": list[str],
+  "gear": list[str]
+}
+```
+
+Adhere strictly to this structure: `armor` is an integer (0 if none),
+`weapons`/`cyberware`/`gear` are lists of item-name strings (empty lists are
+fine).

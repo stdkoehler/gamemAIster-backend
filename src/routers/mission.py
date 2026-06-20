@@ -7,12 +7,17 @@ from src.auth.auth import verify_user
 from src.crud.crud import crud_instance
 from src.brain.gamemaster import Gamemaster
 
-from src.routers.dependencies import get_gamemaster_for_mission
+from src.routers.dependencies import get_gamemaster_for_mission, get_gamemaster_for_npc
 from src.utils.logger import configure_logger
 
 import src.routers.schema.mission as api_schema_mission
 import src.routers.schema.interaction as api_schema_interaction
-from src.routers.schema.mission import NewMissionPayload, UpsertCharacterSheet, DeleteCharacterSheet
+from src.routers.schema.mission import (
+    NewMissionPayload,
+    UpsertCharacterSheet,
+    DeleteCharacterSheet,
+    CreateNpcPayload,
+)
 
 log = configure_logger("mission")
 
@@ -168,3 +173,36 @@ def delete_character_sheet(
         character_sheet_id=payload.character_sheet_id,
         mission_id=payload.mission_id,
     )
+
+
+@router.post("/create-npc")
+def create_npc(
+    payload: CreateNpcPayload,
+    gamemaster: Gamemaster = Depends(get_gamemaster_for_npc),
+    user: str = Depends(verify_user),
+) -> api_schema_mission.CharacterSheetSchema:
+    """Generate an NPC via the 3-agent pipeline and persist it as a CharacterSheet."""
+    try:
+        crud_instance.verify_mission_user(mission_id=payload.mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
+
+    log.info("create-npc | mission_id=%d | name=%s", payload.mission_id, payload.name)
+
+    try:
+        content = gamemaster.generate_npc(name=payload.name, mission_id=payload.mission_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    sheet = UpsertCharacterSheet(
+        character_sheet_id=None,
+        mission_id=payload.mission_id,
+        name=payload.name,
+        game_type=content["gameType"],
+        content=content,
+        is_protagonist=False,
+        is_npc=True,
+    )
+    return crud_instance.upsert_character_sheet(sheet=sheet)

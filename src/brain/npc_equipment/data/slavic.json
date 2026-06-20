@@ -1,0 +1,1821 @@
+{
+  "metadata": {
+    "system": "Slavic 800 A.D. (Forbidden Lands adaptation)",
+    "source": "Adapted from Forbidden Lands Core Rules and historical Slavic material culture",
+    "era": "Early Medieval Period, circa 800 A.D.",
+    "region": "Baltic Slavic territories (Pomerania, Polabia, Wendish lands)",
+    "total_items": 142,
+    "entry_fields": [
+      "name",
+      "category",
+      "type",
+      "damage",
+      "cost",
+      "weight",
+      "availability",
+      "source",
+      "notes"
+    ],
+    "field_coverage": {
+      "name": "142/142 (100%)",
+      "category": "142/142 (100%)",
+      "type": "142/142 (100%)",
+      "damage": "142/142 (100%)",
+      "cost": "142/142 (100%)",
+      "weight": "142/142 (100%)",
+      "availability": "142/142 (100%)",
+      "source": "142/142 (100%)",
+      "notes": "142/142 (100%)"
+    }
+  },
+  "items": [
+    {
+      "name": "Nóż (Knife)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "1",
+      "cost": "1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Universal utility and fighting knife. Found in every household."
+    },
+    {
+      "name": "Kosa (Sickle)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "1",
+      "cost": "2 silver",
+      "weight": "0.8",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Farming tool repurposed as weapon. Curved blade can hook and slash."
+    },
+    {
+      "name": "Topór (Hand Axe)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "2",
+      "cost": "3 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Versatile tool and weapon. The most common Slavic sidearm."
+    },
+    {
+      "name": "Siekiera (Battle Axe)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "3",
+      "cost": "8 silver",
+      "weight": "2.5",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Purpose-built war axe with broader blade and longer haft."
+    },
+    {
+      "name": "Topór Dwuręczny (Great Axe)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "4",
+      "cost": "15 silver",
+      "weight": "4.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Two-handed axe. Requires great strength to wield effectively."
+    },
+    {
+      "name": "Miecz (Sword)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "3",
+      "cost": "25 silver",
+      "weight": "2.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Double-edged straight sword. Status symbol and effective weapon. Typically 80-90 cm blade."
+    },
+    {
+      "name": "Miecz Długi (Longsword)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "4",
+      "cost": "40 silver",
+      "weight": "2.5",
+      "availability": "Very Rare",
+      "source": "Adapted",
+      "notes": "Longer blade (90-110 cm). Used two-handed. Often of Frankish or Scandinavian origin."
+    },
+    {
+      "name": "Szabla (Sabre)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "3",
+      "cost": "30 silver",
+      "weight": "1.8",
+      "availability": "Very Rare",
+      "source": "Adapted",
+      "notes": "Curved, single-edged cavalry weapon. Influenced by eastern nomadic cultures."
+    },
+    {
+      "name": "Włócznia (Spear)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "2",
+      "cost": "4 silver",
+      "weight": "2.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Primary weapon of Slavic warriors. 2-2.5 meters long. Can be thrown or wielded two-handed."
+    },
+    {
+      "name": "Dzida (Javelin)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "2",
+      "cost": "3 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Lighter throwing spear. Used by skirmishers and hunters."
+    },
+    {
+      "name": "Oszczep (Hunting Spear)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "2",
+      "cost": "5 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Spear with broader head and crossbar, designed for boar and bear hunting."
+    },
+    {
+      "name": "Pika (Pike)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "3",
+      "cost": "6 silver",
+      "weight": "4.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Very long spear (3-4 meters). Used in dense formations."
+    },
+    {
+      "name": "Kij (Club)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "1",
+      "cost": "0.5 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Simple wooden cudgel. Improvised weapon."
+    },
+    {
+      "name": "Maczuga (Mace)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "2",
+      "cost": "6 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Wooden haft with iron or stone head. Effective against armor."
+    },
+    {
+      "name": "Buzdygan (Flanged Mace)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "3",
+      "cost": "12 silver",
+      "weight": "2.5",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Mace with protruding flanges. Concentrates impact force."
+    },
+    {
+      "name": "Cep (Flail)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "2",
+      "cost": "5 silver",
+      "weight": "2.5",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Threshing tool repurposed as weapon. Hinged striking head."
+    },
+    {
+      "name": "Młot (War Hammer)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "3",
+      "cost": "10 silver",
+      "weight": "3.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Two-handed hammer with flat striking face and sometimes a spike."
+    },
+    {
+      "name": "Siekierka (Hatchet)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "1",
+      "cost": "2 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Small axe. Easily concealed and thrown."
+    },
+    {
+      "name": "Krótki Miecz (Short Sword)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "2",
+      "cost": "15 silver",
+      "weight": "1.5",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Blade length 50-60 cm. Secondary weapon or primary for lightly equipped warriors."
+    },
+    {
+      "name": "Nóż Bojowy (Seax)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "2",
+      "cost": "8 silver",
+      "weight": "1.2",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Single-edged fighting knife, often with 30-50 cm blade. Common among northern Slavs."
+    },
+    {
+      "name": "Kosa Bojowa (War Scythe)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "3",
+      "cost": "10 silver",
+      "weight": "3.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Farming scythe with blade reoriented to point forward. Improvised polearm."
+    },
+    {
+      "name": "Widły (Pitchfork)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "1",
+      "cost": "1.5 silver",
+      "weight": "2.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Farming tool with two or three prongs. Improvised weapon."
+    },
+    {
+      "name": "Młot Kowalski (Smith's Hammer)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "2",
+      "cost": "4 silver",
+      "weight": "3.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Heavy forging hammer. Devastating but unwieldy."
+    },
+    {
+      "name": "Bierka (Stick)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "0",
+      "cost": "0",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Simple wooden stick. Minimal damage, but useful for fending off animals."
+    },
+    {
+      "name": "Siekiera Obuchowa (Bearded Axe)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "3",
+      "cost": "10 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Axe with extended lower blade 'beard'. Allows hooking shields."
+    },
+    {
+      "name": "Korbacz (Whip)",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "0.8",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Leather whip. Little damage but can intimidate and control animals."
+    },
+    {
+      "name": "Nóż do Skórowania (Skinning Knife)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "0",
+      "cost": "1.5 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Specialized curved blade for processing animal hides."
+    },
+    {
+      "name": "Dłuto (Chisel)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Woodworking or stoneworking tool. Improvised stabbing weapon."
+    },
+    {
+      "name": "Kosa (Scythe - Full)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "2",
+      "cost": "8 silver",
+      "weight": "3.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Full-length farming scythe. Unwieldy in combat but devastating if it connects."
+    },
+    {
+      "name": "Siekiera Ciesielska (Carpenter's Axe)",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "2",
+      "cost": "4 silver",
+      "weight": "1.8",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Straight-edged axe for woodworking. Can double as weapon."
+    },
+    {
+      "name": "Włócznia z Grotem Kościanym (Bone-Tipped Spear)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "1",
+      "cost": "2 silver",
+      "weight": "2.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Crude spear with bone or antler tip. Used by poorer hunters."
+    },
+    {
+      "name": "Sulica (Light Spear)",
+      "category": "Melee",
+      "type": "Piercing",
+      "damage": "1",
+      "cost": "2 silver",
+      "weight": "1.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Short, light spear for throwing or one-handed use."
+    },
+    {
+      "name": "Łuk (Bow)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "2",
+      "cost": "8 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Simple self-bow made of yew, ash, or elm. Effective range ~50-80 meters."
+    },
+    {
+      "name": "Łuk Długi (Longbow)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "3",
+      "cost": "15 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Taller bow (180-200 cm) with greater power. Requires significant strength."
+    },
+    {
+      "name": "Łuk Kompozytowy (Composite Bow)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "3",
+      "cost": "25 silver",
+      "weight": "1.2",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Made of wood, horn, and sinew. Short and powerful. Eastern influence."
+    },
+    {
+      "name": "Kusza (Crossbow)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "3",
+      "cost": "20 silver",
+      "weight": "3.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Simple wooden crossbow. Slow to reload but devastating. Germanic influence."
+    },
+    {
+      "name": "Proca (Sling)",
+      "category": "Ranged",
+      "type": "Blunt",
+      "damage": "1",
+      "cost": "0.5 silver",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Leather or woven sling for throwing stones. Used by shepherds."
+    },
+    {
+      "name": "Strzały (Arrows, set of 12)",
+      "category": "Ranged",
+      "type": "Ammunition",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Wooden shafts with iron or bone heads."
+    },
+    {
+      "name": "Bełty (Bolts, set of 10)",
+      "category": "Ranged",
+      "type": "Ammunition",
+      "damage": "0",
+      "cost": "2 silver",
+      "weight": "0.8",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Shorter, heavier projectiles for crossbow."
+    },
+    {
+      "name": "Kamienie do Procy (Sling Stones, set of 20)",
+      "category": "Ranged",
+      "type": "Ammunition",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Round stones or lead shot for sling."
+    },
+    {
+      "name": "Oszczep (Javelin)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "2",
+      "cost": "3 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Throwing spear. Effective range ~20-30 meters."
+    },
+    {
+      "name": "Sulica (Light Javelin)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "1",
+      "cost": "2 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Very light throwing spear. Can be thrown further but less damage."
+    },
+    {
+      "name": "Łuk Myśliwski (Hunting Bow)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "1",
+      "cost": "5 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Lighter bow for hunting small game. Quieter and easier to draw."
+    },
+    {
+      "name": "Harpon (Harpoon)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "2",
+      "cost": "6 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Barbed spear with rope attachment for fishing or sea hunting."
+    },
+    {
+      "name": "Łuk Dziecięcy (Children's Bow)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "0",
+      "cost": "2 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Small bow for training youths."
+    },
+    {
+      "name": "Kusza Mała (Light Crossbow)",
+      "category": "Ranged",
+      "type": "Piercing",
+      "damage": "2",
+      "cost": "12 silver",
+      "weight": "2.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Smaller crossbow. Faster to reload but less power."
+    },
+    {
+      "name": "Strzały z Grotem Płomiennym (Fire Arrows, set of 5)",
+      "category": "Ranged",
+      "type": "Incendiary",
+      "damage": "1",
+      "cost": "3 silver",
+      "weight": "0.5",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Arrows with resin-soaked heads for igniting targets."
+    },
+    {
+      "name": "Tarcza Okrągła (Round Shield)",
+      "category": "Shield",
+      "type": "Wood/Iron",
+      "damage": "0",
+      "cost": "8 silver",
+      "weight": "4.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Classic Slavic shield. 80-100 cm diameter. Wooden planks with iron boss and rim."
+    },
+    {
+      "name": "Tarcza Migdałowata (Kite Shield)",
+      "category": "Shield",
+      "type": "Wood/Iron",
+      "damage": "0",
+      "cost": "12 silver",
+      "weight": "5.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Teardrop-shaped shield. Provides better leg protection. Frankish influence."
+    },
+    {
+      "name": "Tarcza Mała (Buckler)",
+      "category": "Shield",
+      "type": "Iron",
+      "damage": "1",
+      "cost": "6 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Small iron shield (30-40 cm). Used for parrying."
+    },
+    {
+      "name": "Tarcza Półokrągła (Half-Round Shield)",
+      "category": "Shield",
+      "type": "Wood/Iron",
+      "damage": "0",
+      "cost": "10 silver",
+      "weight": "4.5",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Oval or half-round shape. Common among Baltic tribes."
+    },
+    {
+      "name": "Tarcza Pleciona (Wicker Shield)",
+      "category": "Shield",
+      "type": "Wicker",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "2.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Lightweight woven shield. Offers minimal protection but very cheap."
+    },
+    {
+      "name": "Puklerz (Shield - Hide)",
+      "category": "Shield",
+      "type": "Leather/Hide",
+      "damage": "0",
+      "cost": "4 silver",
+      "weight": "3.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Rawhide stretched over wooden frame. Common among poorer warriors."
+    },
+    {
+      "name": "Skórzana Kurtka (Leather Jerkin)",
+      "category": "Armor",
+      "type": "Light Leather",
+      "damage": "0",
+      "cost": "5 silver",
+      "weight": "2.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Thickened leather tunic. Basic protection against cuts."
+    },
+    {
+      "name": "Skórzany Pancerz (Leather Armor)",
+      "category": "Armor",
+      "type": "Medium Leather",
+      "damage": "1",
+      "cost": "15 silver",
+      "weight": "5.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Reinforced leather with multiple layers or boiled leather plates."
+    },
+    {
+      "name": "Łuskowy Pancerz (Scale Armor)",
+      "category": "Armor",
+      "type": "Scale",
+      "damage": "2",
+      "cost": "35 silver",
+      "weight": "8.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Iron or bone scales sewn onto leather backing. Byzantine influence."
+    },
+    {
+      "name": "Kolczuga (Chainmail)",
+      "category": "Armor",
+      "type": "Chainmail",
+      "damage": "2",
+      "cost": "50 silver",
+      "weight": "10.0",
+      "availability": "Very Rare",
+      "source": "Adapted",
+      "notes": "Interlocking iron rings. Premium armor. Usually Frankish or Scandinavian in origin."
+    },
+    {
+      "name": "Płytowy Pancerz (Lamellar Armor)",
+      "category": "Armor",
+      "type": "Lamellar",
+      "damage": "3",
+      "cost": "60 silver",
+      "weight": "12.0",
+      "availability": "Very Rare",
+      "source": "Adapted",
+      "notes": "Small rectangular plates laced together. Eastern influence. Excellent protection."
+    },
+    {
+      "name": "Skórzane Naramienniki (Leather Pauldrons)",
+      "category": "Armor",
+      "type": "Light Leather",
+      "damage": "0",
+      "cost": "4 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Shoulder protection, often reinforced with metal strips."
+    },
+    {
+      "name": "Skórzane Nagolenniki (Leather Greaves)",
+      "category": "Armor",
+      "type": "Light Leather",
+      "damage": "0",
+      "cost": "4 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Shin protection."
+    },
+    {
+      "name": "Żelazne Nagolenniki (Iron Greaves)",
+      "category": "Armor",
+      "type": "Metal",
+      "damage": "1",
+      "cost": "12 silver",
+      "weight": "3.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Iron shin guards. Worn by wealthier warriors."
+    },
+    {
+      "name": "Pancerz z Kości (Bone Armor)",
+      "category": "Armor",
+      "type": "Bone",
+      "damage": "1",
+      "cost": "10 silver",
+      "weight": "6.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Bone plates sewn onto leather. Used by poorer tribes."
+    },
+    {
+      "name": "Skórzana Kamizelka (Leather Vest)",
+      "category": "Armor",
+      "type": "Light Leather",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Simple leather vest. Minimal protection but cheap and common."
+    },
+    {
+      "name": "Pancerz Wzorzysty (Embroidered Armor)",
+      "category": "Armor",
+      "type": "Heavy Leather",
+      "damage": "1",
+      "cost": "20 silver",
+      "weight": "6.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Decorated leather armor with metal studs or embroidery. Status symbol."
+    },
+    {
+      "name": "Płaszcz Bojowy (War Coat)",
+      "category": "Armor",
+      "type": "Padded",
+      "damage": "0",
+      "cost": "6 silver",
+      "weight": "4.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Thick padded coat. Worn under mail or as standalone armor."
+    },
+    {
+      "name": "Skórzana Czapka (Leather Cap)",
+      "category": "Helmet",
+      "type": "Light Leather",
+      "damage": "0",
+      "cost": "2 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Simple leather skullcap. Minimal head protection."
+    },
+    {
+      "name": "Żelazny Szyszak (Iron Helmet)",
+      "category": "Helmet",
+      "type": "Metal",
+      "damage": "2",
+      "cost": "15 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Simple conical iron helmet with nasal guard. Standard warrior helmet."
+    },
+    {
+      "name": "Hełm z Przyłbicą (Helmet with Visor)",
+      "category": "Helmet",
+      "type": "Metal",
+      "damage": "2",
+      "cost": "25 silver",
+      "weight": "2.5",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Full-face helmet. Provides excellent protection but restricts vision."
+    },
+    {
+      "name": "Hełm Normański (Norman Helmet)",
+      "category": "Helmet",
+      "type": "Metal",
+      "damage": "2",
+      "cost": "20 silver",
+      "weight": "2.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Conical helmet with nasal and cheek guards. Scandinavian influence."
+    },
+    {
+      "name": "Skórzany Hełm z Żelaznymi Paskami (Leather Helmet with Iron Bands)",
+      "category": "Helmet",
+      "type": "Medium Leather",
+      "damage": "1",
+      "cost": "8 silver",
+      "weight": "1.5",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Leather helmet reinforced with iron strips. Good compromise protection."
+    },
+    {
+      "name": "Czapka Futrzana (Fur Cap)",
+      "category": "Helmet",
+      "type": "Fur",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Warm fur hat. Minimal protection but essential in winter."
+    },
+    {
+      "name": "Nóż (Knife)",
+      "category": "Tools",
+      "type": "Edged",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Utility knife for everyday tasks."
+    },
+    {
+      "name": "Krzesiwo (Fire Steel)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Strike fire with flint. Essential for starting fires."
+    },
+    {
+      "name": "Krzemień (Flint)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.1",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Flint stone for fire-starting."
+    },
+    {
+      "name": "Hubka (Tinder)",
+      "category": "Tools",
+      "type": "Consumable",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.1",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Dried fungus or cloth for catching sparks."
+    },
+    {
+      "name": "Świeca (Candle)",
+      "category": "Tools",
+      "type": "Light",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.1",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Tallow or beeswax candle. Burns for several hours."
+    },
+    {
+      "name": "Łuczywo (Torch)",
+      "category": "Tools",
+      "type": "Light",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Resin-soaked wood. Burns brightly for ~1 hour."
+    },
+    {
+      "name": "Latarnia (Lantern)",
+      "category": "Tools",
+      "type": "Light",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "1.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Metal lantern with horn or glass panels. Protected flame."
+    },
+    {
+      "name": "Wiadro (Bucket)",
+      "category": "Tools",
+      "type": "Container",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Wooden bucket. For carrying water or other liquids."
+    },
+    {
+      "name": "Liną (Rope, 10m)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Hemp rope. Essential for climbing, tying, and construction."
+    },
+    {
+      "name": "Siekiera (Axe)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Woodcutter's axe. Essential for gathering firewood."
+    },
+    {
+      "name": "Piła (Saw)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "2 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Hand saw for woodworking."
+    },
+    {
+      "name": "Dłuto (Chisel)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Woodworking chisel."
+    },
+    {
+      "name": "Wiertło (Drill)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "2 silver",
+      "weight": "0.8",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Hand drill for making holes in wood or bone."
+    },
+    {
+      "name": "Młotek (Hammer)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "1.5 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "General-purpose hammer."
+    },
+    {
+      "name": "Gwoździe (Nails, set of 50)",
+      "category": "Tools",
+      "type": "Consumable",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Iron nails. For construction and repairs."
+    },
+    {
+      "name": "Igła (Needle)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.01",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Bone or iron sewing needle."
+    },
+    {
+      "name": "Nić (Thread)",
+      "category": "Tools",
+      "type": "Consumable",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.05",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Linen or wool thread for sewing."
+    },
+    {
+      "name": "Skóra (Leather, square foot)",
+      "category": "Tools",
+      "type": "Material",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Tanned leather for crafting repairs."
+    },
+    {
+      "name": "Tkanina (Cloth, meter)",
+      "category": "Tools",
+      "type": "Material",
+      "damage": "0",
+      "cost": "0.3 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Wool or linen fabric."
+    },
+    {
+      "name": "Węgiel (Charcoal, sack)",
+      "category": "Tools",
+      "type": "Fuel",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "5.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "For fuel and forging."
+    },
+    {
+      "name": "Drewno (Firewood, bundle)",
+      "category": "Tools",
+      "type": "Fuel",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "10.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Bundled firewood."
+    },
+    {
+      "name": "Worek (Sack)",
+      "category": "Tools",
+      "type": "Container",
+      "damage": "0",
+      "cost": "0.3 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Coarse woven sack for carrying goods."
+    },
+    {
+      "name": "Miech (Bellows)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "4 silver",
+      "weight": "2.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "For smithing and fire-making."
+    },
+    {
+      "name": "Kowadło (Anvil)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "20 silver",
+      "weight": "50.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Iron anvil for smithing. Very heavy and expensive."
+    },
+    {
+      "name": "Garniec (Pot)",
+      "category": "Tools",
+      "type": "Container",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Clay cooking pot."
+    },
+    {
+      "name": "Naczynie Drewniane (Wooden Bowl)",
+      "category": "Tools",
+      "type": "Container",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Carved wooden bowl."
+    },
+    {
+      "name": "Łyżka (Spoon)",
+      "category": "Tools",
+      "type": "Utensil",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.05",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Wooden spoon."
+    },
+    {
+      "name": "Nóż do Rzeźbienia (Carving Knife)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Small knife for wood carving."
+    },
+    {
+      "name": "Wędka (Fishing Rod)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Simple fishing pole with line and hook."
+    },
+    {
+      "name": "Sieć (Fishing Net)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "3.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Woven net for fishing."
+    },
+    {
+      "name": "Pułapka (Trap)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Small animal trap."
+    },
+    {
+      "name": "Miotła (Broom)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "For cleaning."
+    },
+    {
+      "name": "Paznokieć (Nail, individual)",
+      "category": "Tools",
+      "type": "Consumable",
+      "damage": "0",
+      "cost": "0.02 silver",
+      "weight": "0.01",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Single iron nail."
+    },
+    {
+      "name": "Kociołek (Cauldron)",
+      "category": "Tools",
+      "type": "Container",
+      "damage": "0",
+      "cost": "8 silver",
+      "weight": "5.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Iron cooking cauldron. Expensive but essential for large households."
+    },
+    {
+      "name": "Kamień Szlifierski (Whetstone)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "For sharpening blades."
+    },
+    {
+      "name": "Płótno (Canvas, meter)",
+      "category": "Tools",
+      "type": "Material",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Heavy linen fabric for tents or coverings."
+    },
+    {
+      "name": "Wosk (Wax, block)",
+      "category": "Tools",
+      "type": "Material",
+      "damage": "0",
+      "cost": "0.3 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Beeswax for sealing, waterproofing, or candle-making."
+    },
+    {
+      "name": "Żywica (Resin, jar)",
+      "category": "Tools",
+      "type": "Material",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Tree resin for waterproofing, glue, or torches."
+    },
+    {
+      "name": "Wrzeciono (Spindle)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.1",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "For spinning thread."
+    },
+    {
+      "name": "Krosno (Loom)",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "10 silver",
+      "weight": "20.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Weaving loom. Requires significant space."
+    },
+    {
+      "name": "Chleb (Bread, loaf)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Rye or barley bread. Lasts several days."
+    },
+    {
+      "name": "Kasza (Porridge, portion)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.05 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Cereal porridge. Staple food."
+    },
+    {
+      "name": "Mięso Suszone (Dried Meat, portion)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.3 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Dried or smoked meat. Lasts months."
+    },
+    {
+      "name": "Ryba Suszona (Dried Fish, portion)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Dried fish. Common in coastal areas."
+    },
+    {
+      "name": "Miód (Honey, jar)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Honey. Used as sweetener and for mead."
+    },
+    {
+      "name": "Sól (Salt, pouch)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.3 silver",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Essential preservative and seasoning."
+    },
+    {
+      "name": "Woda (Water, skin)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "1.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Waterskin containing fresh water."
+    },
+    {
+      "name": "Piwo (Beer, jug)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Ale or beer. Common drink for all ages."
+    },
+    {
+      "name": "Miód Pitny (Mead, jug)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "1.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Fermented honey drink. Ceremonial and celebratory."
+    },
+    {
+      "name": "Kwas (Kvass, jug)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Fermented rye drink. Refreshing and slightly alcoholic."
+    },
+    {
+      "name": "Orzechy (Nuts, pouch)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.1 silver",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Forest nuts. Good trail food."
+    },
+    {
+      "name": "Suszone Owoce (Dried Fruit, pouch)",
+      "category": "Food",
+      "type": "Rations",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Dried apples, pears, or berries."
+    },
+    {
+      "name": "Bursztyn (Amber, small piece)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "2 silver",
+      "weight": "0.05",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Baltic amber. Highly valued trade good."
+    },
+    {
+      "name": "Futra (Furs, bundle)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "5 silver",
+      "weight": "2.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Beaver, marten, or squirrel furs. Valuable export."
+    },
+    {
+      "name": "Wosk (Wax, block)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Beeswax. Important export for church candles."
+    },
+    {
+      "name": "Miód (Honey, large jar)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "2 silver",
+      "weight": "2.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Honey. Traded in bulk."
+    },
+    {
+      "name": "Żelazo (Iron, ingot)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "8 silver",
+      "weight": "5.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Raw iron. Essential for smithing."
+    },
+    {
+      "name": "Srebro (Silver, small bar)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "20 silver",
+      "weight": "0.2",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Silver bullion. Currency and prestige item."
+    },
+    {
+      "name": "Sól (Salt, large sack)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "10.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Salt in bulk. Essential trade good."
+    },
+    {
+      "name": "Płótno (Linen, bolt)",
+      "category": "Trade",
+      "type": "Good",
+      "damage": "0",
+      "cost": "4 silver",
+      "weight": "3.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "High-quality linen fabric."
+    },
+    {
+      "name": "Worek Płócienny (Canvas Bag)",
+      "category": "Container",
+      "type": "Bag",
+      "damage": "0",
+      "cost": "0.3 silver",
+      "weight": "0.3",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Simple bag. Holds ~10 kg."
+    },
+    {
+      "name": "Torba Skórzana (Leather Satchel)",
+      "category": "Container",
+      "type": "Bag",
+      "damage": "0",
+      "cost": "1 silver",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Sturdy leather bag with strap."
+    },
+    {
+      "name": "Plecak (Backpack)",
+      "category": "Container",
+      "type": "Bag",
+      "damage": "0",
+      "cost": "3 silver",
+      "weight": "1.0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Frame backpack. Holds ~25 kg."
+    },
+    {
+      "name": "Skrzynia (Chest)",
+      "category": "Container",
+      "type": "Box",
+      "damage": "0",
+      "cost": "5 silver",
+      "weight": "15.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Wooden chest with iron bands and lock."
+    },
+    {
+      "name": "Mieszek (Pouch)",
+      "category": "Container",
+      "type": "Pouch",
+      "damage": "0",
+      "cost": "0.2 silver",
+      "weight": "0.05",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Small leather pouch for coins or small items."
+    },
+    {
+      "name": "Bułłak (Waterskin)",
+      "category": "Container",
+      "type": "Bag",
+      "damage": "0",
+      "cost": "0.5 silver",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Leather waterskin. Holds ~2 liters."
+    },
+    {
+      "name": "Koń (Horse, riding)",
+      "category": "Mount",
+      "type": "Animal",
+      "damage": "0",
+      "cost": "30 silver",
+      "weight": "0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Riding horse. Status symbol and essential for travel."
+    },
+    {
+      "name": "Koń (Warhorse)",
+      "category": "Mount",
+      "type": "Animal",
+      "damage": "0",
+      "cost": "80 silver",
+      "weight": "0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Trained warhorse. Very expensive."
+    },
+    {
+      "name": "Wół (Ox)",
+      "category": "Mount",
+      "type": "Animal",
+      "damage": "0",
+      "cost": "15 silver",
+      "weight": "0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Work animal. Plows and pulls carts."
+    },
+    {
+      "name": "Wóz (Cart)",
+      "category": "Transport",
+      "type": "Vehicle",
+      "damage": "0",
+      "cost": "20 silver",
+      "weight": "0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Two-wheeled cart. Drawn by ox or horse."
+    },
+    {
+      "name": "Łódź (Boat)",
+      "category": "Transport",
+      "type": "Vehicle",
+      "damage": "0",
+      "cost": "50 silver",
+      "weight": "0",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Dugout canoe or plank boat. For rivers and coastal waters."
+    }
+  ],
+  "npc_equipment_sets": [
+    {
+      "id": "farmer",
+      "name": "Gospodarz (Farmer)",
+      "description": "A free farmer. Works the land and provides for his family.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Nóż (Knife)",
+          "quantity": 1
+        },
+        {
+          "name": "Siekiera (Axe)",
+          "quantity": 1
+        },
+        {
+          "name": "Kosa (Sickle)",
+          "quantity": 1
+        },
+        {
+          "name": "Kij (Club)",
+          "quantity": 1
+        },
+        {
+          "name": "Worek Płócienny (Canvas Bag)",
+          "quantity": 1
+        },
+        {
+          "name": "Krzesiwo (Fire Steel)",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "warrior",
+      "name": "Wojownik (Warrior)",
+      "description": "A clan warrior. Armed and ready for combat.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Włócznia (Spear)",
+          "quantity": 1
+        },
+        {
+          "name": "Topór (Hand Axe)",
+          "quantity": 1
+        },
+        {
+          "name": "Nóż (Knife)",
+          "quantity": 1
+        },
+        {
+          "name": "Tarcza Okrągła (Round Shield)",
+          "quantity": 1
+        },
+        {
+          "name": "Skórzana Kurtka (Leather Jerkin)",
+          "quantity": 1
+        },
+        {
+          "name": "Żelazny Szyszak (Iron Helmet)",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "wealthy_warrior",
+      "name": "Zamożny Wojownik (Wealthy Warrior)",
+      "description": "A well-equipped warrior of high status.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Miecz (Sword)",
+          "quantity": 1
+        },
+        {
+          "name": "Włócznia (Spear)",
+          "quantity": 1
+        },
+        {
+          "name": "Nóż Bojowy (Seax)",
+          "quantity": 1
+        },
+        {
+          "name": "Tarcza Okrągła (Round Shield)",
+          "quantity": 1
+        },
+        {
+          "name": "Kolczuga (Chainmail)",
+          "quantity": 1
+        },
+        {
+          "name": "Hełm z Przyłbicą (Helmet with Visor)",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "hunter",
+      "name": "Myśliwy (Hunter)",
+      "description": "A forest hunter. Provides meat and furs.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Łuk (Bow)",
+          "quantity": 1
+        },
+        {
+          "name": "Strzały (Arrows, set of 12)",
+          "quantity": 1
+        },
+        {
+          "name": "Nóż (Knife)",
+          "quantity": 1
+        },
+        {
+          "name": "Topór (Hand Axe)",
+          "quantity": 1
+        },
+        {
+          "name": "Skórzana Kamizelka (Leather Vest)",
+          "quantity": 1
+        },
+        {
+          "name": "Worek Płócienny (Canvas Bag)",
+          "quantity": 1
+        },
+        {
+          "name": "Pułapka (Trap)",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "merchant",
+      "name": "Kupiec (Merchant)",
+      "description": "A traveling trader.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Nóż (Knife)",
+          "quantity": 1
+        },
+        {
+          "name": "Miecz Krótki (Short Sword)",
+          "quantity": 1
+        },
+        {
+          "name": "Torba Skórzana (Leather Satchel)",
+          "quantity": 1
+        },
+        {
+          "name": "Koń (Horse, riding)",
+          "quantity": 1
+        },
+        {
+          "name": "Wóz (Cart)",
+          "quantity": 1
+        },
+        {
+          "name": "Waga (Scale)",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "craftsman",
+      "name": "Rzemieślnik (Craftsman)",
+      "description": "A village smith, potter, or woodworker.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Nóż (Knife)",
+          "quantity": 1
+        },
+        {
+          "name": "Siekiera (Axe)",
+          "quantity": 1
+        },
+        {
+          "name": "Młotek (Hammer)",
+          "quantity": 1
+        },
+        {
+          "name": "Skóra (Leather, square foot)",
+          "quantity": 1
+        },
+        {
+          "name": "Krzesiwo (Fire Steel)",
+          "quantity": 1
+        },
+        {
+          "name": "Worek Płócienny (Canvas Bag)",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "fisherman",
+      "name": "Rybak (Fisherman)",
+      "description": "A coastal or river fisherman.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Nóż (Knife)",
+          "quantity": 1
+        },
+        {
+          "name": "Wędka (Fishing Rod)",
+          "quantity": 1
+        },
+        {
+          "name": "Sieć (Fishing Net)",
+          "quantity": 1
+        },
+        {
+          "name": "Łódź (Boat)",
+          "quantity": 1
+        },
+        {
+          "name": "Worek Płócienny (Canvas Bag)",
+          "quantity": 1
+        }
+      ]
+    }
+  ]
+}

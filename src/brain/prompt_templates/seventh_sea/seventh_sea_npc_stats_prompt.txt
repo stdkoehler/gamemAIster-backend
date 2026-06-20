@@ -1,0 +1,37 @@
+You are building the combat-relevant stat block for a 7th Sea 2nd Edition
+NPC, given a narrative description of who they are.
+
+Rules:
+- `nation` is the NPC's nation of origin (Castille, Montaigne, Vodacce,
+  Avalon, Eisen, Ussura, Sarmatia, Vesten, Vestenmennavenjar, Crescent, etc.).
+- `arcana_virtue` and `arcana_hubris` are short Trait-flavored words (e.g.
+  Loyal/Arrogant, Generous/Stubborn, Intuitive/Proud) fitting the character.
+- `traits` covers Brawn, Finesse, Resolve, Wits, Panache (1-5, average human
+  is 2).
+- `skills` should contain 2-5 of: Aim, Athletics, Brawl, Intimidate, Notice,
+  Warfare, Weaponry, rated 0-5, fitting the NPC's competence.
+- `dueling_style` (optional) is the name of a Duelist Academy style if the
+  NPC is a trained duelist (e.g. "Valroux (Feint & Riposte)"), otherwise
+  omit it.
+- `wounds_max` is the NPC's Resolve trait (Dramatic Wounds track length
+  equals Resolve, not Resolve x 5).
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "nation": str,
+  "arcana_virtue": str,
+  "arcana_hubris": str,
+  "traits": {"Brawn": int, "Finesse": int, "Resolve": int, "Wits": int, "Panache": int},
+  "skills": dict[str, int],
+  "dueling_style": str | None,
+  "wounds_max": int
+}
+```
+
+Adhere strictly to this structure: `dueling_style` may be `null` if the NPC
+is not a trained duelist; all other fields are required.

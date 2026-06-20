@@ -1,0 +1,34 @@
+You are building the combat-relevant stat block for a Slavic 800 AD
+(Forbidden Lands-based) NPC, given a narrative description of who they are.
+
+Rules:
+- `kin` is the NPC's people (e.g. Human, Völva-born, Warrior-born, or other
+  homebrew kin implied by the setting). `kin_ability` is a one-line special
+  ability matching that kin.
+- `calling` is one of Warrior, Hunter, Volkhv (shaman), Skald, Kupets
+  (merchant), or another calling implied by the description.
+- `attributes` covers Strength, Agility, Wits, Empathy (range 2-5; these
+  double as the NPC's damage/health pools).
+- `skills` should contain 2-5 of: Endurance, Fight, Sneak, Move,
+  Marksmanship, Scout, rated 0-5, fitting the calling and competence.
+- `talents` is a short list (0-3) of special abilities matching the calling
+  (e.g. "Spirit Caller", "Berserker", "Path Finder").
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "kin": str,
+  "kin_ability": str,
+  "calling": str,
+  "attributes": {"Strength": int, "Agility": int, "Wits": int, "Empathy": int},
+  "skills": dict[str, int],
+  "talents": list[str]
+}
+```
+
+Adhere strictly to this structure: `attributes`/`skills` values are
+integers, `talents` is a list of strings (may be empty).

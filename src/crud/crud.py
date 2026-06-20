@@ -186,20 +186,26 @@ class CRUD:
                 for result in results
             ]
 
-    def get_interactions(self, mission_id: int) -> list[Interaction]:
+    def get_interactions(
+        self, mission_id: int, limit: int | None = None
+    ) -> list[Interaction]:
         with self._sessionmaker() as session:
-            stmt = (
-                select(ConversationMemory)
-                .join(
-                    Mission,
-                    and_(
-                        Mission.mission_id == ConversationMemory.mission_id,
-                        Mission.mission_id == mission_id,
-                    ),
-                )
-                .order_by(ConversationMemory.conversation_memory_id.asc())
+            stmt = select(ConversationMemory).join(
+                Mission,
+                and_(
+                    Mission.mission_id == ConversationMemory.mission_id,
+                    Mission.mission_id == mission_id,
+                ),
             )
+            if limit is not None:
+                stmt = stmt.order_by(
+                    ConversationMemory.conversation_memory_id.desc()
+                ).limit(limit)
+            else:
+                stmt = stmt.order_by(ConversationMemory.conversation_memory_id.asc())
             result = session.execute(stmt).scalars().all()
+            if limit is not None:
+                result = list(reversed(result))
             return [
                 Interaction(
                     id_=memory.conversation_memory_id,
@@ -439,6 +445,7 @@ class CRUD:
                     game_type=row.game_type,
                     content=json.loads(row.content),
                     is_protagonist=row.is_protagonist,
+                    is_npc=row.is_npc,
                 )
                 for row in rows
             ]
@@ -468,6 +475,7 @@ class CRUD:
                 row.game_type = sheet.game_type
                 row.content = json.dumps(sheet.content)
                 row.is_protagonist = sheet.is_protagonist
+                row.is_npc = sheet.is_npc
             else:
                 row = CharacterSheet(
                     mission_id=sheet.mission_id,
@@ -475,6 +483,7 @@ class CRUD:
                     game_type=sheet.game_type,
                     content=json.dumps(sheet.content),
                     is_protagonist=sheet.is_protagonist,
+                    is_npc=sheet.is_npc,
                 )
                 session.add(row)
                 session.flush()
@@ -487,6 +496,7 @@ class CRUD:
                 game_type=row.game_type,
                 content=json.loads(row.content),
                 is_protagonist=row.is_protagonist,
+                is_npc=row.is_npc,
             )
 
     def delete_character_sheet(self, character_sheet_id: int, mission_id: int) -> None:

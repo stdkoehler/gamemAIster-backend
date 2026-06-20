@@ -830,6 +830,7 @@ class LLMClientAnthropicBase(LLMClientBase):
         super().__init__(config)
         self._client = anthropic.Anthropic(api_key=api_key, base_url=base_url)
         self._model = model
+        self._base_url = base_url
 
     def _convert_messages(
         self, messages: list[Message]
@@ -1085,7 +1086,6 @@ class LLMClientOpenRouter(LLMClientBase):
             config: Optional LLM configuration
         """
         super().__init__(config=config, model_name=model)
-        self._api_key = api_key
         self._model = model
         self._base_url = "https://openrouter.ai/api/v1"
         self._chat_url = f"{self._base_url}/chat/completions"

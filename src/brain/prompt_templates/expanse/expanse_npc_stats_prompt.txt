@@ -1,0 +1,37 @@
+You are building the combat-relevant stat block for a The Expanse RPG (AGE
+System) NPC, given a narrative description of who they are.
+
+Rules:
+- `origin` is Earther, Martian, or Belter. `background` is a short label
+  (e.g. Military, Criminal, Academic, Colonist). `faction` is the NPC's
+  allegiance (e.g. UN, MCR, OPA, Independent).
+- `abilities` covers Accuracy, Communication, Constitution, Dexterity,
+  Fighting, Intelligence, Perception, Strength, Willpower (range -2 to 4;
+  0 is average, 2-3 for a competent professional).
+- `focuses` is a short list of free-text focuses relevant to combat/field
+  work (e.g. "Accuracy (Pistols)", "Fighting (Heavy Weapons)",
+  "Constitution (Stamina)").
+- `speed` = 10 + Dexterity. `defense` = 10 + Dexterity.
+- `health_max` is 30-50 for a typical NPC (higher for tougher/military
+  NPCs).
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "origin": str,
+  "background": str,
+  "faction": str,
+  "abilities": {"Accuracy": int, "Communication": int, "Constitution": int, "Dexterity": int, "Fighting": int, "Intelligence": int, "Perception": int, "Strength": int, "Willpower": int},
+  "focuses": list[str],
+  "speed": int,
+  "defense": int,
+  "health_max": int
+}
+```
+
+Adhere strictly to this structure: `abilities` values are integers,
+`focuses` is a list of strings (may be empty), all other fields required.
