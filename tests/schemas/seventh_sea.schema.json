@@ -1,0 +1,316 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/SeventhSeaCharacter",
+  "definitions": {
+    "SeventhSeaCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "seventh_sea"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nation": {
+          "type": "string"
+        },
+        "religion": {
+          "type": "string"
+        },
+        "arcana": {
+          "type": "object",
+          "properties": {
+            "virtue": {
+              "type": "string"
+            },
+            "hubris": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "virtue",
+            "hubris"
+          ],
+          "additionalProperties": false
+        },
+        "description": {
+          "type": "string"
+        },
+        "traits": {
+          "type": "object",
+          "properties": {
+            "Brawn": {
+              "type": "number"
+            },
+            "Finesse": {
+              "type": "number"
+            },
+            "Resolve": {
+              "type": "number"
+            },
+            "Wits": {
+              "type": "number"
+            },
+            "Panache": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Brawn",
+            "Finesse",
+            "Resolve",
+            "Wits",
+            "Panache"
+          ],
+          "additionalProperties": false
+        },
+        "skills": {
+          "type": "object",
+          "properties": {
+            "Aim": {
+              "type": "number"
+            },
+            "Athletics": {
+              "type": "number"
+            },
+            "Brawl": {
+              "type": "number"
+            },
+            "Convince": {
+              "type": "number"
+            },
+            "Empathy": {
+              "type": "number"
+            },
+            "Hide": {
+              "type": "number"
+            },
+            "Intimidate": {
+              "type": "number"
+            },
+            "Notice": {
+              "type": "number"
+            },
+            "Perform": {
+              "type": "number"
+            },
+            "Ride": {
+              "type": "number"
+            },
+            "Sailing": {
+              "type": "number"
+            },
+            "Tempt": {
+              "type": "number"
+            },
+            "Theft": {
+              "type": "number"
+            },
+            "Warfare": {
+              "type": "number"
+            },
+            "Weaponry": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Aim",
+            "Athletics",
+            "Brawl",
+            "Convince",
+            "Empathy",
+            "Hide",
+            "Intimidate",
+            "Notice",
+            "Perform",
+            "Ride",
+            "Sailing",
+            "Tempt",
+            "Theft",
+            "Warfare",
+            "Weaponry"
+          ],
+          "additionalProperties": false
+        },
+        "advantages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sorcery": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "knacks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "knacks"
+          ],
+          "additionalProperties": false
+        },
+        "duelingStyle": {
+          "type": "string"
+        },
+        "secretSociety": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "rank": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "rank"
+          ],
+          "additionalProperties": false
+        },
+        "reputation": {
+          "type": "number"
+        },
+        "corruption": {
+          "type": "number"
+        },
+        "wealth": {
+          "type": "number"
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SeventhSeaWeapon"
+          }
+        },
+        "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "wounds": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "heroPoints": {
+          "type": "number"
+        },
+        "backgrounds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "nation",
+        "arcana",
+        "description",
+        "traits",
+        "skills",
+        "advantages",
+        "wounds",
+        "heroPoints"
+      ],
+      "additionalProperties": false
+    },
+    "SeventhSeaWeapon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "trait": {
+          "type": "string",
+          "enum": [
+            "Brawn",
+            "Finesse",
+            "Wits"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "fencing",
+            "heavy",
+            "firearm",
+            "improvised",
+            "thrown"
+          ]
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Dueling",
+              "Paired",
+              "Reload",
+              "Reach",
+              "Gunpowder",
+              "Defensive"
+            ]
+          }
+        }
+      },
+      "required": [
+        "name",
+        "trait",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/ExpanseCharacter",
+  "definitions": {
+    "ExpanseCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "expanse"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string"
+        },
+        "faction": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "abilities": {
+          "type": "object",
+          "properties": {
+            "Accuracy": {
+              "type": "number"
+            },
+            "Communication": {
+              "type": "number"
+            },
+            "Constitution": {
+              "type": "number"
+            },
+            "Dexterity": {
+              "type": "number"
+            },
+            "Fighting": {
+              "type": "number"
+            },
+            "Intelligence": {
+              "type": "number"
+            },
+            "Perception": {
+              "type": "number"
+            },
+            "Strength": {
+              "type": "number"
+            },
+            "Willpower": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Accuracy",
+            "Communication",
+            "Constitution",
+            "Dexterity",
+            "Fighting",
+            "Intelligence",
+            "Perception",
+            "Strength",
+            "Willpower"
+          ],
+          "additionalProperties": false
+        },
+        "focuses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "talents": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "speed": {
+          "type": "number"
+        },
+        "defense": {
+          "type": "number"
+        },
+        "toughness": {
+          "type": "number"
+        },
+        "health": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "fortune": {
+          "type": "number"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AgeWeapon"
+          }
+        },
+        "armor": {
+          "type": "string"
+        },
+        "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "drive": {
+          "type": "string"
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "origin",
+        "background",
+        "faction",
+        "description",
+        "abilities",
+        "focuses",
+        "speed",
+        "defense",
+        "health",
+        "fortune"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "AgeWeapon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "damage": {
+          "type": "string"
+        },
+        "minStr": {
+          "type": "number"
+        },
+        "range": {
+          "type": "string"
+        },
+        "qualities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "damage"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

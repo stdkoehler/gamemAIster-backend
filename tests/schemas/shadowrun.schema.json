@@ -1,0 +1,369 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/ShadowrunCharacter",
+  "definitions": {
+    "ShadowrunCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "shadowrun"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "metatype": {
+          "type": "string"
+        },
+        "archetype": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "age": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "Body": {
+              "type": "number"
+            },
+            "Agility": {
+              "type": "number"
+            },
+            "Reaction": {
+              "type": "number"
+            },
+            "Strength": {
+              "type": "number"
+            },
+            "Willpower": {
+              "type": "number"
+            },
+            "Logic": {
+              "type": "number"
+            },
+            "Intuition": {
+              "type": "number"
+            },
+            "Charisma": {
+              "type": "number"
+            },
+            "Edge": {
+              "type": "number"
+            },
+            "Essence": {
+              "type": "number"
+            },
+            "Magic": {
+              "type": "number"
+            },
+            "Resonance": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Body",
+            "Agility",
+            "Reaction",
+            "Strength",
+            "Willpower",
+            "Logic",
+            "Intuition",
+            "Charisma",
+            "Edge",
+            "Essence"
+          ],
+          "additionalProperties": false
+        },
+        "derived": {
+          "type": "object",
+          "properties": {
+            "physicalLimit": {
+              "type": "number"
+            },
+            "mentalLimit": {
+              "type": "number"
+            },
+            "socialLimit": {
+              "type": "number"
+            },
+            "composure": {
+              "type": "number"
+            },
+            "judgeIntentions": {
+              "type": "number"
+            },
+            "memory": {
+              "type": "number"
+            },
+            "liftCarry": {
+              "type": "number"
+            },
+            "initiativeBase": {
+              "type": "number"
+            },
+            "initiativeDice": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "physicalLimit",
+            "mentalLimit",
+            "socialLimit",
+            "composure",
+            "judgeIntentions",
+            "memory",
+            "liftCarry",
+            "initiativeBase",
+            "initiativeDice"
+          ],
+          "additionalProperties": false
+        },
+        "skills": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "skillSpecializations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "knowledgeSkills": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "qualities": {
+          "type": "object",
+          "properties": {
+            "positive": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "negative": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "positive",
+            "negative"
+          ],
+          "additionalProperties": false
+        },
+        "contacts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "loyalty": {
+                "type": "number"
+              },
+              "connection": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "loyalty",
+              "connection"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "armor": {
+          "type": "number"
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cyberware": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bioware": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nuyen": {
+          "type": "number"
+        },
+        "lifestyle": {
+          "type": "string"
+        },
+        "streetCred": {
+          "type": "number"
+        },
+        "notoriety": {
+          "type": "number"
+        },
+        "publicAwareness": {
+          "type": "number"
+        },
+        "karma": {
+          "type": "number"
+        },
+        "damage": {
+          "type": "object",
+          "properties": {
+            "physical": {
+              "$ref": "#/definitions/StatTrack"
+            },
+            "stun": {
+              "$ref": "#/definitions/StatTrack"
+            }
+          },
+          "required": [
+            "physical",
+            "stun"
+          ],
+          "additionalProperties": false
+        },
+        "spells": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rituals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mentorSpirit": {
+          "type": "string"
+        },
+        "adeptPowers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "complexForms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "registeredSprites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "matrixStats": {
+          "type": "object",
+          "properties": {
+            "device": {
+              "type": "string"
+            },
+            "Attack": {
+              "type": "number"
+            },
+            "Sleaze": {
+              "type": "number"
+            },
+            "DataProcessing": {
+              "type": "number"
+            },
+            "Firewall": {
+              "type": "number"
+            },
+            "matrixConditionMonitor": {
+              "$ref": "#/definitions/StatTrack"
+            }
+          },
+          "required": [
+            "device",
+            "Attack",
+            "Sleaze",
+            "DataProcessing",
+            "Firewall",
+            "matrixConditionMonitor"
+          ],
+          "additionalProperties": false
+        },
+        "vehicles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "metatype",
+        "archetype",
+        "description",
+        "attributes",
+        "derived",
+        "skills",
+        "knowledgeSkills",
+        "qualities",
+        "contacts",
+        "armor",
+        "weapons",
+        "cyberware",
+        "gear",
+        "nuyen",
+        "lifestyle",
+        "streetCred",
+        "notoriety",
+        "publicAwareness",
+        "damage"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

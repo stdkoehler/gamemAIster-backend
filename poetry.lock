@@ -4684,9 +4684,9 @@ type = ["pytest-mypy"]
 [extras]
 dev = ["bandit", "beautifulsoup4", "mypy", "onnxruntime", "pylint", "pytest", "types-requests"]
 release = ["gunicorn"]
-test = ["pytest", "pytest-asyncio", "pytest-cov", "pytest-env"]
+test = ["jsonschema", "pytest", "pytest-asyncio", "pytest-cov", "pytest-env"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "f4927e38b7e91395bf9ad7661b736f795273cf33d801fbb5265eceac0b35995a"
+content-hash = "e4b55952d276cf731d4a5e6dd90b0bcd460ea613a2b31627d09195d894dbe6a3"

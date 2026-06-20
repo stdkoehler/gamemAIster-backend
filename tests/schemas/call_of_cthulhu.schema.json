@@ -1,0 +1,361 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/CthulhuCharacter",
+  "definitions": {
+    "CthulhuCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "call_of_cthulhu"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "occupation": {
+          "type": "string"
+        },
+        "era": {
+          "type": "string"
+        },
+        "age": {
+          "type": "number"
+        },
+        "residence": {
+          "type": "string"
+        },
+        "birthplace": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "characteristics": {
+          "type": "object",
+          "properties": {
+            "STR": {
+              "type": "number"
+            },
+            "CON": {
+              "type": "number"
+            },
+            "SIZ": {
+              "type": "number"
+            },
+            "DEX": {
+              "type": "number"
+            },
+            "APP": {
+              "type": "number"
+            },
+            "INT": {
+              "type": "number"
+            },
+            "POW": {
+              "type": "number"
+            },
+            "EDU": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "STR",
+            "CON",
+            "SIZ",
+            "DEX",
+            "APP",
+            "INT",
+            "POW",
+            "EDU"
+          ],
+          "additionalProperties": false
+        },
+        "derived": {
+          "type": "object",
+          "properties": {
+            "hpMax": {
+              "type": "number"
+            },
+            "mpMax": {
+              "type": "number"
+            },
+            "sanityMax": {
+              "type": "number"
+            },
+            "build": {
+              "type": "number"
+            },
+            "damageBonus": {
+              "type": "string"
+            },
+            "moveRate": {
+              "type": "number"
+            },
+            "half": {
+              "type": "object",
+              "properties": {
+                "STR": {
+                  "type": "number"
+                },
+                "DEX": {
+                  "type": "number"
+                },
+                "INT": {
+                  "type": "number"
+                },
+                "CON": {
+                  "type": "number"
+                },
+                "APP": {
+                  "type": "number"
+                },
+                "POW": {
+                  "type": "number"
+                },
+                "SIZ": {
+                  "type": "number"
+                },
+                "EDU": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "STR",
+                "DEX",
+                "INT",
+                "CON",
+                "APP",
+                "POW",
+                "SIZ",
+                "EDU"
+              ],
+              "additionalProperties": false
+            },
+            "fifth": {
+              "type": "object",
+              "properties": {
+                "STR": {
+                  "type": "number"
+                },
+                "DEX": {
+                  "type": "number"
+                },
+                "INT": {
+                  "type": "number"
+                },
+                "CON": {
+                  "type": "number"
+                },
+                "APP": {
+                  "type": "number"
+                },
+                "POW": {
+                  "type": "number"
+                },
+                "SIZ": {
+                  "type": "number"
+                },
+                "EDU": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "STR",
+                "DEX",
+                "INT",
+                "CON",
+                "APP",
+                "POW",
+                "SIZ",
+                "EDU"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "hpMax",
+            "mpMax",
+            "sanityMax",
+            "build",
+            "damageBonus",
+            "moveRate",
+            "half",
+            "fifth"
+          ],
+          "additionalProperties": false
+        },
+        "skills": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "hitPoints": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "sanity": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "magicPoints": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "luck": {
+          "type": "number"
+        },
+        "cthulhuMythos": {
+          "type": "number"
+        },
+        "spells": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tomesStudied": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "personalDescription": {
+          "type": "string"
+        },
+        "traits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ideologyBeliefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "injuries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fellowsAndContacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "significantPeople": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "meaningfulLocations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "treasuredPossessions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CocWeapon"
+          }
+        },
+        "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spendingLevel": {
+          "type": "string"
+        },
+        "cash": {
+          "type": "number"
+        },
+        "assets": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "occupation",
+        "era",
+        "age",
+        "description",
+        "characteristics",
+        "derived",
+        "skills",
+        "hitPoints",
+        "sanity",
+        "magicPoints",
+        "luck",
+        "cthulhuMythos"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "CocWeapon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "skill": {
+          "type": "string"
+        },
+        "damage": {
+          "type": "string"
+        },
+        "range": {
+          "type": "string"
+        },
+        "attacksPerRound": {
+          "type": "number"
+        },
+        "ammo": {
+          "type": "number"
+        },
+        "malfunction": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "skill",
+        "damage"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

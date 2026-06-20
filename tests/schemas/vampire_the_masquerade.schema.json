@@ -1,0 +1,404 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/VampireCharacter",
+  "definitions": {
+    "VampireCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "vampire_the_masquerade"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nature": {
+          "$ref": "#/definitions/V5Nature"
+        },
+        "description": {
+          "type": "string"
+        },
+        "clan": {
+          "type": "string"
+        },
+        "sire": {
+          "type": "string"
+        },
+        "generation": {
+          "type": "number"
+        },
+        "predatorType": {
+          "type": "string"
+        },
+        "birthday": {
+          "type": "string"
+        },
+        "embraced": {
+          "type": "string"
+        },
+        "apparentAge": {
+          "type": "number"
+        },
+        "ambition": {
+          "type": "string"
+        },
+        "desire": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "Strength": {
+              "type": "number"
+            },
+            "Dexterity": {
+              "type": "number"
+            },
+            "Stamina": {
+              "type": "number"
+            },
+            "Charisma": {
+              "type": "number"
+            },
+            "Manipulation": {
+              "type": "number"
+            },
+            "Composure": {
+              "type": "number"
+            },
+            "Intelligence": {
+              "type": "number"
+            },
+            "Wits": {
+              "type": "number"
+            },
+            "Resolve": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Strength",
+            "Dexterity",
+            "Stamina",
+            "Charisma",
+            "Manipulation",
+            "Composure",
+            "Intelligence",
+            "Wits",
+            "Resolve"
+          ],
+          "additionalProperties": false
+        },
+        "skills": {
+          "type": "object",
+          "properties": {
+            "Athletics": {
+              "type": "number"
+            },
+            "Brawl": {
+              "type": "number"
+            },
+            "Craft": {
+              "type": "number"
+            },
+            "Drive": {
+              "type": "number"
+            },
+            "Firearms": {
+              "type": "number"
+            },
+            "Melee": {
+              "type": "number"
+            },
+            "Larceny": {
+              "type": "number"
+            },
+            "Stealth": {
+              "type": "number"
+            },
+            "Survival": {
+              "type": "number"
+            },
+            "Animal Ken": {
+              "type": "number"
+            },
+            "Etiquette": {
+              "type": "number"
+            },
+            "Insight": {
+              "type": "number"
+            },
+            "Intimidation": {
+              "type": "number"
+            },
+            "Leadership": {
+              "type": "number"
+            },
+            "Performance": {
+              "type": "number"
+            },
+            "Persuasion": {
+              "type": "number"
+            },
+            "Streetwise": {
+              "type": "number"
+            },
+            "Subterfuge": {
+              "type": "number"
+            },
+            "Academics": {
+              "type": "number"
+            },
+            "Awareness": {
+              "type": "number"
+            },
+            "Finance": {
+              "type": "number"
+            },
+            "Investigation": {
+              "type": "number"
+            },
+            "Medicine": {
+              "type": "number"
+            },
+            "Occult": {
+              "type": "number"
+            },
+            "Politics": {
+              "type": "number"
+            },
+            "Science": {
+              "type": "number"
+            },
+            "Technology": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Athletics",
+            "Brawl",
+            "Craft",
+            "Drive",
+            "Firearms",
+            "Melee",
+            "Larceny",
+            "Stealth",
+            "Survival",
+            "Animal Ken",
+            "Etiquette",
+            "Insight",
+            "Intimidation",
+            "Leadership",
+            "Performance",
+            "Persuasion",
+            "Streetwise",
+            "Subterfuge",
+            "Academics",
+            "Awareness",
+            "Finance",
+            "Investigation",
+            "Medicine",
+            "Occult",
+            "Politics",
+            "Science",
+            "Technology"
+          ],
+          "additionalProperties": false
+        },
+        "skillSpecialties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/V5Weapon"
+          }
+        },
+        "disciplines": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "type": "number"
+              },
+              "powers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "level",
+              "powers"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "merits": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "flaws": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "hunger": {
+          "type": "number"
+        },
+        "bloodPotency": {
+          "type": "number"
+        },
+        "resonance": {
+          "type": "string"
+        },
+        "temperament": {
+          "type": "string"
+        },
+        "thinBloodAlchemy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "humanity": {
+          "type": "number"
+        },
+        "chronicleTenets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "touchstones": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clanBane": {
+          "type": "string"
+        },
+        "compulsion": {
+          "type": "string"
+        },
+        "backgrounds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "loresheets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "health": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "willpower": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "experienceTotal": {
+          "type": "number"
+        },
+        "experienceSpent": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "nature",
+        "description",
+        "attributes",
+        "skills",
+        "health",
+        "willpower"
+      ],
+      "additionalProperties": false
+    },
+    "V5Nature": {
+      "type": "string",
+      "enum": [
+        "kindred",
+        "ghoul",
+        "thin-blood",
+        "mortal"
+      ]
+    },
+    "V5Weapon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "damage": {
+          "type": "number"
+        },
+        "skill": {
+          "type": "string",
+          "enum": [
+            "Brawl",
+            "Melee",
+            "Firearms"
+          ]
+        },
+        "range": {
+          "type": "number"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Concealable",
+              "Two-handed",
+              "Loud",
+              "Automatic",
+              "Special"
+            ]
+          }
+        }
+      },
+      "required": [
+        "name",
+        "damage",
+        "skill"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
