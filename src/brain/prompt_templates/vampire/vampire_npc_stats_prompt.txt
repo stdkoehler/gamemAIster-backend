@@ -19,6 +19,11 @@ Rules:
   (mortals/ghouls can use 7 as a default if relevant).
 - `health_max` = Stamina + 3. `willpower_max` = Composure + Resolve (assume
   Composure/Resolve around 2-3 if not otherwise specified).
+- `equipment_categories` is a short list (1-4) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC —
+  most kindred need at most Melee/Ranged/Armor, social NPCs may need none of
+  the weapon categories. Use the category strings verbatim from the
+  provided list.
 
 ## JSON Structure
 
@@ -38,10 +43,13 @@ commentary, no markdown outside the fenced block):
   "humanity": int | None,
   "blood_potency": int | None,
   "health_max": int,
-  "willpower_max": int
+  "willpower_max": int,
+  "equipment_categories": list[str]
 }
 ```
 
 Adhere strictly to this structure: `clan`, `generation`, `predator_type`,
 `hunger`, `humanity`, `blood_potency` may be `null` when not applicable per
-the rules above; `disciplines` may be an empty object `{}`.
+the rules above; `disciplines` may be an empty object `{}`;
+`equipment_categories` is a list of strings picked from the provided valid
+category list (may be empty).

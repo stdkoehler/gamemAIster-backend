@@ -14,7 +14,7 @@ from pathlib import Path
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
 from src.brain.npc_models import NpcProfile, NPC_PIPELINE_CONFIG, merge_npc
-from src.brain.npc_equipment.catalog import npc_equipment_candidates
+from src.brain.npc_equipment.catalog import get_npc_equipment_categories, npc_equipment_candidates
 from src.crud.crud import crud_instance
 from src.llmclient.llm_client import (
     LLMClientBase,
@@ -597,12 +597,18 @@ class Gamemaster:
             task=LLMTask.ARCHITECT,
         )
 
+        valid_categories = get_npc_equipment_categories(game_type)
         stats_messages = [
             Message(role=MessageRole.SYSTEM, content=MessageContent(text=stats_system_prompt)),
             Message(
                 role=MessageRole.USER,
                 content=MessageContent(
-                    text=f"NPC name: {name}\nDescription: {profile.character_description}"
+                    text=(
+                        f"NPC name: {name}\nDescription: {profile.character_description}\n\n"
+                        f"Valid equipment categories for this system (pick `equipment_categories` only "
+                        f"from this list, choosing the ones relevant to this NPC's archetype/role):\n"
+                        f"{', '.join(valid_categories)}"
+                    )
                 ),
             ),
         ]
@@ -615,7 +621,9 @@ class Gamemaster:
         )
 
         budget_cost = _parse_budget_cost(profile.value)
-        candidates = npc_equipment_candidates(game_type, max_cost=budget_cost)
+        candidates = npc_equipment_candidates(
+            game_type, categories=stats.equipment_categories, max_cost=budget_cost
+        )
         candidates_text = json.dumps(candidates, ensure_ascii=False, indent=2)
         equipment_messages = [
             Message(role=MessageRole.SYSTEM, content=MessageContent(text=equipment_system_prompt)),

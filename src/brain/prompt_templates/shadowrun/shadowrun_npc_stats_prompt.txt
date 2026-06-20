@@ -19,6 +19,11 @@ Rules:
   raise it (2-4) for augmented/fast NPCs (e.g. with Wired Reflexes).
 - `damage_physical_max` = 8 + ceil(Body / 2). `damage_stun_max` = 8 +
   ceil(Willpower / 2).
+- `equipment_categories` is a short list (2-5) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC's
+  archetype — e.g. a Decker picks gear/electronics categories, not assault
+  cannons; a Street Samurai picks weapon and cyberware categories. Use the
+  category strings verbatim from the provided list.
 
 ## JSON Structure
 
@@ -34,10 +39,12 @@ commentary, no markdown outside the fenced block):
   "initiative_base": int,
   "initiative_dice": int,
   "damage_physical_max": int,
-  "damage_stun_max": int
+  "damage_stun_max": int,
+  "equipment_categories": list[str]
 }
 ```
 
 Adhere strictly to this structure: `attributes` values are numbers (Essence
 may have decimals, all others are whole numbers), `skills` values are
-integers, all other fields are required.
+integers, `equipment_categories` is a list of strings picked from the
+provided valid category list, all other fields are required.

@@ -13,6 +13,11 @@ Rules:
   Marksmanship, Scout, rated 0-5, fitting the calling and competence.
 - `talents` is a short list (0-3) of special abilities matching the calling
   (e.g. "Spirit Caller", "Berserker", "Path Finder").
+- `equipment_categories` is a short list (1-4) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC's
+  calling — a Warrior picks Melee/Ranged/Armor, a Volkhv may need none of
+  the weapon categories. Use the category strings verbatim from the
+  provided list.
 
 ## JSON Structure
 
@@ -26,9 +31,12 @@ commentary, no markdown outside the fenced block):
   "calling": str,
   "attributes": {"Strength": int, "Agility": int, "Wits": int, "Empathy": int},
   "skills": dict[str, int],
-  "talents": list[str]
+  "talents": list[str],
+  "equipment_categories": list[str]
 }
 ```
 
 Adhere strictly to this structure: `attributes`/`skills` values are
-integers, `talents` is a list of strings (may be empty).
+integers, `talents`/`equipment_categories` are lists of strings (may be
+empty; `equipment_categories` must be picked from the provided valid
+category list).

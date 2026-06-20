@@ -27,5 +27,7 @@ commentary, no markdown outside the fenced block):
 }
 ```
 
-Adhere strictly to this structure: `armor_name` may be None, then armor_rating = 0
+Adhere strictly to this structure. `armor_name` may be None, then armor_rating = 0
 for an unarmored NPC, `weapons`/`gear` are lists of strings (both may be empty).
+The names of the equipment must be exactly as provided in the candidate list including
+the english name in brackets.

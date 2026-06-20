@@ -107,8 +107,19 @@ _NPC_EQUIPMENT_ITEM_FIELDS = (
 )
 
 
+def get_npc_equipment_categories(game_type: GameType) -> list[str]:
+    """
+    Returns the valid, exact equipment-category vocabulary for this system
+    (the same categories `npc_equipment_candidates` samples from by default).
+    Used to tell the Stats step which category strings it's allowed to pick
+    when narrowing equipment to the NPC's archetype.
+    """
+    return list(_NPC_EQUIPMENT_CATEGORIES.get(game_type, []))
+
+
 def npc_equipment_candidates(
     game_type: GameType,
+    categories: list[str] | None = None,
     max_cost: float | None = None,
     limit_per_category: int = 8,
     total_limit: int = 60,
@@ -118,8 +129,17 @@ def npc_equipment_candidates(
     to NPC equipping (no LLM/tool call involved): walks this system's
     combat/field-relevant categories and samples a few items from each,
     deduped by name, trimmed to the fields worth showing the LLM.
+
+    `categories`, if given, narrows the walk to the NPC-specific subset
+    chosen by the Stats step (validated against the system's known
+    vocabulary; unknown/empty selections fall back to the full vocabulary so
+    a bad pick from the LLM never yields zero candidates).
     """
-    categories = _NPC_EQUIPMENT_CATEGORIES.get(game_type, [])
+    valid_categories = _NPC_EQUIPMENT_CATEGORIES.get(game_type, [])
+    if categories:
+        valid_lower = {c.lower() for c in valid_categories}
+        categories = [c for c in categories if c.lower() in valid_lower]
+    categories = categories or valid_categories
     seen_names: set[str] = set()
     candidates: list[dict] = []
     for category in categories:

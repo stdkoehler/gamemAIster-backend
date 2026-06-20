@@ -14,6 +14,11 @@ Rules:
 - `speed` = 10 + Dexterity. `defense` = 10 + Dexterity.
 - `health_max` is 30-50 for a typical NPC (higher for tougher/military
   NPCs).
+- `equipment_categories` is a short list (1-4) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC's
+  role — combat-focused NPCs pick weapon/armor categories, support NPCs may
+  need only medical/electronics categories. Use the category strings
+  verbatim from the provided list.
 
 ## JSON Structure
 
@@ -29,9 +34,12 @@ commentary, no markdown outside the fenced block):
   "focuses": list[str],
   "speed": int,
   "defense": int,
-  "health_max": int
+  "health_max": int,
+  "equipment_categories": list[str]
 }
 ```
 
 Adhere strictly to this structure: `abilities` values are integers,
-`focuses` is a list of strings (may be empty), all other fields required.
+`focuses`/`equipment_categories` are lists of strings (may be empty;
+`equipment_categories` must be picked from the provided valid category
+list), all other fields required.

@@ -39,6 +39,7 @@ class ShadowrunNpcStats(BaseModel):
     initiative_dice: int
     damage_physical_max: int
     damage_stun_max: int
+    equipment_categories: list[str] = Field(default_factory=list)
 
 
 class ShadowrunNpcEquipment(BaseModel):
@@ -155,6 +156,7 @@ class VampireNpcStats(BaseModel):
     blood_potency: int | None = None
     health_max: int
     willpower_max: int
+    equipment_categories: list[str] = Field(default_factory=list)
 
 
 class VampireNpcEquipment(BaseModel):
@@ -214,6 +216,7 @@ class CthulhuNpcStats(BaseModel):
     move_rate: int
     hit_points_max: int
     sanity_max: int
+    equipment_categories: list[str] = Field(default_factory=list)
 
 
 class CthulhuNpcEquipment(BaseModel):
@@ -296,6 +299,7 @@ class SeventhSeaNpcStats(BaseModel):
     skills: dict[str, int]
     dueling_style: str | None = None
     wounds_max: int
+    equipment_categories: list[str] = Field(default_factory=list)
 
 
 class SeventhSeaNpcEquipment(BaseModel):
@@ -354,6 +358,7 @@ class ExpanseNpcStats(BaseModel):
     speed: int
     defense: int
     health_max: int
+    equipment_categories: list[str] = Field(default_factory=list)
 
 
 class ExpanseNpcEquipment(BaseModel):
@@ -421,6 +426,7 @@ class SlavicNpcStats(BaseModel):
     attributes: dict[str, int]
     skills: dict[str, int]
     talents: list[str] = Field(default_factory=list)
+    equipment_categories: list[str] = Field(default_factory=list)
 
 
 class SlavicNpcEquipment(BaseModel):
