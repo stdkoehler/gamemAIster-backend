@@ -4,7 +4,12 @@ Each catalog is a flat ``{"metadata": ..., "items": [...], "npc_equipment_sets":
 JSON file normalized from the source TTRPG rulebooks. Field coverage varies per
 system (e.g. Shadowrun items only have name/category/cost/source, Vampire items
 additionally have subcategory/type/damage/availability) but ``name`` and
-``category`` are always present.
+``category`` are always present. Two systems need special handling, both
+addressed in `load_catalog`/`filter_equipment` below:
+- Call of Cthulhu prices items per era (`cost_by_era`); this app pins to the
+  1920s and drops items that don't exist yet in that era.
+- The Expanse has no price at all, only an Availability TN; equipment-budget
+  filtering uses that field in place of a price (see `_COST_FIELD`).
 """
 
 import json
@@ -15,6 +20,21 @@ from src.routers.schema.mission import GameType
 
 _DATA_DIR = Path(__file__).parent / "data"
 
+# Call of Cthulhu items price by era (`cost_by_era: {"1890s": ..., "1920s": ...,
+# "modern": ...}`) instead of a flat `cost`. This app only ever runs CoC
+# missions in the 1920s (see npc_models._merge_cthulhu's hardcoded
+# `"era": "1920s"`), so we pin to that era and drop items that didn't exist
+# yet (null 1920s entry) rather than guess across eras.
+_COC_ERA = "1920s"
+
+# Some systems express equipment access as a non-currency numeric field. The
+# Expanse catalog has no price at all, only an AGE-system Availability Test
+# Number (rarer/more restricted gear = higher TN) — used here as the
+# `max_cost`-filterable field in place of a price.
+_COST_FIELD: dict[GameType, str] = {
+    GameType.EXPANSE: "availability_tn",
+}
+
 
 @lru_cache
 def load_catalog(game_type: GameType) -> list[dict]:
@@ -22,7 +42,24 @@ def load_catalog(game_type: GameType) -> list[dict]:
     path = _DATA_DIR / f"{game_type.value}.json"
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
-    return data.get("items", [])
+    items = data.get("items", [])
+    if game_type == GameType.CALL_OF_CTHULHU:
+        items = _normalize_coc_items(items)
+    return items
+
+
+def _normalize_coc_items(items: list[dict]) -> list[dict]:
+    normalized = []
+    for item in items:
+        cost_by_era = item.get("cost_by_era")
+        if not cost_by_era:
+            normalized.append(item)
+            continue
+        cost_1920s = cost_by_era.get(_COC_ERA)
+        if cost_1920s is None:
+            continue  # didn't exist yet in the 1920s; not offerable to NPCs
+        normalized.append({**item, "cost": cost_1920s})
+    return normalized
 
 
 def filter_equipment(
@@ -36,11 +73,15 @@ def filter_equipment(
     """
     Filters a system's equipment catalog by category/subcategory/cost/keywords.
 
-    `max_cost` only filters items whose `cost` field parses as a plain number
-    (many systems use non-numeric costs like "1 WP" or era-keyed costs, which
-    are left in regardless so the agent can inspect them via the returned notes).
+    `max_cost` filters against whichever field represents this system's
+    equipment-access constraint (a price for most systems, an Availability TN
+    for Expanse — see `_COST_FIELD`); it only filters items whose value
+    parses as a plain number (many systems use non-numeric costs like "1 WP",
+    which are left in regardless so the agent can inspect them via the
+    returned notes).
     """
     items = load_catalog(game_type)
+    cost_field = _COST_FIELD.get(game_type, "cost")
     results = []
     for item in items:
         if category and category.lower() not in str(item.get("category", "")).lower():
@@ -57,7 +98,7 @@ def filter_equipment(
             if keywords.lower() not in haystack:
                 continue
         if max_cost is not None:
-            cost_value = _parse_numeric_cost(item.get("cost"))
+            cost_value = _parse_numeric_cost(item.get(cost_field))
             if cost_value is not None and cost_value > max_cost:
                 continue
         results.append(item)
@@ -103,7 +144,8 @@ _NPC_EQUIPMENT_CATEGORIES: dict[GameType, list[str]] = {
 # Item fields worth showing the LLM when picking equipment; everything else
 # (e.g. ``source``) is noise that just inflates the prompt.
 _NPC_EQUIPMENT_ITEM_FIELDS = (
-    "name", "category", "subcategory", "cost", "damage", "type", "availability", "notes",
+    "name", "category", "subcategory", "cost", "damage", "type", "availability",
+    "availability_tn", "notes",
 )
 
 

@@ -31,3 +31,6 @@ Adhere strictly to this structure. `armor_name` may be None, then armor_rating =
 for an unarmored NPC, `weapons`/`gear` are lists of strings (both may be empty).
 The names of the equipment must be exactly as provided in the candidate list including
 the english name in brackets.
+
+Important: Sum up the total equipment cost and compare against the given budget.
+If budget is violated you must adapt your selection.

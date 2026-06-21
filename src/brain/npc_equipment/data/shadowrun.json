@@ -9890,6 +9890,7 @@
       "name": "Dermal Plating",
       "category": "Bodyware",
       "type": "cyberware",
+      "cost": 6000,
       "source": "SR5"
     },
     {

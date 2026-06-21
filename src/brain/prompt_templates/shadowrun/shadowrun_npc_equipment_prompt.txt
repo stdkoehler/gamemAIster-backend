@@ -28,3 +28,6 @@ commentary, no markdown outside the fenced block):
 Adhere strictly to this structure: `armor` is an integer (0 if none),
 `weapons`/`cyberware`/`gear` are lists of item-name strings (empty lists are
 fine).
+
+Important: Sum up the total equipment cost and compare against the given budget.
+If budget is violated you must adapt your selection.

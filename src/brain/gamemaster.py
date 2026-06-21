@@ -226,32 +226,39 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
 
 @dataclass(frozen=True)
 class _NpcConfig:
+    profile_prompt: str     # relative to prompt_templates/ — system-specific NPC tiers/budgets
     stats_prompt: str       # relative to prompt_templates/
     equipment_prompt: str   # relative to prompt_templates/
 
 
 _NPC_CONFIGS: dict[api_schema_mission.GameType, _NpcConfig] = {
     _GT.SHADOWRUN: _NpcConfig(
+        profile_prompt="shadowrun/shadowrun_npc_profile_prompt.txt",
         stats_prompt="shadowrun/shadowrun_npc_stats_prompt.txt",
         equipment_prompt="shadowrun/shadowrun_npc_equipment_prompt.txt",
     ),
     _GT.VAMPIRE_THE_MASQUERADE: _NpcConfig(
+        profile_prompt="vampire/vampire_npc_profile_prompt.txt",
         stats_prompt="vampire/vampire_npc_stats_prompt.txt",
         equipment_prompt="vampire/vampire_npc_equipment_prompt.txt",
     ),
     _GT.CALL_OF_CTHULHU: _NpcConfig(
+        profile_prompt="cthulhu/cthulhu_npc_profile_prompt.txt",
         stats_prompt="cthulhu/cthulhu_npc_stats_prompt.txt",
         equipment_prompt="cthulhu/cthulhu_npc_equipment_prompt.txt",
     ),
     _GT.SEVENTH_SEA: _NpcConfig(
+        profile_prompt="seventh_sea/seventh_sea_npc_profile_prompt.txt",
         stats_prompt="seventh_sea/seventh_sea_npc_stats_prompt.txt",
         equipment_prompt="seventh_sea/seventh_sea_npc_equipment_prompt.txt",
     ),
     _GT.EXPANSE: _NpcConfig(
+        profile_prompt="expanse/expanse_npc_profile_prompt.txt",
         stats_prompt="expanse/expanse_npc_stats_prompt.txt",
         equipment_prompt="expanse/expanse_npc_equipment_prompt.txt",
     ),
     _GT.SLAVIC: _NpcConfig(
+        profile_prompt="slavic/slavic_npc_profile_prompt.txt",
         stats_prompt="slavic/slavic_npc_stats_prompt.txt",
         equipment_prompt="slavic/slavic_npc_equipment_prompt.txt",
     ),
@@ -565,9 +572,7 @@ class Gamemaster:
         game_type = self._game_type
 
         prompt_dir = Path(__file__).parent / "prompt_templates"
-        profile_system_prompt = (prompt_dir / "npc" / "npc_profile_prompt.txt").read_text(
-            encoding="utf-8"
-        )
+        profile_system_prompt = (prompt_dir / npc_cfg.profile_prompt).read_text(encoding="utf-8")
         stats_system_prompt = (prompt_dir / npc_cfg.stats_prompt).read_text(encoding="utf-8")
         equipment_system_prompt = (prompt_dir / npc_cfg.equipment_prompt).read_text(
             encoding="utf-8"
