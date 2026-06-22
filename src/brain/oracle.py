@@ -74,18 +74,18 @@ class ExpanseProposal(FactionBasedProposal):
     pass
 
 
-class FactionEpochAligned(BaseModel):
+class FactionEraAligned(BaseModel):
     factions: list[str]
     incitingIncident: str
     themes: list[str]
-    epoch: str
+    era: str
 
 
-class VampireAligned(FactionEpochAligned):
+class VampireAligned(FactionEraAligned):
     pass
 
 
-class SeventhSeaAligned(FactionEpochAligned):
+class SeventhSeaAligned(FactionEraAligned):
     pass
 
 
@@ -204,6 +204,17 @@ class BaseOracle(ABC, Generic[TProposal, TAligned]):
         weights = [item.probability for item in items]
         return random.choices(names, weights=weights, k=1)[0]
 
+    @classmethod
+    def _weighted_sample(cls, items: list[Candidate], k: int) -> list[str]:
+        """Weighted sampling without replacement (random.sample ignores .probability)."""
+        pool = list(items)
+        chosen: list[str] = []
+        for _ in range(min(k, len(pool))):
+            name = cls._weighted_choice(pool)
+            chosen.append(name)
+            pool = [c for c in pool if c.name != name]
+        return chosen
+
     def _align(self, proposal: TProposal, background: str) -> TAligned:
         proposal_dict = proposal.model_dump()
         proposal_dict["background"] = background
@@ -257,7 +268,7 @@ class FactionBasedOracle(BaseOracle[FactionBasedProposal, TFactionAligned]):
 
     def _assemble_proposal_seed(self) -> FactionBasedProposal:
         k = random.randint(1, 2)
-        factions = random.sample([c.name for c in self._pools["factions"]], k=k)
+        factions = self._weighted_sample(self._pools["factions"], k)
         incident = self._weighted_choice(self._pools["inciting_incidents"])
         theme = self._weighted_choice(self._pools["themes"])
         return self._proposal_type(
