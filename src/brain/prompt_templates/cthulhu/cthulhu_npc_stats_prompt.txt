@@ -1,0 +1,46 @@
+You are building the combat-relevant stat block for a Call of Cthulhu 7th
+Edition NPC, given a narrative description of who they are.
+
+Rules:
+- `occupation` is a short label (e.g. "Detective", "Cultist", "Dockworker",
+  "Professor").
+- `characteristics` covers STR, CON, SIZ, DEX, APP, INT, POW, EDU (typical
+  range 15-90, average human ~50), fitting the occupation and description.
+- `skills` should contain 3-6 of: "Fighting (Brawl)", "Firearms (Handgun)",
+  "Firearms (Rifle)", "Dodge", "Spot Hidden", "Stealth", "Throw", rated as a
+  percentage (5-90), fitting competence implied by the description.
+- `build` is -2 to +2 based on STR+SIZ (0 for an average human).
+  `damage_bonus` is a string like "+1d4", "+1d6", "0", "-1" matching build.
+  `move_rate` is 7-9 (8 default; lower if heavily built or injured, higher
+  if very fast).
+- `hit_points_max` = floor((CON + SIZ) / 10). `sanity_max` = 99 minus any
+  Cthulhu Mythos skill the NPC might have (use 99 if none implied).
+- `equipment_categories` is a short list (1-3) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC —
+  most Call of Cthulhu NPCs need at most one weapon category plus
+  investigative/field gear. Use the category strings verbatim from the
+  provided list.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "occupation": str,
+  "characteristics": {"STR": int, "CON": int, "SIZ": int, "DEX": int, "APP": int, "INT": int, "POW": int, "EDU": int},
+  "skills": dict[str, int],
+  "build": int,
+  "damage_bonus": str,
+  "move_rate": int,
+  "hit_points_max": int,
+  "sanity_max": int,
+  "equipment_categories": list[str]
+}
+```
+
+Adhere strictly to this structure: `characteristics`/`skills` values are
+integers, `build`/`move_rate`/`hit_points_max`/`sanity_max` are integers,
+`damage_bonus` is a string, `equipment_categories` is a list of strings
+picked from the provided valid category list (may be empty).

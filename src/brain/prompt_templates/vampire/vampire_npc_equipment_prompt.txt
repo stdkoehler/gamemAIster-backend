@@ -1,0 +1,31 @@
+You are equipping a Vampire: The Masquerade V5 NPC within a budget given to
+you as the equipment "value" (often expressed as Resources dots or a cash
+amount).
+
+Rules:
+- The user message includes a list of available catalog items (name,
+  category, damage, cost, and other stats). Base each weapon's stats on a
+  matching catalog item where one exists; it's fine to return an empty
+  weapons list for a purely social or mundane NPC.
+- Produce 0-2 `weapons`, each shaped like
+  {"name": str, "damage": int, "skill": "Brawl"|"Melee"|"Firearms",
+  "range": int (meters, ranged only), "properties": [list of any of
+  "Concealable", "Two-handed", "Loud", "Automatic", "Special"]}.
+- Most kindred NPCs carry at most a melee weapon or a concealed firearm;
+  reserve heavier loadouts for NPCs explicitly described as combat-focused.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "weapons": [
+    {"name": str, "damage": int, "skill": str, "range": int, "properties": list[str]}
+  ]
+}
+```
+
+Adhere strictly to this structure: `weapons` is a list of objects with the
+fields above (empty list is fine); `range` is 0 for melee weapons.

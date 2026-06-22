@@ -1,0 +1,50 @@
+You are building the combat-relevant stat block for a Shadowrun 6th Edition
+NPC, given a narrative description of who they are.
+
+Rules:
+- `metatype` is one of Human, Elf, Dwarf, Ork, Troll (pick what best fits the
+  description).
+- `archetype` is a short label such as "Street Samurai", "Decker", "Mage",
+  "Shaman", "Rigger", "Face", "Ganger", "Corp Security", etc.
+- `attributes` covers Body, Agility, Reaction, Strength, Willpower, Logic,
+  Intuition, Charisma, Edge (natural range 1-6, augmented up to 9), and
+  Essence (0.0-6.0, reduced by cyberware). Only include Magic or Resonance if
+  the archetype calls for it.
+- `skills` should contain 3-6 combat/field-relevant skills (e.g. Automatics,
+  Pistols, Rifles, Shotguns, Heavy Weapons, Blades, Clubs, Unarmed Combat,
+  Archery, Throwing Weapons, Sneaking, Perception, Gymnastics, Pilot Ground
+  Craft, Pilot Aircraft) rated 1-12, fitting the archetype and the NPC's
+  competence level implied by the description and budget.
+- `initiative_base` = Reaction + Intuition. `initiative_dice` is normally 1,
+  raise it (2-4) for augmented/fast NPCs (e.g. with Wired Reflexes).
+- `damage_physical_max` = 8 + ceil(Body / 2). `damage_stun_max` = 8 +
+  ceil(Willpower / 2).
+- `equipment_categories` is a short list (2-5) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC's
+  archetype — e.g. a Decker picks gear/electronics categories, not assault
+  cannons; a Street Samurai picks weapon and cyberware categories. Use the
+  category strings verbatim from the provided list.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "metatype": str,
+  "archetype": str,
+  "attributes": {"Body": int, "Agility": int, "Reaction": int, "Strength": int, "Willpower": int, "Logic": int, "Intuition": int, "Charisma": int, "Edge": int, "Essence": float},
+  "skills": dict[str, int],
+  "initiative_base": int,
+  "initiative_dice": int,
+  "damage_physical_max": int,
+  "damage_stun_max": int,
+  "equipment_categories": list[str]
+}
+```
+
+Adhere strictly to this structure: `attributes` values are numbers (Essence
+may have decimals, all others are whole numbers), `skills` values are
+integers, `equipment_categories` is a list of strings picked from the
+provided valid category list, all other fields are required.

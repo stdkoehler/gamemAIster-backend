@@ -1,0 +1,1166 @@
+{
+  "metadata": {
+    "system": "Vampire: The Masquerade 5th Edition",
+    "source": "Derived from V5 Core Rulebook, V5 Companion, and other official supplements.",
+    "total_items": 85,
+    "entry_fields": [
+      "name",
+      "category",
+      "type",
+      "damage",
+      "cost",
+      "availability",
+      "source",
+      "notes"
+    ],
+    "field_coverage": {
+      "name": "82/82 (100%)",
+      "category": "82/82 (100%)",
+      "type": "82/82 (100%)",
+      "damage": "82/82 (100%)",
+      "cost": "82/82 (100%)",
+      "availability": "82/82 (100%)",
+      "source": "82/82 (100%)",
+      "notes": "82/82 (100%)"
+    }
+  },
+  "items": [
+    {
+      "name": "Combat Knife",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+2",
+      "cost": "$20",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Standard fighting knife. Concealable."
+    },
+    {
+      "name": "Survival Knife",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+2",
+      "cost": "$50",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Heavier blade, can be used as a tool."
+    },
+    {
+      "name": "Machete",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+3",
+      "cost": "$100",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Long, heavy blade for slashing."
+    },
+    {
+      "name": "Fire Axe",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+4",
+      "cost": "$150",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Two-handed, devastating chopping weapon."
+    },
+    {
+      "name": "Crowbar",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Bashing",
+      "damage": "+2",
+      "cost": "$30",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Can pry open doors and crates."
+    },
+    {
+      "name": "Baseball Bat",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Bashing",
+      "damage": "+2",
+      "cost": "$25",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "A classic blunt instrument."
+    },
+    {
+      "name": "Tire Iron",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Bashing",
+      "damage": "+2",
+      "cost": "$20",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Commonly found in vehicles."
+    },
+    {
+      "name": "Hunting Knife",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+2",
+      "cost": "$40",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "A versatile field knife."
+    },
+    {
+      "name": "Sword (Broad)",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+3",
+      "cost": "$300",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Antique or modern replica, still effective."
+    },
+    {
+      "name": "Katana",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+4",
+      "cost": "$500",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Masterwork blade. Rare and expensive."
+    },
+    {
+      "name": "Stake (Wooden)",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+1",
+      "cost": "$5",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "The classic vampire-slaying tool. Must be driven through the heart."
+    },
+    {
+      "name": "Wooden Mallet",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Bashing",
+      "damage": "+1",
+      "cost": "$15",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Used to drive stakes."
+    },
+    {
+      "name": "Chain",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Bashing",
+      "damage": "+2",
+      "cost": "$20",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Improvised weapon, can entangle."
+    },
+    {
+      "name": "Brass Knuckles",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Bashing",
+      "damage": "+1",
+      "cost": "$10",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Concealable, adds weight to a punch."
+    },
+    {
+      "name": "Metal Pipe",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Bashing",
+      "damage": "+2",
+      "cost": "$10",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Easily found on construction sites."
+    },
+    {
+      "name": "Broken Bottle",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+1",
+      "cost": "$0",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Improvised stabbing weapon."
+    },
+    {
+      "name": "Razor (Straight)",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+1",
+      "cost": "$10",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Concealable, can be used for slashing."
+    },
+    {
+      "name": "Scalpel",
+      "category": "Melee",
+      "subcategory": "melee_weapons",
+      "type": "Lethal",
+      "damage": "+1",
+      "cost": "$15",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Surgical blade, accurate but delicate."
+    },
+    {
+      "name": ".22 Pistol",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+1",
+      "cost": "$200",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Small caliber, low stopping power. Easy to conceal."
+    },
+    {
+      "name": ".38 Special Revolver",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+2",
+      "cost": "$300",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Standard police sidearm for decades. Reliable."
+    },
+    {
+      "name": "9mm Pistol",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+2",
+      "cost": "$400",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Common semi-automatic, high magazine capacity."
+    },
+    {
+      "name": ".45 Automatic Pistol",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+3",
+      "cost": "$600",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Heavy caliber stopping power. Bigger bullets, bigger recoil."
+    },
+    {
+      "name": ".357 Magnum Revolver",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+3",
+      "cost": "$800",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Devastating round, but limited capacity and heavy recoil."
+    },
+    {
+      "name": ".44 Magnum Revolver",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+4",
+      "cost": "$1,000",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Overkill for humans, effective against some supernatural threats."
+    },
+    {
+      "name": "9mm Submachine Gun",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+2",
+      "cost": "$1,200",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Full-auto, high rate of fire. Burns through ammo."
+    },
+    {
+      "name": "12-Gauge Shotgun",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+4",
+      "cost": "$500",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Devastating at close range. Spread makes hitting easier."
+    },
+    {
+      "name": "12-Gauge Shotgun (Sawed-Off)",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+4",
+      "cost": "$400",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Easier to conceal, but wider spread and shorter range."
+    },
+    {
+      "name": ".223 Assault Rifle",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+3",
+      "cost": "$1,500",
+      "availability": "5",
+      "source": "V5 Corebook",
+      "notes": "Military-grade automatic rifle. Standard for elite forces."
+    },
+    {
+      "name": "Hunting Rifle (.308)",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+3",
+      "cost": "$800",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Bolt-action, accurate at long range."
+    },
+    {
+      "name": "Sniper Rifle (.50 Cal)",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Gunshot",
+      "damage": "+5",
+      "cost": "$3,000",
+      "availability": "6",
+      "source": "V5 Corebook",
+      "notes": "Extreme range and damage. Anti-materiel capabilities."
+    },
+    {
+      "name": "Crossbow",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Lethal",
+      "damage": "+3",
+      "cost": "$400",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Silent, but slow to reload. Can fire wooden bolts."
+    },
+    {
+      "name": "Flamethrower",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Aggravated",
+      "damage": "+4",
+      "cost": "$1,500",
+      "availability": "6",
+      "source": "V5 Corebook",
+      "notes": "Inflicts Aggravated damage on Kindred. Inhumane and destructive."
+    },
+    {
+      "name": "Taser",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Bashing/Stun",
+      "damage": "+1",
+      "cost": "$100",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Non-lethal for mortals, just an annoyance for Kindred."
+    },
+    {
+      "name": "Pepper Spray",
+      "category": "Ranged",
+      "subcategory": "ranged_weapons",
+      "type": "Bashing/Stun",
+      "damage": "0",
+      "cost": "$10",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Effective against humans, useless against Kindred."
+    },
+    {
+      "name": "Fragmentation Grenade (M67)",
+      "category": "Ranged",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Lethal",
+      "damage": "+4",
+      "cost": "$100",
+      "availability": "5",
+      "source": "V5 Corebook",
+      "notes": "Area-of-effect shrapnel. Devastating in enclosed spaces."
+    },
+    {
+      "name": "Flashbang Grenade",
+      "category": "Ranged",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Bashing/Stun",
+      "damage": "+1",
+      "cost": "$75",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Non-lethal, but can blind and deafen for several turns."
+    },
+    {
+      "name": "Smoke Grenade",
+      "category": "Ranged",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Area",
+      "damage": "0",
+      "cost": "$40",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Creates an area of thick smoke for cover."
+    },
+    {
+      "name": "C4 Plastic Explosive (1 lb)",
+      "category": "Heavy",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Lethal",
+      "damage": "+6",
+      "cost": "$200",
+      "availability": "6",
+      "source": "V5 Corebook",
+      "notes": "Demolition charge. Can be shaped for breaching or structural damage."
+    },
+    {
+      "name": "Detonator",
+      "category": "Heavy",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$50",
+      "availability": "5",
+      "source": "V5 Corebook",
+      "notes": "Used to trigger explosives remotely."
+    },
+    {
+      "name": "Improvised Molotov Cocktail",
+      "category": "Ranged",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Aggravated",
+      "damage": "+2",
+      "cost": "$5",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Bottle of flammable liquid. Deals Aggravated damage to Kindred."
+    },
+    {
+      "name": "Fire Extinguisher",
+      "category": "Gear",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$40",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Can be used as a blunt weapon or to put out fires."
+    },
+    {
+      "name": "Dragon's Breath Shotgun Shells",
+      "category": "Ranged",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Aggravated",
+      "damage": "+2",
+      "cost": "$50 (per shell)",
+      "availability": "6",
+      "source": "V5 Corebook",
+      "notes": "Incendiary rounds. Deal Aggravated damage."
+    },
+    {
+      "name": "Incendiary Rounds",
+      "category": "Ranged",
+      "subcategory": "explosives_and_heavy_weapons",
+      "type": "Aggravated",
+      "damage": "+1",
+      "cost": "$30 (per clip)",
+      "availability": "5",
+      "source": "V5 Corebook",
+      "notes": "Armor-piercing, but deal Aggravated damage on a successful hit."
+    },
+    {
+      "name": "Leather Jacket",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Light",
+      "damage": "-1",
+      "cost": "$100",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Provides minimal protection against Bashing damage. Adds Style."
+    },
+    {
+      "name": "Kevlar Vest (Level II)",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Medium",
+      "damage": "-2",
+      "cost": "$500",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "Stops most handgun rounds. Doesn't cover limbs."
+    },
+    {
+      "name": "Kevlar Vest (Level IIIA)",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Medium",
+      "damage": "-3",
+      "cost": "$800",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Stops high-velocity handgun and some rifle rounds."
+    },
+    {
+      "name": "Reinforced Clothing",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Light",
+      "damage": "-1",
+      "cost": "$150",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Rigid panels woven into the fabric. Good against blades."
+    },
+    {
+      "name": "Heavy Body Armor (Level IV)",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Heavy",
+      "damage": "-4",
+      "cost": "$2,000",
+      "availability": "5",
+      "source": "V5 Corebook",
+      "notes": "Full torso and limb protection. Stops high-powered rifle rounds."
+    },
+    {
+      "name": "Helmet (Ballistic)",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Head",
+      "damage": "-2",
+      "cost": "$100",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Protects against headshots. Can be worn with a vest."
+    },
+    {
+      "name": "Ballistic Shield",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Shield",
+      "damage": "-4",
+      "cost": "$600",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Provides full cover to the wielder. Heavy and cumbersome."
+    },
+    {
+      "name": "Reinforced Long Coat",
+      "category": "Armor",
+      "subcategory": "armor_and_protection",
+      "type": "Light",
+      "damage": "-1",
+      "cost": "$200",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Trendy armor for urban vampires. Offers some concealment for weapons."
+    },
+    {
+      "name": "Lockpicks (Professional Set)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$50",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "For bypassing mechanical locks."
+    },
+    {
+      "name": "Electronic Lock Breaker",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$300",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "For bypassing electronic and magnetic locks."
+    },
+    {
+      "name": "Rope (50 ft)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$20",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Essential for climbing and rappelling."
+    },
+    {
+      "name": "Grappling Hook",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$25",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "For scaling buildings."
+    },
+    {
+      "name": "Handcuffs (Metal)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Restraint",
+      "damage": "0",
+      "cost": "$30",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "For restraining prisoners (human or Kindred)."
+    },
+    {
+      "name": "Zipties (Pack of 50)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Restraint",
+      "damage": "0",
+      "cost": "$5",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Disposable restraints. Lightweight and quiet."
+    },
+    {
+      "name": "Duct Tape",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$5",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "The most useful tool in the world. For binding, sealing, and improvising."
+    },
+    {
+      "name": "Flashlight (Tactical)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$30",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Powerful beam, can be used to blind opponents."
+    },
+    {
+      "name": "Night Vision Goggles",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Electronics",
+      "damage": "0",
+      "cost": "$1,000",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Allows navigation in total darkness."
+    },
+    {
+      "name": "Binoculars",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$80",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For surveillance."
+    },
+    {
+      "name": "Smartphone (Burner)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Electronics",
+      "damage": "0",
+      "cost": "$30",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Prepaid, untraceable phone."
+    },
+    {
+      "name": "First Aid Kit",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Medical",
+      "damage": "0",
+      "cost": "$50",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For patching up mortals. Useless for Kindred."
+    },
+    {
+      "name": "Gas Mask",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Protection",
+      "damage": "0",
+      "cost": "$100",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "Protects against tear gas and airborne toxins."
+    },
+    {
+      "name": "Fire Extinguisher",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$40",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For putting out fires (or creating a blinding cloud)."
+    },
+    {
+      "name": "Crowbar",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "+2",
+      "cost": "$30",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For prying doors and crates. Also a decent weapon."
+    },
+    {
+      "name": "Shovel",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "+2",
+      "cost": "$25",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For burying bodies or digging up secrets."
+    },
+    {
+      "name": "Sledgehammer",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "+3",
+      "cost": "$50",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For smashing through walls, doors, and bones."
+    },
+    {
+      "name": "Saw (Hack/Hand)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "+1",
+      "cost": "$15",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For cutting through wood, metal, or flesh."
+    },
+    {
+      "name": "Bolt Cutters",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$30",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For cutting through chains and padlocks."
+    },
+    {
+      "name": "Mirror (Handheld)",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$10",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For checking corners and spotting hidden things."
+    },
+    {
+      "name": "Chalk",
+      "category": "Gear",
+      "subcategory": "tactical_and_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$2",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For marking trails or drawing occult symbols."
+    },
+    {
+      "name": "Blood Bag (Fresh)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Consumable",
+      "damage": "0",
+      "cost": "$50",
+      "availability": "3",
+      "source": "V5 Corebook",
+      "notes": "A portable source of vitae for healing and refueling."
+    },
+    {
+      "name": "Blood Bag (Resonant)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Consumable",
+      "damage": "0",
+      "cost": "$150",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Provides a temporary boost to a specific Attribute or Discipline."
+    },
+    {
+      "name": "Holy Water (Vial)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$20",
+      "availability": "4",
+      "source": "V5 Corebook",
+      "notes": "Burns Kindred on contact. Deal Aggravated damage if splashed on them."
+    },
+    {
+      "name": "Crucifix",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$10",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "May cause fear or hesitation in superstitious Kindred (mechanical effect at ST discretion)."
+    },
+    {
+      "name": "Wooden Stakes (Pack of 3)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Weapon",
+      "damage": "+1",
+      "cost": "$25",
+      "availability": "2",
+      "source": "V5 Corebook",
+      "notes": "The ultimate weapon for a vampire hunter. Must be driven through the heart."
+    },
+    {
+      "name": "Sunscreen (SPF 100+)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$15",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Allows a Kindred to survive a few minutes of direct sunlight. Provides 1-2 turns of protection."
+    },
+    {
+      "name": "Sunglasses (UV-Protected)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$20",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Reduces penalties in bright light."
+    },
+    {
+      "name": "Wide-Brimmed Hat",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$25",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "More sun protection for the face."
+    },
+    {
+      "name": "Dark Suit (Tailored)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$300",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "The classic vampire uniform. +1 to Social rolls in formal settings."
+    },
+    {
+      "name": "Umbrella",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$15",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For protection from rain and sun. Can be used as a makeshift shield."
+    },
+    {
+      "name": "Plastic Sheeting",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$10",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For containing messes. Essential for cleanup."
+    },
+    {
+      "name": "Bleach",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$5",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "For cleaning up bloodstains."
+    },
+    {
+      "name": "Lime (Calcium Hydroxide)",
+      "category": "Vampire Gear",
+      "subcategory": "vampire_specific_combat_gear",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$10",
+      "availability": "1",
+      "source": "V5 Corebook",
+      "notes": "Speeds up decomposition. For disposing of bodies."
+    }
+  ],
+  "npc_equipment_sets": [
+    {
+      "id": "street_thug",
+      "name": "Street Thug",
+      "description": "A low-level criminal, likely armed with something found on the street.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Brass Knuckles",
+          "quantity": 1,
+          "cost": "$10",
+          "notes": "For beating protection money out of people."
+        },
+        {
+          "name": "Tire Iron",
+          "quantity": 1,
+          "cost": "$20",
+          "notes": "A sturdy and intimidating tool."
+        },
+        {
+          "name": "Knife (Flick)",
+          "quantity": 1,
+          "cost": "$15",
+          "notes": "Quick to draw, good for threatening."
+        },
+        {
+          "name": "Zipties",
+          "quantity": 1,
+          "cost": "$5",
+          "notes": "For restraining victims or prisoners."
+        },
+        {
+          "name": "Mask (Balaclava)",
+          "quantity": 1,
+          "cost": "$10",
+          "notes": "For keeping their identity hidden."
+        }
+      ]
+    },
+    {
+      "id": "professional_enforcer",
+      "name": "Professional Enforcer",
+      "description": "A well-equipped soldier for a Kindred organization. Usually a Ghoul or Mortal.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "9mm Pistol",
+          "quantity": 1,
+          "cost": "$400",
+          "notes": "Reliable, high-capacity sidearm."
+        },
+        {
+          "name": "Combat Knife",
+          "quantity": 1,
+          "cost": "$20",
+          "notes": "For silent takedowns and as a backup weapon."
+        },
+        {
+          "name": "Kevlar Vest (Level II)",
+          "quantity": 1,
+          "cost": "$500",
+          "notes": "Basic protection for a firefight."
+        },
+        {
+          "name": "Lockpicks",
+          "quantity": 1,
+          "cost": "$50",
+          "notes": "For bypassing locks when needed."
+        },
+        {
+          "name": "Burner Phone",
+          "quantity": 1,
+          "cost": "$30",
+          "notes": "Untraceable communication."
+        },
+        {
+          "name": "Flashlight (Tactical)",
+          "quantity": 1,
+          "cost": "$30",
+          "notes": "For exploring dark places."
+        }
+      ]
+    },
+    {
+      "id": "elite_spec_ops",
+      "name": "Elite Spec-Ops",
+      "description": "A high-end operative, possibly Second Inquisition or a powerful Kindred's personal guard.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": ".223 Assault Rifle",
+          "quantity": 1,
+          "cost": "$1,500",
+          "notes": "Military-grade firepower."
+        },
+        {
+          "name": "12-Gauge Shotgun",
+          "quantity": 1,
+          "cost": "$500",
+          "notes": "For close-quarters encounters."
+        },
+        {
+          "name": ".45 Automatic Pistol",
+          "quantity": 1,
+          "cost": "$600",
+          "notes": "Heavy backup sidearm."
+        },
+        {
+          "name": "Heavy Body Armor (Level IV)",
+          "quantity": 1,
+          "cost": "$2,000",
+          "notes": "Max protection against small arms."
+        },
+        {
+          "name": "Ballistic Helmet",
+          "quantity": 1,
+          "cost": "$100",
+          "notes": "Head protection. Can mount night vision."
+        },
+        {
+          "name": "Night Vision Goggles",
+          "quantity": 1,
+          "cost": "$1,000",
+          "notes": "For operations in total darkness."
+        },
+        {
+          "name": "Fragmentation Grenade",
+          "quantity": 2,
+          "cost": "$100",
+          "notes": "For clearing rooms or eliminating threats quickly."
+        },
+        {
+          "name": "Flashbang Grenade",
+          "quantity": 2,
+          "cost": "$75",
+          "notes": "For non-lethal room entry and disorientation."
+        }
+      ]
+    },
+    {
+      "id": "vampire_hunter",
+      "name": "Vampire Hunter",
+      "description": "A fanatic or professional dedicated to eliminating Kindred.",
+      "total_cost": null,
+      "equipment": [
+        {
+          "name": "Wooden Stakes (Pack of 3)",
+          "quantity": 1,
+          "cost": "$25",
+          "notes": "The primary weapon for finishing a Kindred."
+        },
+        {
+          "name": "Crossbow",
+          "quantity": 1,
+          "cost": "$400",
+          "notes": "For firing wooden bolts silently."
+        },
+        {
+          "name": "12-Gauge Shotgun",
+          "quantity": 1,
+          "cost": "$500",
+          "notes": "For close-range engagement."
+        },
+        {
+          "name": "Dragon's Breath Shells",
+          "quantity": 6,
+          "cost": "$300",
+          "notes": "Incendiary rounds for Aggravated damage."
+        },
+        {
+          "name": "Holy Water (Vials)",
+          "quantity": 3,
+          "cost": "$60",
+          "notes": "For splashing on Kindred."
+        },
+        {
+          "name": "Crucifix",
+          "quantity": 1,
+          "cost": "$10",
+          "notes": "A focus for faith, may deter superstitious vampires."
+        },
+        {
+          "name": "Gas Mask",
+          "quantity": 1,
+          "cost": "$100",
+          "notes": "Protection from Kindred powers that use gas or miasma."
+        },
+        {
+          "name": "Kevlar Vest (Level IIIA)",
+          "quantity": 1,
+          "cost": "$800",
+          "notes": "Protection from firearms."
+        },
+        {
+          "name": "Flashlight (UV)",
+          "quantity": 1,
+          "cost": "$50",
+          "notes": "UV light is painful to Kindred and can be used to spot them."
+        }
+      ]
+    }
+  ]
+}

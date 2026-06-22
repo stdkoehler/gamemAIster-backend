@@ -1,0 +1,755 @@
+{
+  "metadata": {
+    "system": "The Expanse RPG",
+    "total_items": 113
+  },
+  "items": [
+    {
+      "name": "Zauger ZX9 Semi-Automatic",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 11,
+      "notes": "Standard issue polymer sidearm for UN Navy personnel and corporate security forces."
+    },
+    {
+      "name": "Alba Patera SAP 'Argyre'",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 12,
+      "notes": "Martian high-muzzle-velocity heavy sidearm built for vacuum/armored engagements."
+    },
+    {
+      "name": "Zauger DI-C495 Pocket Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 9,
+      "notes": "Easily concealable backup frame, highly favored by Belter rock-hoppers."
+    },
+    {
+      "name": "Nova Arms SAP34 Service Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 10,
+      "notes": "A strictly mechanical, highly reliable baseline semi-automatic."
+    },
+    {
+      "name": "Star-Helix Security Issue Revolver",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 11,
+      "notes": "Heavy kinetic cylinder revolver issued to atmospheric station marshals."
+    },
+    {
+      "name": "Martian Mag-Assisted Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 13,
+      "notes": "Fires micro-flechettes using magnetic rails; highly effective in low-gravity vacuum."
+    },
+    {
+      "name": "Stunner Sidearm",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 10,
+      "notes": "Non-lethal energy discharge weapon used strictly for civilian crowd or riot control."
+    },
+    {
+      "name": "Lou-Hi Tactical Systems Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 11,
+      "notes": "Corporate-grade semi-automatic pistol favored by private security contractors."
+    },
+    {
+      "name": "Reul 52T Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 10,
+      "notes": "Reliable sidearm with a distinctive profile, common in outer planet colonies."
+    },
+    {
+      "name": "Snow Tiger Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 12,
+      "notes": "High-end civilian pistol known for its accuracy and precision machining."
+    },
+    {
+      "name": "Tyler Inc. Bolster Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 11,
+      "notes": "Heavy-frame sidearm with a reputation for stopping power in close quarters."
+    },
+    {
+      "name": "Yoko-Tech Y-01 Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 10,
+      "notes": "Mass-produced, modular pistol popular among Belters for its ease of repair."
+    },
+    {
+      "name": "3D Printed Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 7,
+      "notes": "Cheap, easily manufactured firearm of variable quality, common in the outer system."
+    },
+    {
+      "name": "10guns Bach Revolver",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 9,
+      "notes": "Classic design revolver, prized for its reliability in harsh environments."
+    },
+    {
+      "name": "Cold Iron 'Hyperdyne FR' Revolver",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 11,
+      "notes": "Modern revolver with advanced materials, used by some security forces."
+    },
+    {
+      "name": "Edon Tech 'Chiasmodon' Revolver",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 12,
+      "notes": "High-end revolver with integrated smart-link systems for targeting."
+    },
+    {
+      "name": "Korth NXR 'Nighthawk' Revolver",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 13,
+      "notes": "Premium revolver, a status symbol among the wealthy and elite security."
+    },
+    {
+      "name": "Mateba Autorevolver",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 11,
+      "notes": "Unusual semi-automatic revolver design, a collector's piece in the system."
+    },
+    {
+      "name": "1st Generation Martian Service Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 13,
+      "notes": "Early MCRN standard sidearm, based on the Springfield XD-9. Still seen in some reserve units."
+    },
+    {
+      "name": "2nd Generation Martian Service Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 14,
+      "notes": "Current MCRN sidearm, a modified Magpul FMG-9, known for its compact, folding design."
+    },
+    {
+      "name": "Standard United Nations Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 12,
+      "notes": "Standard UN military sidearm, based on the Umarex Walther Red Hawk."
+    },
+    {
+      "name": "Protogen Security Pistol",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 11,
+      "notes": "Sidearm issued to Protogen security forces, a modified Magpul FMG-9 similar to the Martian 2nd Gen."
+    },
+    {
+      "name": "Chiappa Rhino 50DS",
+      "category": "weapons",
+      "subcategory": "pistols_and_small_arms",
+      "availability_tn": 13,
+      "notes": "A powerful, distinctive revolver favored by UN black-ops tac-teams and later used by Detective Miller."
+    },
+    {
+      "name": "Vostok Firearms 'Zarya' MKII",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 12,
+      "notes": "Bullpup, caseless ammunition SMG tailored for close-quarters ship boarding actions."
+    },
+    {
+      "name": "Edon Tech Bullpup 'Itajara'",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 13,
+      "notes": "High-end corporate personal defense weapon featuring integrated smart-link telemetry."
+    },
+    {
+      "name": "Zarki Systems SamUC (Belter Stamped)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 11,
+      "notes": "Roughly manufactured, heavy-capacity SMG common in OPA cache networks."
+    },
+    {
+      "name": "MCRN Compact PDW",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 13,
+      "notes": "Ultra-light personal defense weapon issued to Martian pilots and logistics crews."
+    },
+    {
+      "name": "3Barrel PDW",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 11,
+      "notes": "Unconventional three-barreled design, favored by some for its high burst output."
+    },
+    {
+      "name": "Black Rock Arms 12M PDW",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 12,
+      "notes": "Compact and rugged PDW, popular among shipboard security teams."
+    },
+    {
+      "name": "HLG9i SMG",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 11,
+      "notes": "Lightweight submachine gun with a high rate of fire, used by various factions."
+    },
+    {
+      "name": "TGA Repulsor DS SMG",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 12,
+      "notes": "Advanced SMG featuring a unique recoil mitigation system."
+    },
+    {
+      "name": "Zarki Systems TimC SMG",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_pdw",
+      "availability_tn": 10,
+      "notes": "Simpler, more affordable variant of the SamUC, widely distributed in the Belt."
+    },
+    {
+      "name": "Behring AT XAR-55B Tactical Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 13,
+      "notes": "Standard service assault rifle for United Nations Marines."
+    },
+    {
+      "name": "Alba Patera 'Tharsis II' Combat Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 14,
+      "notes": "High-tier MCRN assault rifle featuring advanced carbon-weave recoil dampening."
+    },
+    {
+      "name": "Nova Arms AR34 Militia Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 12,
+      "notes": "Older-generation kinetic rifle widely distributed across outer planet garrisons."
+    },
+    {
+      "name": "Nova Arms CS-48 Breaching Shotgun",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 12,
+      "notes": "Pump-action combat shotgun devastating inside narrow metallic station corridors."
+    },
+    {
+      "name": "BMPS 42 Red (Low-Recoil Shotgun)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 11,
+      "notes": "Belter-modified gas-ported shotgun safe for untethered zero-g usage."
+    },
+    {
+      "name": "Edon Tech UCSRP 'Pike' Sniper System",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 14,
+      "notes": "Long-range anti-material precision system built for moon-surface deployments."
+    },
+    {
+      "name": "MCRN Long-Range Marksman Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 14,
+      "notes": "Smart-scoped semi-automatic rifle issued to marine scouts."
+    },
+    {
+      "name": "Edon Tech 'Akula Black' Anti-Materiel Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 15,
+      "notes": "Heavy-caliber rifle designed to penetrate light vehicle armor and bulkheads."
+    },
+    {
+      "name": "Prototype 'Oceanic' Anti-Materiel Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 16,
+      "notes": "Experimental long-range rifle, rarely seen outside of special forces."
+    },
+    {
+      "name": "Nova Arms S-4 Sniper Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 13,
+      "notes": "Bolt-action precision rifle, a standard for planetary-based marksmen."
+    },
+    {
+      "name": "GR-Tech Fishman Sniper Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 13,
+      "notes": "Semi-automatic sniper system with advanced environmental compensation."
+    },
+    {
+      "name": "Yoko-Tech 913-R Assault Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 12,
+      "notes": "Versatile assault rifle, a common sight among various military and militia forces."
+    },
+    {
+      "name": "3D Printed Assault Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 8,
+      "notes": "Crudely manufactured rifle, often unreliable but easy to produce and conceal."
+    },
+    {
+      "name": "ThndrStrm SF43 Combat Shotgun",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 12,
+      "notes": "High-capacity, semi-automatic shotgun for shipboard and urban combat."
+    },
+    {
+      "name": "Zulfiqar Double-Barreled Shotgun",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 10,
+      "notes": "Simple, powerful break-action shotgun, reliable in the most extreme conditions."
+    },
+    {
+      "name": "UN Assault Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 13,
+      "notes": "Standard UN Marine assault rifle, based on the H&K SL8-4, often seen in the hands of Amos and UN guards."
+    },
+    {
+      "name": "Martian Assault Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "availability_tn": 14,
+      "notes": "Standard MCRN Marine assault rifle, based on the APS UAR Airsoft rifle, a bullpup design."
+    },
+    {
+      "name": "Industrial Plasma Torch (Improvised)",
+      "category": "weapons",
+      "subcategory": "exotic_and_heavy_weapons",
+      "availability_tn": 8,
+      "notes": "Heavy structural cutting tool that functions as a devastating melee weapon."
+    },
+    {
+      "name": "High-Output Rocket Launcher",
+      "category": "weapons",
+      "subcategory": "exotic_and_heavy_weapons",
+      "availability_tn": 15,
+      "notes": "Man-portable military ordinance built to damage light ground vehicles or airlocks."
+    },
+    {
+      "name": "MCRN Recoilless Long-Gun",
+      "category": "weapons",
+      "subcategory": "exotic_and_heavy_weapons",
+      "availability_tn": 15,
+      "notes": "Heavy, brace-mounted support weapon engineered exclusively for zero-g vacuums."
+    },
+    {
+      "name": "Chemical Tear Gas Launcher",
+      "category": "weapons",
+      "subcategory": "exotic_and_heavy_weapons",
+      "availability_tn": 11,
+      "notes": "Atmospheric riot-control weapon used to clear hab-domes."
+    },
+    {
+      "name": "Creature Control Rifle",
+      "category": "weapons",
+      "subcategory": "exotic_and_heavy_weapons",
+      "availability_tn": 12,
+      "notes": "Specialized weapon used by planetary surveyors for non-lethal animal control."
+    },
+    {
+      "name": "Goliath Powered Armor Minigun",
+      "category": "weapons",
+      "subcategory": "exotic_and_heavy_weapons",
+      "availability_tn": 18,
+      "notes": "Built-in 2mm gatling gun for the MCRN Goliath Powered Armor, a devastating anti-personnel weapon."
+    },
+    {
+      "name": "Combat Knife",
+      "category": "weapons",
+      "subcategory": "melee_weapons",
+      "availability_tn": 6,
+      "notes": "Standard utility and fighting knife, common throughout the system."
+    },
+    {
+      "name": "Survival Knife",
+      "category": "weapons",
+      "subcategory": "melee_weapons",
+      "availability_tn": 5,
+      "notes": "Multi-purpose tool with a sturdy blade, essential for EVA and wilderness survival."
+    },
+    {
+      "name": "Heavy Axe",
+      "category": "weapons",
+      "subcategory": "melee_weapons",
+      "availability_tn": 7,
+      "notes": "A brutal and unbalanced melee weapon, often used for breaching or in zero-gravity fights."
+    },
+    {
+      "name": "Mace",
+      "category": "weapons",
+      "subcategory": "melee_weapons",
+      "availability_tn": 7,
+      "notes": "A crushing weapon, favored by some for its ability to deliver blunt-force trauma."
+    },
+    {
+      "name": "Sword",
+      "category": "weapons",
+      "subcategory": "melee_weapons",
+      "availability_tn": 8,
+      "notes": "A rare and balanced weapon, often a ceremonial piece or a personalized tool for melee specialists."
+    },
+    {
+      "name": "Flexible Weapon",
+      "category": "weapons",
+      "subcategory": "melee_weapons",
+      "availability_tn": 7,
+      "notes": "An unwieldy but unpredictable weapon, such as a chain or whip, used to bypass enemy defenses."
+    },
+    {
+      "name": "UN Navy Fragmentation Grenade",
+      "category": "weapons",
+      "subcategory": "explosives_and_grenades",
+      "availability_tn": 13,
+      "notes": "Standard issue fragmentation grenade for UN forces. Effective in shipboard and urban combat."
+    },
+    {
+      "name": "MCR Navy Fragmentation Grenade",
+      "category": "weapons",
+      "subcategory": "explosives_and_grenades",
+      "availability_tn": 13,
+      "notes": "Martian equivalent of the UN fragmentation grenade, with a slightly different blast pattern."
+    },
+    {
+      "name": "UN Navy Stun Grenade",
+      "category": "weapons",
+      "subcategory": "explosives_and_grenades",
+      "availability_tn": 11,
+      "notes": "Non-lethal grenade used for crowd control and clearing rooms without causing structural damage."
+    },
+    {
+      "name": "MCR Navy Stun Grenade",
+      "category": "weapons",
+      "subcategory": "explosives_and_grenades",
+      "availability_tn": 11,
+      "notes": "Martian version of the stun grenade, commonly used in boarding actions."
+    },
+    {
+      "name": "MCRN Prop Grenade",
+      "category": "weapons",
+      "subcategory": "explosives_and_grenades",
+      "availability_tn": 10,
+      "notes": "A dummy or low-yield training grenade used by MCRN forces, sometimes repurposed as a decoy."
+    },
+    {
+      "name": "Mining Charge",
+      "category": "weapons",
+      "subcategory": "explosives_and_grenades",
+      "availability_tn": 9,
+      "notes": "Industrial explosive used in asteroid mining, easily repurposed as a powerful demolition charge."
+    },
+    {
+      "name": "Nuclear Detonator (Prop/Device)",
+      "category": "weapons",
+      "subcategory": "explosives_and_grenades",
+      "availability_tn": 17,
+      "notes": "A device for arming a nuclear warhead. Incredibly rare and restricted, with immense destructive potential."
+    },
+    {
+      "name": "Standard Civilian Clothing / Jumpsuit",
+      "category": "armor_and_apparel",
+      "availability_tn": 5,
+      "notes": "Basic, durable clothing suitable for shipboard life or dome cities."
+    },
+    {
+      "name": "Heavy Leather/Reinforced Work Coveralls",
+      "category": "armor_and_apparel",
+      "availability_tn": 8,
+      "notes": "Thick utility wear providing minor protection against stray industrial sparks."
+    },
+    {
+      "name": "Star-Helix Light Security Vest",
+      "category": "armor_and_apparel",
+      "availability_tn": 10,
+      "notes": "Concealable kinetic mesh vest designed to stop low-caliber handgun rounds."
+    },
+    {
+      "name": "UN Marine Tactical Body Armor",
+      "category": "armor_and_apparel",
+      "availability_tn": 13,
+      "notes": "Full-body composite plating issued to regular United Nations infantry forces."
+    },
+    {
+      "name": "MCRN Combat Armor Plating",
+      "category": "armor_and_apparel",
+      "availability_tn": 14,
+      "notes": "Advanced lightweight alloy plating optimized for both high-g and vacuum maneuvers."
+    },
+    {
+      "name": "Goliath Powered Armor",
+      "category": "armor_and_apparel",
+      "availability_tn": 18,
+      "notes": "Elite MCRN mechanical power armor; strictly military-restricted, self-contained system."
+    },
+    {
+      "name": "Light Carapace Armor",
+      "category": "armor_and_apparel",
+      "availability_tn": 12,
+      "notes": "Hardened shell armor providing solid protection without sacrificing mobility."
+    },
+    {
+      "name": "Bodyglove",
+      "category": "armor_and_apparel",
+      "availability_tn": 9,
+      "notes": "Skin-tight suit that offers minor protection and can be worn under other armor."
+    },
+    {
+      "name": "Flak Armor",
+      "category": "armor_and_apparel",
+      "availability_tn": 11,
+      "notes": "Soft armor designed to absorb shrapnel and fragmentation from explosives."
+    },
+    {
+      "name": "Mesh Armor",
+      "category": "armor_and_apparel",
+      "availability_tn": 10,
+      "notes": "Lightweight woven armor, offering good protection against slashing and stabbing attacks."
+    },
+    {
+      "name": "UNMC Powered Armor Space Suit",
+      "category": "armor_and_apparel",
+      "availability_tn": 17,
+      "notes": "Full-body powered armor suit used by United Nations Marine Corps, similar in concept to the Goliath suit."
+    },
+    {
+      "name": "Basic Emergency 'Bubble' Hood",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 6,
+      "notes": "Single-use emergency transparent hood providing 10 minutes of filtration/oxygen."
+    },
+    {
+      "name": "Light Duties Skinsuit",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 9,
+      "notes": "Form-fitting, low-profile internal suit designed to protect against brief decompression."
+    },
+    {
+      "name": "Standard Work Vacsuit",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 11,
+      "notes": "The blue-collar industrial spacesuit used by Belter rock-hoppers for external repairs."
+    },
+    {
+      "name": "MCRN Armored Vacsuit",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 13,
+      "notes": "A military-grade environmental suit with integrated kinetic mesh layers."
+    },
+    {
+      "name": "Standard Magnetic Boots (Mag-Boots)",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 8,
+      "notes": "Ubiquitous footwear using high-grade electromagnets for deck-walking in zero-g."
+    },
+    {
+      "name": "Extended Oxygen Reservoir Tank",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 8,
+      "notes": "Supplemental air supply tank attaching directly to standard utility suits."
+    },
+    {
+      "name": "Portable Emergency Vacuum Shelter",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 10,
+      "notes": "Deployable inflatable hab-tent designed to shield up to 4 people from vacuum crashes."
+    },
+    {
+      "name": "Belter 'Pur & Kleen' Work Vacsuit",
+      "category": "environment_suits_and_survival",
+      "availability_tn": 9,
+      "notes": "A common, fabric-based vacsuit used by Belters, less protective than military-grade suits but widely available."
+    },
+    {
+      "name": "Hand Terminal (Consumer Grade)",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 6,
+      "notes": "Ubiquitous transparent personal computer/phone used for localized data syncing."
+    },
+    {
+      "name": "Hand Terminal (Secure/Military Cryptographic)",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 12,
+      "notes": "Hardened terminal featuring localized server-node encryption layers."
+    },
+    {
+      "name": "Mechanical Toolset (Shipboard Standard)",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 8,
+      "notes": "Wrenches, drivers, and plasma-brazers necessary for keeping a hull together."
+    },
+    {
+      "name": "Electronic Sequencer (Lockpick)",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 11,
+      "notes": "Illegal hacking bypass matrix tool used to splice electronic airlocks."
+    },
+    {
+      "name": "Industrial Laser Rangefinder",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 7,
+      "notes": "Handheld survey device mapping geometry up to several kilometers out."
+    },
+    {
+      "name": "Remote Reconnaissance Drone",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 11,
+      "notes": "Small Quad-rotor or cold-gas thruster probe equipped with optical sensors."
+    },
+    {
+      "name": "Mech (Exoskeleton)",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 15,
+      "notes": "Bulky exoskeleton amplifying the wearer's strength for heavy lifting or combat."
+    },
+    {
+      "name": "MCRN Field Comm Device",
+      "category": "electronics_tools_and_scifi_tech",
+      "availability_tn": 10,
+      "notes": "Standard-issue military communication device, a clear acrylic prop with a holographic interface."
+    },
+    {
+      "name": "Standard First-Aid Medkit",
+      "category": "medical_supplies_and_pharmaceuticals",
+      "availability_tn": 7,
+      "notes": "Basic trauma dressings, topical sealants, and localized antiseptic sprays."
+    },
+    {
+      "name": "Automated Medical Injector (Auto-Med)",
+      "category": "medical_supplies_and_pharmaceuticals",
+      "availability_tn": 10,
+      "notes": "Smart-sleeve computer attachment that diagnoses and administers stable drug cocktails."
+    },
+    {
+      "name": "High-G Cocktail ('The Juice')",
+      "category": "medical_supplies_and_pharmaceuticals",
+      "availability_tn": 11,
+      "notes": "Essential chemical cocktail keeping pilots conscious during hard high-g maneuvers."
+    },
+    {
+      "name": "Anti-Radiation Drug Regimen",
+      "category": "medical_supplies_and_pharmaceuticals",
+      "availability_tn": 10,
+      "notes": "Aggressive cellular repair pills crucial after exposure to leaking ship reactors."
+    },
+    {
+      "name": "Tissue Regeneration Gel Pack",
+      "category": "medical_supplies_and_pharmaceuticals",
+      "availability_tn": 12,
+      "notes": "Synthetic biological slurry accelerating muscle and skin closing after kinetic wounds."
+    },
+    {
+      "name": "Ceres Station Field Medical Kit",
+      "category": "medical_supplies_and_pharmaceuticals",
+      "availability_tn": 9,
+      "notes": "A standard-issue medical kit used on Ceres Station, containing supplies for common injuries and industrial accidents."
+    },
+    {
+      "name": "MCRN-Tachi Medical Backpack",
+      "category": "medical_supplies_and_pharmaceuticals",
+      "availability_tn": 11,
+      "notes": "A high-quality medical backpack found on MCRN vessels like the Tachi, containing advanced field surgery tools and drugs."
+    },
+    {
+      "name": "Point Defense Cannon (PDC)",
+      "category": "ship_weapons_and_vehicle_equipment",
+      "availability_tn": 16,
+      "notes": "Close-in weapon system firing rapid bursts of kinetic rounds to intercept torpedoes and fighters. Standard on military vessels."
+    },
+    {
+      "name": "Shipboard Torpedo (Missile)",
+      "category": "ship_weapons_and_vehicle_equipment",
+      "availability_tn": 16,
+      "notes": "Guided ship-to-ship missile with a plasma or kinetic warhead. The primary offensive weapon for naval engagements."
+    },
+    {
+      "name": "Shipboard Railgun",
+      "category": "ship_weapons_and_vehicle_equipment",
+      "availability_tn": 17,
+      "notes": "Electromagnetically fired kinetic weapon, devastating at short to medium range. Found on cruisers and battleships."
+    },
+    {
+      "name": "Grappling Cannon",
+      "category": "ship_weapons_and_vehicle_equipment",
+      "availability_tn": 14,
+      "notes": "A shipboard cannon that fires a harpoon or grapnel to snare enemy vessels for boarding actions, found on some assault cruisers."
+    },
+    {
+      "name": "Breaching Pod",
+      "category": "ship_weapons_and_vehicle_equipment",
+      "availability_tn": 15,
+      "notes": "Small, armored craft designed to attach to an enemy vessel and deploy marines directly into the hull."
+    },
+    {
+      "name": "Knight-Class Shuttle",
+      "category": "vehicles_and_spacecraft",
+      "availability_tn": 13,
+      "notes": "A small personnel shuttle with three fusion torch drives. Pre-Epstein drive technology, less efficient but common on older ships."
+    },
+    {
+      "name": "Grendel-Class Light Freighter",
+      "category": "vehicles_and_spacecraft",
+      "availability_tn": 12,
+      "notes": "A blocky, commercial transport spacecraft with four Epstein drives. Common for cargo hauling throughout the system."
+    },
+    {
+      "name": "Scirocco-Class Assault Cruiser",
+      "category": "vehicles_and_spacecraft",
+      "availability_tn": 18,
+      "notes": "A 200-meter long frontline warship and troop carrier, driven by four powerful Epstein drives. The pinnacle of combat balance."
+    },
+    {
+      "name": "Cronkite-Class Media Ship",
+      "category": "vehicles_and_spacecraft",
+      "availability_tn": 11,
+      "notes": "A specialty vessel designed for broadcasting and editing in deep space, a rare example of a ship built for a specific media role."
+    },
+    {
+      "name": "Raptor-Class Cruiser",
+      "category": "vehicles_and_spacecraft",
+      "availability_tn": 18,
+      "notes": "A dangerous warship with bow and stern railguns, six plasma torpedo bays, and advanced Epstein drives."
+    },
+    {
+      "name": "Colony Ship",
+      "category": "vehicles_and_spacecraft",
+      "availability_tn": 14,
+      "notes": "Large, long-range vessels designed to carry human colonists and supplies to the Outer Planets and beyond."
+    }
+  ],
+  "npc_equipment_sets": []
+}

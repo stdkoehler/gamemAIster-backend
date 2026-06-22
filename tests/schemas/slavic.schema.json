@@ -1,0 +1,232 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/SlavicCharacter",
+  "definitions": {
+    "SlavicCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "slavic"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "kin": {
+          "type": "string"
+        },
+        "kinAbility": {
+          "type": "string"
+        },
+        "calling": {
+          "type": "string"
+        },
+        "age": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "Strength": {
+              "type": "number"
+            },
+            "Agility": {
+              "type": "number"
+            },
+            "Wits": {
+              "type": "number"
+            },
+            "Empathy": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Strength",
+            "Agility",
+            "Wits",
+            "Empathy"
+          ],
+          "additionalProperties": false
+        },
+        "attributeDamage": {
+          "type": "object",
+          "properties": {
+            "Strength": {
+              "type": "number"
+            },
+            "Agility": {
+              "type": "number"
+            },
+            "Wits": {
+              "type": "number"
+            },
+            "Empathy": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Strength",
+            "Agility",
+            "Wits",
+            "Empathy"
+          ],
+          "additionalProperties": false
+        },
+        "skills": {
+          "type": "object",
+          "properties": {
+            "Endurance": {
+              "type": "number"
+            },
+            "Fight": {
+              "type": "number"
+            },
+            "Sneak": {
+              "type": "number"
+            },
+            "Move": {
+              "type": "number"
+            },
+            "Marksmanship": {
+              "type": "number"
+            },
+            "Scout": {
+              "type": "number"
+            },
+            "Lore": {
+              "type": "number"
+            },
+            "Survival": {
+              "type": "number"
+            },
+            "Craft": {
+              "type": "number"
+            },
+            "Insight": {
+              "type": "number"
+            },
+            "Manipulation": {
+              "type": "number"
+            },
+            "Healing": {
+              "type": "number"
+            },
+            "Performance": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Endurance",
+            "Fight",
+            "Sneak",
+            "Move",
+            "Marksmanship",
+            "Scout",
+            "Lore",
+            "Survival",
+            "Craft",
+            "Insight",
+            "Manipulation",
+            "Healing",
+            "Performance"
+          ],
+          "additionalProperties": false
+        },
+        "talents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "wyrd": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "armor": {
+          "$ref": "#/definitions/SlavicArmor"
+        },
+        "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pride": {
+          "type": "string"
+        },
+        "darkSecret": {
+          "type": "string"
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "experience": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "kin",
+        "kinAbility",
+        "calling",
+        "description",
+        "attributes",
+        "attributeDamage",
+        "skills",
+        "talents"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "SlavicArmor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "rating"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

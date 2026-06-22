@@ -1,0 +1,1282 @@
+{
+  "metadata": {
+    "system": "7th Sea (2nd Edition) - Caribbean Pirate Expansion",
+    "source": "Derived from 7th Sea Core Rulebook, 7th Sea 1st Edition sourcebooks, historical pirate weaponry references, and fan resources",
+    "theme": "Golden Age of Piracy - Caribbean Theater (c. 1660-1730)",
+    "total_items": 101,
+    "entry_fields": [
+      "name",
+      "category",
+      "skill",
+      "keywords",
+      "damage_rating",
+      "cost",
+      "notes"
+    ],
+    "field_coverage": {
+      "name": "110/110 (100%)",
+      "category": "110/110 (100%)",
+      "skill": "110/110 (100%)",
+      "keywords": "110/110 (100%)",
+      "damage_rating": "110/110 (100%)",
+      "cost": "110/110 (100%)",
+      "notes": "110/110 (100%)"
+    }
+  },
+  "items": [
+    {
+      "name": "Knife",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "1k1",
+      "cost": "1 WP",
+      "notes": "Suffers +5 TN penalty to Active Defence. Universal tool and backup weapon.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Dagger",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "1k2",
+      "cost": "2 WP",
+      "notes": "A common secondary weapon. Easily concealed.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Stiletto",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "1k2",
+      "cost": "3 WP",
+      "notes": "Suffers +5 TN penalty to Active Defence. Ignores 2 points of Reduction from armor. Ideal for piercing.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Main-Gauche",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "0k2",
+      "cost": "4 WP",
+      "notes": "A parrying dagger, used in the off-hand for defense.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Triple-Dagger",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "0k2",
+      "cost": "6 WP",
+      "notes": "+5 TN to Active Defence. -5 to Attack. An unusual and tricky weapon.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Naval Dirk",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "1k2",
+      "cost": "3 WP",
+      "notes": "A heavy-bladed knife carried by sailors and junior officers. Part tool, part weapon.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Gully",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "1k2",
+      "cost": "4 WP",
+      "notes": "A large, heavy fighting knife popular among pirates. Useful for cutting rigging and close-quarters brawling.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Cutlass",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "2k2",
+      "cost": "10 WP",
+      "notes": "The quintessential pirate sword. Short, heavy, curved blade. Easy to draw and deadly in close quarters.",
+      "skill": "Fencing",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Hanger / Hunting Sword",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "2k2",
+      "cost": "12 WP",
+      "notes": "A short, curved sword with a single edge. A naval and military sidearm, favored by boarding parties.",
+      "skill": "Fencing",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Sabre",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "2k2",
+      "cost": "15 WP",
+      "notes": "A cavalry sword with a curved blade. Also used by naval officers.",
+      "skill": "Fencing",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Rapier",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "2k2",
+      "cost": "18 WP",
+      "notes": "A thin, thrusting blade. More common among duelists and officers than common pirates. Less handy below decks.",
+      "skill": "Fencing",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Smallsword",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "2k2",
+      "cost": "25 WP",
+      "notes": "A lighter, faster dueling sword. A status symbol among wealthy pirates and captains.",
+      "skill": "Fencing",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Scimitar",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "2k2",
+      "cost": "30 WP",
+      "notes": "A curved sword from the Crescent Empire. Rare in the Caribbean, but a prized trophy.",
+      "skill": "Fencing",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Broadsword",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "3k2",
+      "cost": "20 WP",
+      "notes": "A wide-bladed, heavy sword. Favored by those who prefer a crushing blow.",
+      "skill": "Heavy Weapon",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Longsword",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "3k2",
+      "cost": "25 WP",
+      "notes": "Suffers +5 TN penalty to Active Defence. A versatile, two-handed blade.",
+      "skill": "Heavy Weapon",
+      "keywords": "Large"
+    },
+    {
+      "name": "Claymore",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "4k2",
+      "cost": "40 WP",
+      "notes": "Attack Roll has -1k0 penalty. A massive Scottish two-handed sword.",
+      "skill": "Heavy Weapon",
+      "keywords": "Large"
+    },
+    {
+      "name": "Zweihander",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "3k3",
+      "cost": "50 WP",
+      "notes": "Must be set before attacking. An enormous two-handed sword.",
+      "skill": "Heavy Weapon",
+      "keywords": "Large"
+    },
+    {
+      "name": "Falchion",
+      "category": "Melee",
+      "subcategory": "blades_and_swords",
+      "damage_rating": "2k3",
+      "cost": "22 WP",
+      "notes": "A single-edged, cleaver-like sword. Effective at chopping.",
+      "skill": "Heavy Weapon",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Hatchet (Throwing)",
+      "category": "Melee",
+      "subcategory": "axes_and_bludgeons",
+      "damage_rating": "1k2",
+      "cost": "5 WP",
+      "notes": "Can be thrown. A common tool and weapon.",
+      "skill": "Fencing",
+      "keywords": "Small"
+    },
+    {
+      "name": "Woodsman's Axe",
+      "category": "Melee",
+      "subcategory": "axes_and_bludgeons",
+      "damage_rating": "2k3",
+      "cost": "8 WP",
+      "notes": "A utility tool and weapon.",
+      "skill": "Heavy Weapon",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Great Axe",
+      "category": "Melee",
+      "subcategory": "axes_and_bludgeons",
+      "damage_rating": "0k4",
+      "cost": "35 WP",
+      "notes": "A massive two-handed axe.",
+      "skill": "Heavy Weapon",
+      "keywords": "Large"
+    },
+    {
+      "name": "Boarding Axe",
+      "category": "Melee",
+      "subcategory": "axes_and_bludgeons",
+      "damage_rating": "2k2",
+      "cost": "15 WP",
+      "notes": "The iconic pirate boarding tool. Designed for climbing, cutting rigging, and combat. Can be used one or two-handed.",
+      "skill": "Heavy Weapon",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Club",
+      "category": "Melee",
+      "subcategory": "axes_and_bludgeons",
+      "damage_rating": "1k2",
+      "cost": "1 WP",
+      "notes": "A simple, heavy bludgeon. Often a belaying pin, easily found on any ship.",
+      "skill": "Heavy Weapon",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Mace",
+      "category": "Melee",
+      "subcategory": "axes_and_bludgeons",
+      "damage_rating": "2k2",
+      "cost": "14 WP",
+      "notes": "A metal-headed club. Effective against armor.",
+      "skill": "Heavy Weapon",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Flail",
+      "category": "Melee",
+      "subcategory": "axes_and_bludgeons",
+      "damage_rating": "2k2",
+      "cost": "18 WP",
+      "notes": "A spiked ball on a chain. Unpredictable and dangerous.",
+      "skill": "Heavy Weapon",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Spear",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "2k2",
+      "cost": "8 WP",
+      "notes": "A versatile polearm. Common on ships as a boarding pike.",
+      "skill": "Spear",
+      "keywords": "Large"
+    },
+    {
+      "name": "Boarding Pike",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "2k2",
+      "cost": "10 WP",
+      "notes": "A long spear used to repel boarders or push enemies back during a boarding action.",
+      "skill": "Spear",
+      "keywords": "Large"
+    },
+    {
+      "name": "Lance",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "3k4*",
+      "cost": "20 WP",
+      "notes": "Off horseback damage is 1k2. Using without a Move Action increases TN by +5 (horseback) or +10 (foot). Shatters if inflicts >30 Wounds.",
+      "skill": "Spear",
+      "keywords": "Large"
+    },
+    {
+      "name": "Halberd",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "3k2",
+      "cost": "30 WP",
+      "notes": "An axe-bladed polearm.",
+      "skill": "Polearm",
+      "keywords": "Large"
+    },
+    {
+      "name": "Quarterstaff",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "1k2",
+      "cost": "2 WP",
+      "notes": "A simple wooden staff.",
+      "skill": "Staff",
+      "keywords": "Large"
+    },
+    {
+      "name": "Harpoon",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "2k2",
+      "cost": "12 WP",
+      "notes": "A thrown spear with a barbed head, often with a rope attached. Used for whaling and as a weapon.",
+      "skill": "Spear",
+      "keywords": "Large"
+    },
+    {
+      "name": "Whip",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "0k1",
+      "cost": "6 WP",
+      "notes": "Doubles an opponent's bonus to Armor TN from armor.",
+      "skill": "Whip",
+      "keywords": "Small"
+    },
+    {
+      "name": "Improvised Weapon",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "0k1",
+      "cost": "0 WP",
+      "notes": "A chair, bottle, or other object. Anything can be a weapon in a pirate brawl.",
+      "skill": "Brawl",
+      "keywords": "Small"
+    },
+    {
+      "name": "Brawling",
+      "category": "Melee",
+      "subcategory": "polearms_and_specialty",
+      "damage_rating": "0k1",
+      "cost": "0 WP",
+      "notes": "Fighting with fists, feet, and improvised techniques.",
+      "skill": "Brawl",
+      "keywords": "Small"
+    },
+    {
+      "name": "Avalon Longbow",
+      "category": "Ranged",
+      "subcategory": "bows_and_thrown",
+      "damage_rating": "2k2*",
+      "cost": "35 WP",
+      "notes": "Requires Brawn 4. -1k0 for every 50ft past Range. +10 TN if used from horseback.",
+      "skill": "Archery",
+      "keywords": "Large, Range (500)"
+    },
+    {
+      "name": "Cossack Bow",
+      "category": "Ranged",
+      "subcategory": "bows_and_thrown",
+      "damage_rating": "2k2*",
+      "cost": "25 WP",
+      "notes": "Requires Brawn 3. -1k0 for every 50ft past Range. +10 TN if used on foot.",
+      "skill": "Archery",
+      "keywords": "Medium, Range (150)"
+    },
+    {
+      "name": "Standard Bow",
+      "category": "Ranged",
+      "subcategory": "bows_and_thrown",
+      "damage_rating": "2k2*",
+      "cost": "20 WP",
+      "notes": "Requires Brawn 2. -1k0 for every 50ft past Range. +10 TN if used from horseback.",
+      "skill": "Archery",
+      "keywords": "Large, Range (250)"
+    },
+    {
+      "name": "Crossbow",
+      "category": "Ranged",
+      "subcategory": "bows_and_thrown",
+      "damage_rating": "2k2",
+      "cost": "28 WP",
+      "notes": "Slow to reload but powerful. Sometimes used by sharpshooters in the rigging.",
+      "skill": "Archery",
+      "keywords": "Large, Range"
+    },
+    {
+      "name": "Throwing Knife",
+      "category": "Ranged",
+      "subcategory": "bows_and_thrown",
+      "damage_rating": "1k1",
+      "cost": "3 WP",
+      "notes": "Can be thrown. A common pirate ranged weapon.",
+      "skill": "Knife",
+      "keywords": "Small"
+    },
+    {
+      "name": "Bola",
+      "category": "Ranged",
+      "subcategory": "bows_and_thrown",
+      "damage_rating": "0k1",
+      "cost": "8 WP",
+      "notes": "Used to entangle a target. Rare in the Caribbean, but used by some South American natives.",
+      "skill": "Brawl",
+      "keywords": "Small"
+    },
+    {
+      "name": "Flintlock Pistol",
+      "category": "Firearms",
+      "subcategory": "pistols",
+      "damage_rating": "4k3",
+      "cost": "20 WP",
+      "notes": "Damage Modified by Wits. Ignores all Reduction. -1k1 for every 20ft past Range. Ignores armor bonuses. 1 shot, 2 rounds to reload.",
+      "skill": "Firearms",
+      "keywords": "Small, Range (20)"
+    },
+    {
+      "name": "Flintlock Pistol (Queen Anne)",
+      "category": "Firearms",
+      "subcategory": "pistols",
+      "damage_rating": "3k3",
+      "cost": "25 WP",
+      "notes": "A smaller, more easily concealed pistol. Popular with pirates for its compact size. 1 shot, 2 rounds to reload.",
+      "skill": "Firearms",
+      "keywords": "Small, Range (15)"
+    },
+    {
+      "name": "Flintlock Pistol (Sea Service)",
+      "category": "Firearms",
+      "subcategory": "pistols",
+      "damage_rating": "5k3",
+      "cost": "30 WP",
+      "notes": "A heavier, more powerful naval pistol. Standard issue for ship's officers. 1 shot, 2 rounds to reload.",
+      "skill": "Firearms",
+      "keywords": "Small, Range (25)"
+    },
+    {
+      "name": "Flintlock Pistol (Duckfoot)",
+      "category": "Firearms",
+      "subcategory": "pistols",
+      "damage_rating": "3k2",
+      "cost": "35 WP",
+      "notes": "A multi-barreled pistol with splayed barrels. Fires a spread of shot. Difficult to aim, devastating at point-blank range.",
+      "skill": "Firearms",
+      "keywords": "Small, Range (10)"
+    },
+    {
+      "name": "Brace of Pistols",
+      "category": "Firearms",
+      "subcategory": "pistols",
+      "damage_rating": "4k3",
+      "cost": "40 WP",
+      "notes": "Two pistols. Some pirates carry up to three braces (6 pistols). Allows two shots before reloading.",
+      "skill": "Firearms",
+      "keywords": "Small, Range (20)"
+    },
+    {
+      "name": "Musket",
+      "category": "Firearms",
+      "subcategory": "longarms",
+      "damage_rating": "5k3",
+      "cost": "35 WP",
+      "notes": "Damage Modified by Wits. Ignores all Reduction. -1k1 for every 20ft past Range. Ignores armor bonuses. Often used by sharpshooters from the rigging.",
+      "skill": "Firearms",
+      "keywords": "Large, Range (80)"
+    },
+    {
+      "name": "Blunderbuss",
+      "category": "Firearms",
+      "subcategory": "longarms",
+      "damage_rating": "3k3",
+      "cost": "30 WP",
+      "notes": "A short, wide-barreled firearm that fires a spread of shot. Devastating at close range, especially during boarding actions.",
+      "skill": "Firearms",
+      "keywords": "Medium, Range (15)"
+    },
+    {
+      "name": "Arquebus",
+      "category": "Firearms",
+      "subcategory": "longarms",
+      "damage_rating": "4k3",
+      "cost": "25 WP",
+      "notes": "An early, heavy firearm. Less common in the Caribbean during the Golden Age.",
+      "skill": "Firearms",
+      "keywords": "Large, Range (60)"
+    },
+    {
+      "name": "Musketoon",
+      "category": "Firearms",
+      "subcategory": "longarms",
+      "damage_rating": "4k3",
+      "cost": "32 WP",
+      "notes": "A short-barreled musket. Favored by cavalry and boarding parties for its handiness.",
+      "skill": "Firearms",
+      "keywords": "Medium, Range (30)"
+    },
+    {
+      "name": "Grenado (Grenade)",
+      "category": "Explosives",
+      "damage_rating": "3k3",
+      "cost": "15 WP",
+      "notes": "A cast-iron sphere filled with gunpowder and a fuse. Dangerous to both wielder and target. Area of effect.",
+      "skill": "Thrown",
+      "keywords": "Small, Range (10)"
+    },
+    {
+      "name": "Stinkpot",
+      "category": "Explosives",
+      "damage_rating": "0k1",
+      "cost": "10 WP",
+      "notes": "A pottery jar filled with sulfur, pitch, and other foul materials. Creates a cloud of noxious smoke. Non-lethal, but can cause panic and confusion.",
+      "skill": "Thrown",
+      "keywords": "Small, Range (10)"
+    },
+    {
+      "name": "Firepot",
+      "category": "Explosives",
+      "damage_rating": "2k2",
+      "cost": "12 WP",
+      "notes": "A clay pot filled with flammable liquid and a fuse. Used to set enemy ships on fire.",
+      "skill": "Thrown",
+      "keywords": "Small, Range (10)"
+    },
+    {
+      "name": "Powder Flask (Explosive)",
+      "category": "Explosives",
+      "damage_rating": "3k3",
+      "cost": "8 WP",
+      "notes": "A horn or metal flask of gunpowder with a fuse. Makeshift grenade. Risky to carry and use.",
+      "skill": "Thrown",
+      "keywords": "Small, Range (5)"
+    },
+    {
+      "name": "Petard",
+      "category": "Explosives",
+      "damage_rating": "5k3",
+      "cost": "40 WP",
+      "notes": "A small bomb used to blow open doors or gates. Sometimes used in boarding actions to breach bulkheads.",
+      "skill": "Demolition",
+      "keywords": "Large"
+    },
+    {
+      "name": "Cannon (Shipboard)",
+      "category": "Explosives",
+      "damage_rating": "8k3",
+      "cost": "200 WP",
+      "notes": "Ship-mounted artillery. Fires round shot, grapeshot, or chain shot. Devastating against ships and crews.",
+      "skill": "Artillery",
+      "keywords": "Large, Range (500)"
+    },
+    {
+      "name": "Buckler",
+      "category": "Shield",
+      "damage_rating": "1k1",
+      "cost": "8 WP",
+      "notes": "+5 Armor TN against Non-Ranged Attacks.",
+      "skill": "Shield",
+      "keywords": "Small"
+    },
+    {
+      "name": "Full Shield",
+      "category": "Shield",
+      "damage_rating": "2k1",
+      "cost": "20 WP",
+      "notes": "+10 Armor TN against Non-Ranged Attacks.",
+      "skill": "Shield",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Cloak",
+      "category": "Offhand",
+      "damage_rating": "0k0",
+      "cost": "5 WP",
+      "notes": "Used for defense and distraction.",
+      "skill": "Cloak",
+      "keywords": "Medium"
+    },
+    {
+      "name": "Panzerhand",
+      "category": "Offhand",
+      "damage_rating": "0k2",
+      "cost": "15 WP",
+      "notes": "An Eisen gauntlet used for parrying and bashing.",
+      "skill": "Panzerhand",
+      "keywords": "Small"
+    },
+    {
+      "name": "Lantern Shield",
+      "category": "Shield",
+      "damage_rating": "1k1",
+      "cost": "12 WP",
+      "notes": "A small shield with a built-in lantern. Can be used to blind opponents. +5 Armor TN.",
+      "skill": "Shield",
+      "keywords": "Small"
+    },
+    {
+      "name": "Grappling Hook",
+      "category": "Offhand",
+      "damage_rating": "1k1",
+      "cost": "5 WP",
+      "notes": "A hooked iron tool on a rope. Can be used to snag enemies, rigging, or to climb. Can be thrown.",
+      "skill": "Brawl",
+      "keywords": "Small"
+    },
+    {
+      "name": "Padded Armor",
+      "category": "Armor",
+      "subcategory": "light_armor",
+      "type": "Light",
+      "damage_reduction": "1",
+      "cost": "8 WP",
+      "notes": "A thick, padded coat. Common among sailors for protection against splinters."
+    },
+    {
+      "name": "Leather Armor",
+      "category": "Armor",
+      "subcategory": "light_armor",
+      "type": "Light",
+      "damage_reduction": "2",
+      "cost": "15 WP",
+      "notes": "Boiled or hardened leather. Offers some protection against cuts."
+    },
+    {
+      "name": "Buff Coat",
+      "category": "Armor",
+      "subcategory": "light_armor",
+      "type": "Light",
+      "damage_reduction": "1",
+      "cost": "12 WP",
+      "notes": "A heavy leather coat. Worn by cavalry and some pirates. Offers good protection against sword cuts."
+    },
+    {
+      "name": "Quilted Jacket",
+      "category": "Armor",
+      "subcategory": "light_armor",
+      "type": "Light",
+      "damage_reduction": "1",
+      "cost": "6 WP",
+      "notes": "A padded, quilted garment. Worn under mail or alone. Comfortable in the Caribbean heat."
+    },
+    {
+      "name": "Chainmail",
+      "category": "Armor",
+      "subcategory": "medium_armor",
+      "type": "Medium",
+      "damage_reduction": "3",
+      "cost": "40 WP",
+      "notes": "Interlocking iron rings. Offers good protection but is heavy and hot."
+    },
+    {
+      "name": "Cuirass",
+      "category": "Armor",
+      "subcategory": "medium_armor",
+      "type": "Medium",
+      "damage_reduction": "3",
+      "cost": "35 WP",
+      "notes": "A breastplate, often worn over mail or a padded jack. Common among officers."
+    },
+    {
+      "name": "Brigandine",
+      "category": "Armor",
+      "subcategory": "medium_armor",
+      "type": "Medium",
+      "damage_reduction": "3",
+      "cost": "30 WP",
+      "notes": "A jacket with small iron plates riveted between layers of fabric. Popular with pirates for its flexibility."
+    },
+    {
+      "name": "Lamellar Armor",
+      "category": "Armor",
+      "subcategory": "medium_armor",
+      "type": "Medium",
+      "damage_reduction": "3",
+      "cost": "45 WP",
+      "notes": "Small rectangular plates laced together. Rare in the Caribbean, but used by some Spanish conquistadors."
+    },
+    {
+      "name": "Half-Plate",
+      "category": "Armor",
+      "subcategory": "heavy_armor",
+      "type": "Heavy",
+      "damage_reduction": "4",
+      "cost": "60 WP",
+      "notes": "Partial plate armor covering the torso and limbs. Heavy and restrictive, but offers excellent protection."
+    },
+    {
+      "name": "Full Plate",
+      "category": "Armor",
+      "subcategory": "heavy_armor",
+      "type": "Heavy",
+      "damage_reduction": "5",
+      "cost": "100 WP",
+      "notes": "Complete plate armor. Rare in the Caribbean due to heat and cost. Offers the best protection."
+    },
+    {
+      "name": "Leather Cap",
+      "category": "Armor",
+      "subcategory": "helmets",
+      "type": "Head",
+      "damage_reduction": "1",
+      "cost": "3 WP",
+      "notes": "A simple leather skullcap. Offers minimal head protection."
+    },
+    {
+      "name": "Morion",
+      "category": "Armor",
+      "subcategory": "helmets",
+      "type": "Head",
+      "damage_reduction": "2",
+      "cost": "15 WP",
+      "notes": "A steel helmet with a brim and crest. Worn by Spanish soldiers. Offers good protection."
+    },
+    {
+      "name": "Cabasset",
+      "category": "Armor",
+      "subcategory": "helmets",
+      "type": "Head",
+      "damage_reduction": "2",
+      "cost": "12 WP",
+      "notes": "A steel helmet with a brim. Similar to the morion, but with a different shape."
+    },
+    {
+      "name": "Seaman's Hat (Tarred)",
+      "category": "Armor",
+      "subcategory": "helmets",
+      "type": "Head",
+      "damage_reduction": "0",
+      "cost": "2 WP",
+      "notes": "A wide-brimmed hat stiffened with tar. Offers some protection from the sun and rain."
+    },
+    {
+      "name": "Lantern",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Light",
+      "cost": "5 WP",
+      "notes": "An oil lantern with a metal frame. Essential for below decks and night operations."
+    },
+    {
+      "name": "Candle",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Light",
+      "cost": "1 WP",
+      "notes": "A simple wax candle."
+    },
+    {
+      "name": "Torch",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Light",
+      "cost": "1 WP",
+      "notes": "A burning brand of wood and pitch."
+    },
+    {
+      "name": "Rope (50ft)",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "3 WP",
+      "notes": "Hemp rope. Essential for sailing and climbing."
+    },
+    {
+      "name": "Grappling Hook",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "5 WP",
+      "notes": "An iron hook for climbing and boarding."
+    },
+    {
+      "name": "Lockpicks",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "8 WP",
+      "notes": "Tools for picking locks. Useful for breaking into strongboxes."
+    },
+    {
+      "name": "Crowbar",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "4 WP",
+      "notes": "An iron bar for prying open chests and doors."
+    },
+    {
+      "name": "Compass",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "8 WP",
+      "notes": "A navigational aid. Essential for sea travel."
+    },
+    {
+      "name": "Spyglass",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "15 WP",
+      "notes": "A telescope for spotting ships and land."
+    },
+    {
+      "name": "Map (Caribbean Chart)",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "50 WP",
+      "notes": "A map of the Caribbean. Cost depends on detail and accuracy. Priceless to a pirate captain."
+    },
+    {
+      "name": "Disguise Kit",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Tool",
+      "cost": "10 WP",
+      "notes": "Costumes and makeup for disguise. Useful for blending in at port."
+    },
+    {
+      "name": "Medical Kit (Surgeon's Kit)",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Medical",
+      "cost": "20 WP",
+      "notes": "Bandages, salves, saws, and tools for treating wounds. Essential for any ship."
+    },
+    {
+      "name": "Powder Horn",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Consumable",
+      "cost": "4 WP",
+      "notes": "A horn or metal flask for carrying gunpowder. Essential for firearms."
+    },
+    {
+      "name": "Shot Pouch",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Consumable",
+      "cost": "3 WP",
+      "notes": "A leather pouch for carrying musket balls and shot."
+    },
+    {
+      "name": "Manacles",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Restraint",
+      "cost": "6 WP",
+      "notes": "Iron shackles for prisoners. Common on slave ships and pirate vessels."
+    },
+    {
+      "name": "Pouch",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Container",
+      "cost": "2 WP",
+      "notes": "A small leather bag for carrying coins or items."
+    },
+    {
+      "name": "Backpack (Sea Bag)",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Container",
+      "cost": "5 WP",
+      "notes": "A canvas bag for carrying gear. Common among sailors."
+    },
+    {
+      "name": "Waterskin",
+      "category": "Gear",
+      "subcategory": "pirate_and_shipboard_gear",
+      "type": "Container",
+      "cost": "2 WP",
+      "notes": "A leather flask for carrying water. Essential for long voyages."
+    },
+    {
+      "name": "Rowboat / Longboat",
+      "category": "Vehicle",
+      "subcategory": "vehicles",
+      "type": "Watercraft",
+      "cost": "25 WP",
+      "notes": "A small boat for rivers and coastal waters. Used for shore parties and boarding actions."
+    },
+    {
+      "name": "Sloop",
+      "category": "Vehicle",
+      "subcategory": "vehicles",
+      "type": "Watercraft",
+      "cost": "100 WP",
+      "notes": "A single-masted sailing vessel. Fast and agile. Favored by pirates for its speed."
+    },
+    {
+      "name": "Brigantine",
+      "category": "Vehicle",
+      "subcategory": "vehicles",
+      "type": "Watercraft",
+      "cost": "200 WP",
+      "notes": "A two-masted vessel. A common pirate ship, balancing speed and cargo capacity."
+    },
+    {
+      "name": "Galleon",
+      "category": "Vehicle",
+      "subcategory": "vehicles",
+      "type": "Watercraft",
+      "cost": "500 WP",
+      "notes": "A large, multi-masted ship. Used for treasure fleets and naval engagements."
+    },
+    {
+      "name": "Riding Horse",
+      "category": "Mount",
+      "subcategory": "mounts",
+      "type": "Animal",
+      "cost": "50 WP",
+      "notes": "A reliable horse for travel. Useful for overland expeditions in the Caribbean."
+    },
+    {
+      "name": "Warhorse",
+      "category": "Mount",
+      "subcategory": "mounts",
+      "type": "Animal",
+      "cost": "150 WP",
+      "notes": "A trained horse for combat. Rare in the Caribbean."
+    },
+    {
+      "name": "Mule",
+      "category": "Mount",
+      "subcategory": "mounts",
+      "type": "Animal",
+      "cost": "20 WP",
+      "notes": "A sturdy pack animal. Essential for overland travel with supplies."
+    },
+    {
+      "name": "Donkey",
+      "category": "Mount",
+      "subcategory": "mounts",
+      "type": "Animal",
+      "cost": "15 WP",
+      "notes": "A smaller, more stubborn pack animal. Common in the Caribbean."
+    }
+  ],
+  "npc_equipment_sets": [
+    {
+      "id": "common_pirate",
+      "name": "Common Pirate",
+      "description": "A typical member of a pirate crew.",
+      "total_cost": "31 WP",
+      "equipment": [
+        {
+          "name": "Cutlass",
+          "quantity": 1,
+          "cost": "10 WP"
+        },
+        {
+          "name": "Knife / Gully",
+          "quantity": 1,
+          "cost": "4 WP"
+        },
+        {
+          "name": "Flintlock Pistol",
+          "quantity": 1,
+          "cost": "20 WP"
+        },
+        {
+          "name": "Powder Horn",
+          "quantity": 1,
+          "cost": "4 WP"
+        }
+      ]
+    },
+    {
+      "id": "boarding_party",
+      "name": "Boarding Party",
+      "description": "A pirate specialized in boarding actions.",
+      "total_cost": "44 WP",
+      "equipment": [
+        {
+          "name": "Boarding Axe",
+          "quantity": 1,
+          "cost": "15 WP"
+        },
+        {
+          "name": "Cutlass",
+          "quantity": 1,
+          "cost": "10 WP"
+        },
+        {
+          "name": "Brace of Pistols",
+          "quantity": 1,
+          "cost": "40 WP"
+        },
+        {
+          "name": "Knife",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Grappling Hook",
+          "quantity": 1,
+          "cost": "5 WP"
+        }
+      ]
+    },
+    {
+      "id": "pirate_captain",
+      "name": "Pirate Captain",
+      "description": "A successful and well-equipped pirate captain.",
+      "total_cost": "114 WP",
+      "equipment": [
+        {
+          "name": "Cutlass / Smallsword",
+          "quantity": 1,
+          "cost": "25 WP"
+        },
+        {
+          "name": "Brace of Pistols",
+          "quantity": 2,
+          "cost": "80 WP"
+        },
+        {
+          "name": "Knife",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Spyglass",
+          "quantity": 1,
+          "cost": "15 WP"
+        },
+        {
+          "name": "Cuirass",
+          "quantity": 1,
+          "cost": "35 WP"
+        }
+      ]
+    },
+    {
+      "id": "sharpshooter",
+      "name": "Sharpshooter",
+      "description": "A pirate skilled with firearms, often stationed in the rigging.",
+      "total_cost": "65 WP",
+      "equipment": [
+        {
+          "name": "Musket",
+          "quantity": 1,
+          "cost": "35 WP"
+        },
+        {
+          "name": "Flintlock Pistol",
+          "quantity": 1,
+          "cost": "20 WP"
+        },
+        {
+          "name": "Knife",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Powder Horn",
+          "quantity": 1,
+          "cost": "4 WP"
+        },
+        {
+          "name": "Shot Pouch",
+          "quantity": 1,
+          "cost": "3 WP"
+        }
+      ]
+    },
+    {
+      "id": "spanish_soldier",
+      "name": "Spanish Soldier",
+      "description": "A soldier of the Spanish Empire, stationed in the Caribbean.",
+      "total_cost": "83 WP",
+      "equipment": [
+        {
+          "name": "Broadsword",
+          "quantity": 1,
+          "cost": "20 WP"
+        },
+        {
+          "name": "Musket",
+          "quantity": 1,
+          "cost": "35 WP"
+        },
+        {
+          "name": "Dagger",
+          "quantity": 1,
+          "cost": "2 WP"
+        },
+        {
+          "name": "Cuirass",
+          "quantity": 1,
+          "cost": "35 WP"
+        },
+        {
+          "name": "Morion",
+          "quantity": 1,
+          "cost": "15 WP"
+        }
+      ]
+    },
+    {
+      "id": "buccaneer",
+      "name": "Buccaneer",
+      "description": "A hunter and pirate of the Caribbean, often of French origin.",
+      "total_cost": "74 WP",
+      "equipment": [
+        {
+          "name": "Musket",
+          "quantity": 1,
+          "cost": "35 WP"
+        },
+        {
+          "name": "Cutlass",
+          "quantity": 1,
+          "cost": "10 WP"
+        },
+        {
+          "name": "Knife",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Buff Coat",
+          "quantity": 1,
+          "cost": "12 WP"
+        }
+      ]
+    },
+    {
+      "id": "voodoo_pirate",
+      "name": "Voodoo Pirate",
+      "description": "A pirate with ties to the mystical traditions of the Caribbean.",
+      "total_cost": "63 WP",
+      "equipment": [
+        {
+          "name": "Cutlass",
+          "quantity": 1,
+          "cost": "10 WP"
+        },
+        {
+          "name": "Knife",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Pistol",
+          "quantity": 1,
+          "cost": "20 WP"
+        },
+        {
+          "name": "Voodoo Charm / Gris-Gris",
+          "quantity": 1,
+          "cost": "5 WP"
+        },
+        {
+          "name": "Stinkpot",
+          "quantity": 2,
+          "cost": "20 WP"
+        }
+      ]
+    },
+    {
+      "id": "navigator",
+      "name": "Navigator / Quartermaster",
+      "description": "The ship's navigator and second-in-command.",
+      "total_cost": "110 WP",
+      "equipment": [
+        {
+          "name": "Cutlass",
+          "quantity": 1,
+          "cost": "10 WP"
+        },
+        {
+          "name": "Knife",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Pistol",
+          "quantity": 1,
+          "cost": "20 WP"
+        },
+        {
+          "name": "Spyglass",
+          "quantity": 1,
+          "cost": "15 WP"
+        },
+        {
+          "name": "Compass",
+          "quantity": 1,
+          "cost": "8 WP"
+        },
+        {
+          "name": "Map (Caribbean Chart)",
+          "quantity": 1,
+          "cost": "50 WP"
+        }
+      ]
+    },
+    {
+      "id": "pirate_brute",
+      "name": "Pirate Brute",
+      "description": "A large, intimidating pirate focused on heavy combat.",
+      "total_cost": "37 WP",
+      "equipment": [
+        {
+          "name": "Boarding Axe",
+          "quantity": 1,
+          "cost": "15 WP"
+        },
+        {
+          "name": "Club",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Flintlock Pistol",
+          "quantity": 1,
+          "cost": "20 WP"
+        },
+        {
+          "name": "Powder Horn",
+          "quantity": 1,
+          "cost": "4 WP"
+        }
+      ]
+    },
+    {
+      "id": "shipboard_cannoneer",
+      "name": "Shipboard Cannoneer",
+      "description": "A pirate skilled in operating shipboard artillery.",
+      "total_cost": "45 WP",
+      "equipment": [
+        {
+          "name": "Knife",
+          "quantity": 1,
+          "cost": "1 WP"
+        },
+        {
+          "name": "Cutlass",
+          "quantity": 1,
+          "cost": "10 WP"
+        },
+        {
+          "name": "Pistol",
+          "quantity": 1,
+          "cost": "20 WP"
+        },
+        {
+          "name": "Powder Horn",
+          "quantity": 1,
+          "cost": "4 WP"
+        },
+        {
+          "name": "Cannon (Shipboard)",
+          "quantity": 1,
+          "cost": "200 WP (ship's property)"
+        }
+      ]
+    }
+  ]
+}

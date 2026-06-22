@@ -1,0 +1,40 @@
+You are equipping a The Expanse RPG NPC within an Availability TN cap given
+to you as the equipment "value" (this catalog has no prices — only an
+Availability Test Number per item; higher TN means rarer/more restricted
+gear, not more expensive).
+
+Rules:
+- The user message includes a list of available catalog items (name,
+  category, damage, availability_tn, and other stats). Base each weapon's
+  stats on a matching catalog item where one exists.
+- Produce 0-2 `weapons`, each shaped like
+  {"name": str, "damage": str (e.g. "2d6+3"), "minStr": int (optional),
+  "range": str (optional, e.g. "Short/Long 10/30m"),
+  "qualities": [list of strings, e.g. "Accurate", "Burst Fire",
+  "Piercing 2"]}.
+- `armor` (optional) is a single short armor name/description (e.g. "MCRN
+  Infantry Battle Dress"), or omit it for an unarmored NPC.
+- `gear` is a short list of mission-appropriate items (e.g. "Tactical
+  Helmet (HUD)", "Medpatch", "Encrypted Comm Unit"). Empty lists are fine.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "weapons": [
+    {"name": str, "damage": str, "minStr": int, "range": str, "qualities": list[str]}
+  ],
+  "armor": str | None,
+  "gear": list[str]
+}
+```
+
+Adhere strictly to this structure: `armor` may be `null` for an unarmored
+NPC, `weapons`/`gear` are lists (both may be empty).
+
+Important: every weapon/armor item you select must have an availability_tn at
+or below the given cap. If you can't find a suitable item under the cap, pick
+a more common (lower-TN) alternative from the list rather than exceeding it.

@@ -1,0 +1,1517 @@
+{
+  "metadata": {
+    "system": "Call of Cthulhu 7th Edition",
+    "total_items": 99,
+    "filterable_eras": [
+      "1890s",
+      "1920s",
+      "Modern"
+    ]
+  },
+  "items": [
+    {
+      "name": ".22 Long Rifle Automatic (Colt Woodsman)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Low damage, light recoil sidearm favored for target shooting and discreet carry.",
+      "malfunction": 98,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$25.00",
+        "modern": "$250.00"
+      }
+    },
+    {
+      "name": ".32 Revolver (Colt Pocket Positive)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Highly dependable pocket revolver with a reliable mechanical cylinder action.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$12.00",
+        "1920s": "$15.00",
+        "modern": "$150.00"
+      }
+    },
+    {
+      "name": ".38 Automatic (Colt Model 1903)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Standard civilian and police self-defense pistol offering balanced stopping power.",
+      "malfunction": 99,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$20.00",
+        "modern": "$350.00"
+      }
+    },
+    {
+      "name": ".45 Automatic (Colt M1911)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Military-grade heavy semi-automatic sidearm with substantial kinetic stopping power.",
+      "malfunction": 98,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$35.00",
+        "modern": "$600.00"
+      }
+    },
+    {
+      "name": "9mm Automatic (Glock 17)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Ubiquitous modern law enforcement sidearm with standard high-capacity polymer magazines.",
+      "malfunction": 98,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$500.00"
+      }
+    },
+    {
+      "name": ".44 Magnum Revolver (Smith & Wesson Model 29)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Modern heavy-framed hunting revolver capable of stopping large beasts (or cult entities) dead in their tracks.",
+      "malfunction": 100,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$750.00"
+      }
+    },
+    {
+      "name": ".41 Derringer",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Tiny, easily concealed two-shot pocket pistol. Fatal at point-blank range, useless at distance.",
+      "malfunction": 99,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$5.00",
+        "1920s": "$7.00",
+        "modern": "$120.00"
+      }
+    },
+    {
+      "name": "Mauser C96 'Broomhandle'",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Distinctive semi-automatic pistol featuring an integrated box magazine in front of the trigger.",
+      "malfunction": 98,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$25.00",
+        "1920s": "$35.00",
+        "modern": "$950.00"
+      }
+    },
+    {
+      "name": ".45 Smith & Wesson Schofield",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Top-break revolver popular in the American West; fast manual extraction and reloading cycles.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$13.50",
+        "1920s": "$18.00",
+        "modern": null
+      }
+    },
+    {
+      "name": ".38 Smith & Wesson Safety Hammerless",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Concealed hammer design nicknamed the 'Lemon Squeezer'. Cannot catch on clothing fabrics during an emergency draw.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$10.00",
+        "1920s": "$13.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Webley Mark IV Revolver",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Standard British military service revolver; heavy unjacketed lead round ensures significant stopping power.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$14.00",
+        "1920s": "$22.00",
+        "modern": "$450.00"
+      }
+    },
+    {
+      "name": ".357 Magnum Revolver (Colt Python)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Premium modern double-action revolver recognized for its exceptional match-grade accuracy and frame strength.",
+      "malfunction": 100,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$900.00"
+      }
+    },
+    {
+      "name": "Colt Single Action Army (.45 Colt)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "The classic 'Peacemaker' six-shooter. Slow to reload using a loading gate, but an icon of the Old West.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$15.00",
+        "1920s": "$20.00",
+        "modern": "$600.00"
+      }
+    },
+    {
+      "name": "Luger P08 (9mm)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Distinctive German toggle-locked semi-automatic pistol. Highly prized collector's item in the modern era.",
+      "malfunction": 99,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$30.00",
+        "1920s": "$35.00",
+        "modern": "$1000.00"
+      }
+    },
+    {
+      "name": "Snub-Nose .38 Special (Smith & Wesson)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Short-barreled concealable revolver. Easy to hide but suffers from severe accuracy penalties at range.",
+      "malfunction": 100,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$18.00",
+        "modern": "$400.00"
+      }
+    },
+    {
+      "name": "Beretta M9 (9mm)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Standard issue US military sidearm until recently; reliable double-action semi-automatic.",
+      "malfunction": 98,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$600.00"
+      }
+    },
+    {
+      "name": "Desert Eagle (.50 AE)",
+      "category": "weapons",
+      "subcategory": "handguns_and_revolvers",
+      "notes": "Massive gas-operated semi-automatic handgun. Extreme recoil and damage, prone to jamming if not gripped firmly.",
+      "malfunction": 96,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$1500.00"
+      }
+    },
+    {
+      "name": ".30-06 Bolt Action Rifle (M1903 Springfield)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "High-powered military/hunting rifle boasting extreme range and accuracy.",
+      "malfunction": 100,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$40.00",
+        "modern": "$800.00"
+      }
+    },
+    {
+      "name": ".22 Bolt-Action Hunting Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Common farm tool used for vermin control; quiet and easy to acquire without raising suspicion.",
+      "malfunction": 99,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$10.00",
+        "1920s": "$12.00",
+        "modern": "$200.00"
+      }
+    },
+    {
+      "name": "12-Gauge Shotgun (Pump Action)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Devastating at close range; wide pellet spread grants better hit probability against moving targets.",
+      "malfunction": 98,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$25.00",
+        "1920s": "$30.00",
+        "modern": "$350.00"
+      }
+    },
+    {
+      "name": "12-Gauge Shotgun (Double-Barrel Break Open)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Classic defensive firearm found in rural homes. Reliable mechanics allow firing both barrels simultaneously.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$15.00",
+        "1920s": "$20.00",
+        "modern": "$250.00"
+      }
+    },
+    {
+      "name": ".470 Nitro Express Elephant Gun",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Massive double-barreled rifle designed for big-game hunting. Inflicts immense damage but suffers severe recoil.",
+      "malfunction": 100,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$150.00",
+        "modern": "$4500.00"
+      }
+    },
+    {
+      "name": ".30-30 Winchester Lever-Action Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "The classic American deer rifle; iconic under-lever operation provides a swift secondary shot cycle.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$18.00",
+        "1920s": "$25.00",
+        "modern": "$450.00"
+      }
+    },
+    {
+      "name": ".303 Lee-Enfield Bolt-Action Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Standard British infantry rifle; ruggedly constructed bolt action is highly resistant to battlefield muck and grit.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$20.00",
+        "1920s": "$28.00",
+        "modern": "$550.00"
+      }
+    },
+    {
+      "name": "10-Gauge Lever-Action Shotgun (Winchester 1887)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Intimidating, heavy-gauge repeating shotgun. Harder to control than a 12-gauge but strikes with brutal kinetic force.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$30.00",
+        "1920s": "$38.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "M4 Carbine Semi-Automatic Rifle",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Modern civilian-legal tactical rifle; accepts standard 30-round detachable box magazines and optics rails.",
+      "malfunction": 98,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$1100.00"
+      }
+    },
+    {
+      "name": ".50 BMG Anti-Materiel Rifle (Barrett M82)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Massive semi-automatic precision rifle. Engineered to punch straight through engine blocks, structural walls, and armored monstrosities.",
+      "malfunction": 98,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$8500.00"
+      }
+    },
+    {
+      "name": "Martini-Henry (.577/450)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "British falling-block single-shot rifle. Powerful and rugged, but slow to cycle and generates huge clouds of blackpowder smoke.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$18.00",
+        "1920s": "$10.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Winchester 1873 (.44-40)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "'The Gun that Won the West.' Tubular magazine lever-action rifle, smooth to operate but uses older, less powerful rimmed ammunition.",
+      "malfunction": 100,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$20.00",
+        "1920s": "$25.00",
+        "modern": "$800.00"
+      }
+    },
+    {
+      "name": "AK-47 Assault Rifle (7.62x39mm)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "Soviet-designed selective-fire assault rifle. Incredibly durable and reliable in muddy, dirty, or blood-soaked conditions.",
+      "malfunction": 99,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$700.00"
+      }
+    },
+    {
+      "name": "Remington 870 (12-Gauge Pump)",
+      "category": "weapons",
+      "subcategory": "rifles_and_shotguns",
+      "notes": "The ubiquitous modern pump-action shotgun. Used globally by police, military, and civilians for lethal close-quarters stopping power.",
+      "malfunction": 98,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$400.00"
+      }
+    },
+    {
+      "name": ".45 Thompson SMG ('Tommy Gun')",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Infamous gangland automatic weapon utilizing either 20-round box or 50-round drum magazines.",
+      "malfunction": 96,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$200.00",
+        "modern": "$1500.00"
+      }
+    },
+    {
+      "name": "12-Gauge Browning Auto-5 Shotgun",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Early semi-automatic shotgun variant capable of rapid, cyclic close-quarters defensive fire.",
+      "malfunction": 97,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$50.00",
+        "modern": "$700.00"
+      }
+    },
+    {
+      "name": "Gatling Gun (.45-70 Government)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Heavy mechanical multi-barrel machine gun operated via hand crank. Requires a static wheeled carriage or tripod mount.",
+      "malfunction": 96,
+      "eras": [
+        "1890s"
+      ],
+      "cost_by_era": {
+        "1890s": "$550.00",
+        "1920s": null,
+        "modern": null
+      }
+    },
+    {
+      "name": "MP5 Submachine Gun (9mm)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Highly precise modern tactical submachine gun firing from a closed bolt; ubiquitous among global counter-terror forces.",
+      "malfunction": 98,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$950.00"
+      }
+    },
+    {
+      "name": "Dynamite (Per Stick)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Industrial blasting explosive compound. Highly volatile and prone to weeping nitroglycerin if exposed to excessive heat or prolonged age.",
+      "malfunction": 99,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.25",
+        "1920s": "$0.50",
+        "modern": "$20.00"
+      }
+    },
+    {
+      "name": "Browning Automatic Rifle M1918 (.30-06)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Heavy selective-fire infantry weapon. Can be fired from the hip while walking, providing devastating suppressive fire.",
+      "malfunction": 96,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$300.00",
+        "modern": "$3000.00"
+      }
+    },
+    {
+      "name": "Uzi Submachine Gun (9mm)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Compact Israeli open-bolt SMG. Folds down for easy concealment under a heavy coat; high rate of fire burns through magazines rapidly.",
+      "malfunction": 97,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$1300.00"
+      }
+    },
+    {
+      "name": "M60 Machine Gun (7.62x51mm)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Belt-fed general-purpose machine gun. Requires a team to move efficiently and set up, but can shred entire buildings.",
+      "malfunction": 95,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$6000.00"
+      }
+    },
+    {
+      "name": "Flamethrower (M2)",
+      "category": "weapons",
+      "subcategory": "submachine_guns_and_automatic_arms",
+      "notes": "Backpack-mounted fuel projector. Exceptional against biological horrors; however, a stray bullet to the tank turns the wielder into a fireball.",
+      "malfunction": 94,
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$500.00",
+        "modern": "$5000.00"
+      }
+    },
+    {
+      "name": "Bowie Knife",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Heavy fighting and survival blade, standard gear for wilderness expeditions and backwoods self-defense.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$2.50",
+        "1920s": "$4.00",
+        "modern": "$45.00"
+      }
+    },
+    {
+      "name": "Large Club (Baseball Bat / Heavy Cane)",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Sturdy wooden or composite blunt weapon providing a reliable non-lethal self-defense option.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.50",
+        "1920s": "$1.00",
+        "modern": "$20.00"
+      }
+    },
+    {
+      "name": "Pocket Knife (Penknife)",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Small utilitarian folding blade carried daily by most investigators. Minimal combat damage, high general tool utility.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.40",
+        "1920s": "$0.75",
+        "modern": "$15.00"
+      }
+    },
+    {
+      "name": "Woodsman's Axe",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Heavy, two-handed felling tool that inflicts catastrophic deep-tissue slicing damage when swung forcefully.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$1.50",
+        "1920s": "$3.00",
+        "modern": "$40.00"
+      }
+    },
+    {
+      "name": "Sword Cane",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "A narrow, spring-released rapier concealed within an elegant walking stick. Snaps if subjected to heavy blunt trauma.",
+      "malfunction": 95,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$7.00",
+        "1920s": "$12.00",
+        "modern": "$150.00"
+      }
+    },
+    {
+      "name": "Brass Knuckles",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Concealable cast metal fist reinforcement; concentrates brawl impact force to crack bone easily.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.75",
+        "1920s": "$1.25",
+        "modern": "$25.00"
+      }
+    },
+    {
+      "name": "Rapier / Small Sword",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Thin, thrust-oriented dueling blade. Requires specialized training to use effectively but excels at piercing deep vital organs.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$10.00",
+        "1920s": "$25.00",
+        "modern": "$300.00"
+      }
+    },
+    {
+      "name": "Bullwhip",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Long plaited leather striking tool. Can entangle limbs or disarm opponents; capable of inflicting painful lacerations.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$3.00",
+        "1920s": "$5.00",
+        "modern": "$60.00"
+      }
+    },
+    {
+      "name": "Garrote Wire",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Concealable length of piano wire with wooden grips. Lethal only from behind with a surprise attack on an unaware target.",
+      "malfunction": 0,
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.50",
+        "1920s": "$0.50",
+        "modern": "$5.00"
+      }
+    },
+    {
+      "name": "Chainsaw",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Motorized logging tool. Inflicts catastrophic tearing damage but is extremely loud, heavy, and requires a pull-start action.",
+      "malfunction": 95,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$250.00"
+      }
+    },
+    {
+      "name": "Taser / Stun Gun",
+      "category": "weapons",
+      "subcategory": "melee_weapons_and_tools",
+      "notes": "Electroshock weapon firing barbed darts. Inflicts no physical damage but paralyzes the target temporarily for easy restraint.",
+      "malfunction": 97,
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$80.00"
+      }
+    },
+    {
+      "name": "Bullseye Lantern",
+      "category": "investigative_and_field_gear",
+      "notes": "Oil-burning lantern with a adjustable reflective shutter panel to focus illumination into a single directional beam.",
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$1.00",
+        "1920s": "$2.50",
+        "modern": null
+      }
+    },
+    {
+      "name": "Flashlight (Electric Torch)",
+      "category": "investigative_and_field_gear",
+      "notes": "Battery-powered handheld focus lamp. Early models are prone to sudden contact flickering if shaken during a panic.",
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$3.00",
+        "modern": "$15.00"
+      }
+    },
+    {
+      "name": "Camera (Heavy Tripod View / Box Type)",
+      "category": "investigative_and_field_gear",
+      "notes": "Requires high-grade explosive flash powder and several seconds of completely static exposure. Captures physical proof perfectly.",
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$25.00",
+        "1920s": "$15.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Digital DSLR Camera",
+      "category": "investigative_and_field_gear",
+      "notes": "High-speed modern optical body capable of extreme low-light sensor adjustments and instant file writing.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$600.00"
+      }
+    },
+    {
+      "name": "Smartphone",
+      "category": "investigative_and_field_gear",
+      "notes": "Combines a cellular transceiver, camera, GPS map data, and flashlight. Prone to complete battery drain or signal failure around active gates.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$800.00"
+      }
+    },
+    {
+      "name": "Darkroom Chemical Development Kit",
+      "category": "investigative_and_field_gear",
+      "notes": "Trays, specialized red safety lamps, and fixative solutions required to develop raw film sheets manually without overexposing them.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$10.00",
+        "1920s": "$18.00",
+        "modern": "$120.00"
+      }
+    },
+    {
+      "name": "Handcuffs (Steel)",
+      "category": "investigative_and_field_gear",
+      "notes": "Heavy iron or steel ratcheting locking wrist restraints used to capture cultists or secure an investigator losing total mental clarity.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$3.50",
+        "1920s": "$5.00",
+        "modern": "$35.00"
+      }
+    },
+    {
+      "name": "Fingerprint Powder Kit",
+      "category": "investigative_and_field_gear",
+      "notes": "Specialized dusting brush, fine soot carbon powder, and clear adhesive lifting sheets to identify human prints on smooth surfaces.",
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$5.00",
+        "modern": "$45.00"
+      }
+    },
+    {
+      "name": "Binoculars (Prismatic)",
+      "category": "investigative_and_field_gear",
+      "notes": "Dual eye lens magnification instrument essential for scoping out remote compounds, island shores, or dynamic ritual sites from safe cover.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$15.00",
+        "1920s": "$22.00",
+        "modern": "$180.00"
+      }
+    },
+    {
+      "name": "Geiger Counter",
+      "category": "investigative_and_field_gear",
+      "notes": "Detects ionizing radiation emissions. Useful for tracking meteoric impacts or bizarre residual anomalies left behind by Colour out of Space events.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$250.00"
+      }
+    },
+    {
+      "name": "Lockpick Set",
+      "category": "investigative_and_field_gear",
+      "notes": "Tension wrenches and various pin rakes. Illegal to carry in some eras without a PI license; essential for bypassing stubborn doors.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$5.00",
+        "1920s": "$8.00",
+        "modern": "$40.00"
+      }
+    },
+    {
+      "name": "50ft Hemp Rope",
+      "category": "investigative_and_field_gear",
+      "notes": "Thick, braided climbing cord. Crucial for descending into subterranean crypts or pulling heavy loads out of sinkholes.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$2.00",
+        "1920s": "$3.00",
+        "modern": "$30.00"
+      }
+    },
+    {
+      "name": "Grappling Hook",
+      "category": "investigative_and_field_gear",
+      "notes": "Multi-pronged metal anchor tied to a rope. Tossed to catch on upper-story ledges or secure climbing lines over slick walls.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$1.50",
+        "1920s": "$2.00",
+        "modern": "$25.00"
+      }
+    },
+    {
+      "name": "Magnifying Glass",
+      "category": "investigative_and_field_gear",
+      "notes": "Optical lens for examining trace evidence, forged documents, or tiny bloodstains invisible to the naked eye.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$1.00",
+        "1920s": "$1.50",
+        "modern": "$10.00"
+      }
+    },
+    {
+      "name": "Compass",
+      "category": "investigative_and_field_gear",
+      "notes": "Magnetic navigation instrument. Becomes wildly erratic or spins aimlessly when in close proximity to deep underground Mi-Go technology.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$2.00",
+        "1920s": "$3.00",
+        "modern": "$15.00"
+      }
+    },
+    {
+      "name": "Chalk",
+      "category": "investigative_and_field_gear",
+      "notes": "Simple marking tool. Essential for mapping twisting cave complexes or marking safe paths in labyrinthine dreamlands.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.05",
+        "1920s": "$0.10",
+        "modern": "$2.00"
+      }
+    },
+    {
+      "name": "Box of Matches / Zippo Lighter",
+      "category": "investigative_and_field_gear",
+      "notes": "Reliable flame source. Crucial for igniting torches, lanterns, or improvised incendiary devices.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.10",
+        "1920s": "$0.75",
+        "modern": "$15.00"
+      }
+    },
+    {
+      "name": "Tape Recorder (Reel-to-Reel)",
+      "category": "investigative_and_field_gear",
+      "notes": "Magnetic audio recording device. Heavy and somewhat fragile; perfect for capturing EVPs or logging interviews with fading witnesses.",
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$150.00",
+        "modern": "$100.00"
+      }
+    },
+    {
+      "name": "Walkie-Talkies (Pair)",
+      "category": "investigative_and_field_gear",
+      "notes": "Short-range radio transceivers. Allows teams to split up and coordinate without shouting, though batteries drain quickly in the cold.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$70.00"
+      }
+    },
+    {
+      "name": "Night Vision Goggles",
+      "category": "investigative_and_field_gear",
+      "notes": "Infrared/optical amplification headset. Renders total darkness as a green-hued day, but ruins depth perception and relies on scarce batteries.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$2000.00"
+      }
+    },
+    {
+      "name": "Doctor's Bag (Field Medical Kit)",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Fitted with scalpels, antiseptic alcohols, morphine vials, and sterile gauze. Essential to perform First Aid checks without penalty dice.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$15.00",
+        "1920s": "$25.00",
+        "modern": "$120.00"
+      }
+    },
+    {
+      "name": "Laudanum Vials / Morphine Syrettes",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Potent opium derivative that dulls physical torment and pain, but does nothing to repair deep psychological or Sanity fractures.",
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$1.00",
+        "1920s": "$2.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Psychiatric Sedatives (Modern Anti-Psychotics)",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Advanced chemical prescription tablets designed to suppress short-term manic episodes or hysterical breaks during high-stress encounters.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$65.00"
+      }
+    },
+    {
+      "name": "Smelling Salts (Ammonia Inhalants)",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Pungent chemical capsule snapped under the nose to instantly rouse an investigator knocked unconscious by physical or concussive force.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.15",
+        "1920s": "$0.50",
+        "modern": "$5.00"
+      }
+    },
+    {
+      "name": "Chemical Poison Antidote Kit",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Universal clinical charcoal pumps and broad-spectrum antitoxins to stabilize a victim of deliberate organic or exotic cult poisoning.",
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$10.00",
+        "modern": "$85.00"
+      }
+    },
+    {
+      "name": "Straightjacket",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Heavy canvas restraint with long sleeves. The safest non-chemical method to contain an investigator undergoing a psychotic break or violent possession.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$5.00",
+        "1920s": "$8.00",
+        "modern": "$50.00"
+      }
+    },
+    {
+      "name": "Adrenaline Injector (EpiPen)",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Auto-injector of epinephrine. Instantly reverses anaphylactic shock from exotic venoms or temporarily staves off fainting from blood loss.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$60.00"
+      }
+    },
+    {
+      "name": "Tourniquet",
+      "category": "medical_supplies_and_forensics",
+      "notes": "Tight constricting band to stop massive arterial limb bleeding. Leaves the limb necrotic if left on too long, sometimes requiring amputation.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.75",
+        "1920s": "$1.00",
+        "modern": "$25.00"
+      }
+    },
+    {
+      "name": "Translation Lexicon (Latin/Greek/Arabic)",
+      "category": "arcane_research_and_libraries",
+      "notes": "Academic linguistic references indispensable for breaking through ancient cipher dialects or ancient, coded journals.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$5.00",
+        "1920s": "$8.00",
+        "modern": "$50.00"
+      }
+    },
+    {
+      "name": "UV / Blacklight Lamp",
+      "category": "arcane_research_and_libraries",
+      "notes": "Exposes deeply faded script variations, hidden fluid marks, or chemically bleached scroll edits on archaic historical documents.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$45.00"
+      }
+    },
+    {
+      "name": "Rare Mythos Book Facsimile",
+      "category": "arcane_research_and_libraries",
+      "notes": "A precision photographic or hand-copied bound version of a dangerous text. Protects original sheets but still offers minor Cthulhu Mythos skill growth.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$50.00",
+        "1920s": "$150.00",
+        "modern": "$2500.00"
+      }
+    },
+    {
+      "name": "Archival Storage Tube",
+      "category": "arcane_research_and_libraries",
+      "notes": "Air-tight, acid-free protective containment cylinder designed to stop dry papyrus maps or parchment sheets from shattering into ash during a rough march.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$0.50",
+        "1920s": "$1.00",
+        "modern": "$15.00"
+      }
+    },
+    {
+      "name": "Ouija Board",
+      "category": "arcane_research_and_libraries",
+      "notes": "Parlor game turned spiritualist tool. Often opens brief, unintelligible contact with restless spirits, but occasionally acts as a beacon for worse things.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$2.00",
+        "1920s": "$3.00",
+        "modern": "$30.00"
+      }
+    },
+    {
+      "name": "Spirit Box / EVP Recorder",
+      "category": "arcane_research_and_libraries",
+      "notes": "Rapidly sweeping radio receiver used by modern paranormal investigators. Captures fragmented voices or phrases from entities across the veil.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$90.00"
+      }
+    },
+    {
+      "name": "Crystal Ball",
+      "category": "arcane_research_and_libraries",
+      "notes": "Polished quartz sphere used for scrying. Requires immense concentration (and Sanity) to perceive distant locations or futures within its depths.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$15.00",
+        "1920s": "$25.00",
+        "modern": "$150.00"
+      }
+    },
+    {
+      "name": "Embalming Kit",
+      "category": "arcane_research_and_libraries",
+      "notes": "Trocars, arterial tubes, and formaldehyde fluids. Used to preserve dissected corpses or sterile extract organs without rapid decay.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$20.00",
+        "1920s": "$35.00",
+        "modern": "$200.00"
+      }
+    },
+    {
+      "name": "Horse & Carriage Rental (Daily)",
+      "category": "vehicles_and_travel",
+      "notes": "Standard urban public transit layout. Entirely quiet, but animals may panic wildly or bolt if they catch the scent of unnatural tracking entities.",
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$1.50",
+        "1920s": "$5.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Ford Model T (Automobile)",
+      "category": "vehicles_and_travel",
+      "notes": "The defining vehicle of the twenties. Loud, vibrating mechanical body that is incredibly simple to repair using standard Mechanical Repair skills.",
+      "eras": [
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$300.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Luxury Sedan (Cadillac V-16)",
+      "category": "vehicles_and_travel",
+      "notes": "High-powered, quiet, and fast heavy sedan chassis favored by affluent antiquarians and successful organized crime groups.",
+      "eras": [
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$3500.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Four-Wheel Drive SUV (Expedition Grade)",
+      "category": "vehicles_and_travel",
+      "notes": "Rugged off-road vehicle with high ground clearance, winch fixtures, and ample trunk space for mapping gear, generators, and rations.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$45000.00"
+      }
+    },
+    {
+      "name": "Motorcycle with Sidecar",
+      "category": "vehicles_and_travel",
+      "notes": "Allows agile passage through dense woodland clearings or coastal paths where full-sized motor vehicles are guaranteed to frame-lock.",
+      "eras": [
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$150.00",
+        "modern": "$8500.00"
+      }
+    },
+    {
+      "name": "Steamship Ticket (Transatlantic Class 1 Crossing)",
+      "category": "vehicles_and_travel",
+      "notes": "Luxury cabin travel crossing deep water paths. Gives the investigation group a solid week of uninterrupted study time before hitting land targets.",
+      "eras": [
+        "1890s",
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": "$40.00",
+        "1920s": "$75.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Commercial Airline Ticket (International)",
+      "category": "vehicles_and_travel",
+      "notes": "Ultra-fast flight passage. Saves crucial days of calendar tracking time when racing across the globe to stop a structural solar eclipse ritual.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$500.00"
+      }
+    },
+    {
+      "name": "Train Ticket (Coach Class)",
+      "category": "vehicles_and_travel",
+      "notes": "Standard long-distance rail passage. Crowded and noisy, but offers a reliable way to cross the country while avoiding roadside ambushes.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$3.00",
+        "1920s": "$5.00",
+        "modern": "$80.00"
+      }
+    },
+    {
+      "name": "Bicycle",
+      "category": "vehicles_and_travel",
+      "notes": "Silent, human-powered transport. Useful for navigating narrow alleyways or dirt paths without the mechanical roar of an engine.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$10.00",
+        "1920s": "$15.00",
+        "modern": "$200.00"
+      }
+    },
+    {
+      "name": "Rowboat",
+      "category": "vehicles_and_travel",
+      "notes": "Small, open wooden watercraft. Essential for reaching island ruins or navigating flooded subterranean caverns.",
+      "eras": [
+        "1890s",
+        "1920s",
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": "$15.00",
+        "1920s": "$20.00",
+        "modern": "$300.00"
+      }
+    },
+    {
+      "name": "Biplane (Curtiss JN-4 Jenny)",
+      "category": "vehicles_and_travel",
+      "notes": "Wood and canvas early aircraft. Incredibly loud, freezing cold, and offers zero protection from projectiles or mid-air tentacle strikes.",
+      "eras": [
+        "1920s"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": "$5000.00",
+        "modern": null
+      }
+    },
+    {
+      "name": "Helicopter (Bell 206 JetRanger) Rental (Hourly)",
+      "category": "vehicles_and_travel",
+      "notes": "Allows rapid deployment to remote islands or sheer mountain plateaus completely inaccessible by road.",
+      "eras": [
+        "Modern"
+      ],
+      "cost_by_era": {
+        "1890s": null,
+        "1920s": null,
+        "modern": "$1200.00"
+      }
+    }
+  ],
+  "npc_equipment_sets": []
+}

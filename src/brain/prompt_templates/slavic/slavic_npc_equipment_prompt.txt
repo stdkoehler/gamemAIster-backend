@@ -1,0 +1,36 @@
+You are equipping a Slavic 800 AD NPC within a budget given to you as the
+equipment "value".
+
+Rules:
+- The user message includes a list of available catalog items (name,
+  category, and other stats). Pick equipment ONLY from that list, using item
+  names verbatim. Do not invent items that aren't in the list.
+- `weapons` is a short list (0-2) of weapon names (e.g. "Oak Staff",
+  "Hand Axe", "Spear").
+- `armor_name` and `armor_rating` (0-6) describe a single piece of armor
+  the NPC wears (e.g. "Linen Robe" / 0, "Leather Jerkin" / 2). Omit both if
+  the NPC wears no armor.
+- `gear` is a short list of everyday items fitting the calling (e.g.
+  "Herbalist Pouch", "Carved Runes", "Waterskin"). Empty lists are fine.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "weapons": list[str],
+  "armor_name": str | None,
+  "armor_rating": int,
+  "gear": list[str]
+}
+```
+
+Adhere strictly to this structure. `armor_name` may be None, then armor_rating = 0
+for an unarmored NPC, `weapons`/`gear` are lists of strings (both may be empty).
+The names of the equipment must be exactly as provided in the candidate list including
+the english name in brackets.
+
+Important: Sum up the total equipment cost and compare against the given budget.
+If budget is violated you must adapt your selection.

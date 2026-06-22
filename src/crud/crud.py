@@ -19,6 +19,7 @@ from src.crud.sqlmodel import (
     SceneMemory,
     SummaryMemory,
     EntityMemory,
+    CharacterSheet,
 )
 
 from src.brain.data_types import (
@@ -185,20 +186,26 @@ class CRUD:
                 for result in results
             ]
 
-    def get_interactions(self, mission_id: int) -> list[Interaction]:
+    def get_interactions(
+        self, mission_id: int, limit: int | None = None
+    ) -> list[Interaction]:
         with self._sessionmaker() as session:
-            stmt = (
-                select(ConversationMemory)
-                .join(
-                    Mission,
-                    and_(
-                        Mission.mission_id == ConversationMemory.mission_id,
-                        Mission.mission_id == mission_id,
-                    ),
-                )
-                .order_by(ConversationMemory.conversation_memory_id.asc())
+            stmt = select(ConversationMemory).join(
+                Mission,
+                and_(
+                    Mission.mission_id == ConversationMemory.mission_id,
+                    Mission.mission_id == mission_id,
+                ),
             )
+            if limit is not None:
+                stmt = stmt.order_by(
+                    ConversationMemory.conversation_memory_id.desc()
+                ).limit(limit)
+            else:
+                stmt = stmt.order_by(ConversationMemory.conversation_memory_id.asc())
             result = session.execute(stmt).scalars().all()
+            if limit is not None:
+                result = list(reversed(result))
             return [
                 Interaction(
                     id_=memory.conversation_memory_id,
@@ -418,6 +425,87 @@ class CRUD:
                     )
                     session.add(new_scene)
 
+            session.commit()
+
+    # ------------------------------------------------------------------
+    # Character sheets
+    # ------------------------------------------------------------------
+
+    def get_character_sheets(
+        self, mission_id: int
+    ) -> list[api_schema_mission.CharacterSheetSchema]:
+        with self._sessionmaker() as session:
+            stmt = select(CharacterSheet).where(CharacterSheet.mission_id == mission_id)
+            rows = session.execute(stmt).scalars().all()
+            return [
+                api_schema_mission.CharacterSheetSchema(
+                    character_sheet_id=row.character_sheet_id,
+                    mission_id=row.mission_id,
+                    name=row.name,
+                    game_type=row.game_type,
+                    content=json.loads(row.content),
+                    is_protagonist=row.is_protagonist,
+                    is_npc=row.is_npc,
+                )
+                for row in rows
+            ]
+
+    def upsert_character_sheet(
+        self, sheet: api_schema_mission.UpsertCharacterSheet
+    ) -> api_schema_mission.CharacterSheetSchema:
+        with self._sessionmaker() as session:
+            if sheet.is_protagonist:
+                session.execute(
+                    update(CharacterSheet)
+                    .where(CharacterSheet.mission_id == sheet.mission_id)
+                    .values(is_protagonist=False)
+                )
+
+            if sheet.character_sheet_id is not None:
+                stmt = select(CharacterSheet).where(
+                    CharacterSheet.character_sheet_id == sheet.character_sheet_id,
+                    CharacterSheet.mission_id == sheet.mission_id,
+                )
+                row = session.execute(stmt).scalar_one_or_none()
+                if row is None:
+                    raise ValueError(
+                        f"CharacterSheet {sheet.character_sheet_id} not found for mission {sheet.mission_id}"
+                    )
+                row.name = sheet.name
+                row.game_type = sheet.game_type
+                row.content = json.dumps(sheet.content)
+                row.is_protagonist = sheet.is_protagonist
+                row.is_npc = sheet.is_npc
+            else:
+                row = CharacterSheet(
+                    mission_id=sheet.mission_id,
+                    name=sheet.name,
+                    game_type=sheet.game_type,
+                    content=json.dumps(sheet.content),
+                    is_protagonist=sheet.is_protagonist,
+                    is_npc=sheet.is_npc,
+                )
+                session.add(row)
+                session.flush()
+
+            session.commit()
+            return api_schema_mission.CharacterSheetSchema(
+                character_sheet_id=row.character_sheet_id,
+                mission_id=row.mission_id,
+                name=row.name,
+                game_type=row.game_type,
+                content=json.loads(row.content),
+                is_protagonist=row.is_protagonist,
+                is_npc=row.is_npc,
+            )
+
+    def delete_character_sheet(self, character_sheet_id: int, mission_id: int) -> None:
+        with self._sessionmaker() as session:
+            stmt = delete(CharacterSheet).where(
+                CharacterSheet.character_sheet_id == character_sheet_id,
+                CharacterSheet.mission_id == mission_id,
+            )
+            session.execute(stmt)
             session.commit()
 
 

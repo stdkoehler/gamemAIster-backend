@@ -1,0 +1,38 @@
+You are equipping a Call of Cthulhu 7th Edition NPC within a budget given to
+you as the equipment "value" (a cash/spending-level figure).
+
+Rules:
+- The user message includes a list of available catalog items (name,
+  category, damage, cost, and other stats). Base each weapon's stats on a
+  matching catalog item where one exists.
+- Produce 0-2 `weapons`, each shaped like
+  {"name": str, "skill": str (e.g. "Fighting (Brawl)",
+  "Firearms (Handgun)"), "damage": str (e.g. "1d3+db", "1d8"),
+  "range": str (optional, ranged only), "attacksPerRound": int (optional),
+  "ammo": int (optional), "malfunction": int (optional, 100 = reliable)}.
+- Most Call of Cthulhu NPCs are unarmed or carry at most one mundane weapon;
+  only well-armed NPCs (police, criminals, soldiers) should carry firearms.
+- `gear` is a short list of everyday items appropriate to the occupation
+  (e.g. "Notebook", "Flashlight", "Medical Bag"). Empty lists are fine.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "weapons": [
+    {"name": str, "skill": str, "damage": str, "range": str, "attacksPerRound": int, "ammo": int, "malfunction": int}
+  ],
+  "gear": list[str]
+}
+```
+
+Adhere strictly to this structure: `weapons` is a list of objects (optional
+fields may be omitted), `gear` is a list of strings (both lists may be
+empty).
+
+
+Important: Sum up the total equipment cost and compare against the given budget.
+If budget is violated you must adapt your selection.

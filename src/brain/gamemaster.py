@@ -6,12 +6,16 @@ from dataclasses import dataclass
 import json
 import os
 import re
+import time
 
 from typing import AsyncGenerator
 from pathlib import Path
 
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
+from src.brain.npc_models import NpcProfile, NPC_PIPELINE_CONFIG, merge_npc
+from src.brain.npc_equipment.catalog import get_npc_equipment_categories, npc_equipment_candidates
+from src.crud.crud import crud_instance
 from src.llmclient.llm_client import (
     LLMClientBase,
     LLMClientClaude,
@@ -115,6 +119,17 @@ class _MissionBody(_FlexBase):
 _EXAMPLE_HEADING = re.compile(r"^#{1,3} Example", re.MULTILINE)
 
 
+def _parse_budget_cost(value: str) -> float | None:
+    """Extracts a soft numeric cost cap from a profile's free-text budget (e.g. '5000 nuyen')."""
+    digits = "".join(ch for ch in value if ch.isdigit() or ch == ".")
+    if not digits:
+        return None
+    try:
+        return float(digits)
+    except ValueError:
+        return None
+
+
 def _load_prompt(path: Path, max_examples: int | None = None) -> str:
     text = path.read_text(encoding="utf-8")
     if max_examples is None:
@@ -205,6 +220,47 @@ _GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
         mission_prompt="custom/custom_mission_prompt.txt",
         mission_prompt_non_oracle="custom/custom_mission_prompt.txt",
         oracle_class=CustomOracle,
+    ),
+}
+
+
+@dataclass(frozen=True)
+class _NpcConfig:
+    profile_prompt: str     # relative to prompt_templates/ — system-specific NPC tiers/budgets
+    stats_prompt: str       # relative to prompt_templates/
+    equipment_prompt: str   # relative to prompt_templates/
+
+
+_NPC_CONFIGS: dict[api_schema_mission.GameType, _NpcConfig] = {
+    _GT.SHADOWRUN: _NpcConfig(
+        profile_prompt="shadowrun/shadowrun_npc_profile_prompt.txt",
+        stats_prompt="shadowrun/shadowrun_npc_stats_prompt.txt",
+        equipment_prompt="shadowrun/shadowrun_npc_equipment_prompt.txt",
+    ),
+    _GT.VAMPIRE_THE_MASQUERADE: _NpcConfig(
+        profile_prompt="vampire/vampire_npc_profile_prompt.txt",
+        stats_prompt="vampire/vampire_npc_stats_prompt.txt",
+        equipment_prompt="vampire/vampire_npc_equipment_prompt.txt",
+    ),
+    _GT.CALL_OF_CTHULHU: _NpcConfig(
+        profile_prompt="cthulhu/cthulhu_npc_profile_prompt.txt",
+        stats_prompt="cthulhu/cthulhu_npc_stats_prompt.txt",
+        equipment_prompt="cthulhu/cthulhu_npc_equipment_prompt.txt",
+    ),
+    _GT.SEVENTH_SEA: _NpcConfig(
+        profile_prompt="seventh_sea/seventh_sea_npc_profile_prompt.txt",
+        stats_prompt="seventh_sea/seventh_sea_npc_stats_prompt.txt",
+        equipment_prompt="seventh_sea/seventh_sea_npc_equipment_prompt.txt",
+    ),
+    _GT.EXPANSE: _NpcConfig(
+        profile_prompt="expanse/expanse_npc_profile_prompt.txt",
+        stats_prompt="expanse/expanse_npc_stats_prompt.txt",
+        equipment_prompt="expanse/expanse_npc_equipment_prompt.txt",
+    ),
+    _GT.SLAVIC: _NpcConfig(
+        profile_prompt="slavic/slavic_npc_profile_prompt.txt",
+        stats_prompt="slavic/slavic_npc_stats_prompt.txt",
+        equipment_prompt="slavic/slavic_npc_equipment_prompt.txt",
     ),
 }
 
@@ -494,3 +550,108 @@ class Gamemaster:
             "oracle": self._mission_options.oracle,
         }
         return api_schema_mission.Mission.model_validate(mission)
+
+    def generate_npc(self, name: str, mission_id: int) -> dict:
+        """
+        Generate an NPC content dict for `mission_id`, chaining three
+        structured-output LLM calls (same parse_with_retry pattern as
+        generate_mission): a shared Profiler (narrative description +
+        equipment budget), a per-system Stats agent (combat-relevant
+        attributes/skills), and a per-system Equipment step that picks from a
+        deterministically pre-filtered slice of the system's equipment
+        catalog (embedded as prompt text, no tool calling). The result is
+        merged into a full CharacterProps-shaped dict scoped to what
+        NpcCard.tsx's NPC view renders, with all other required fields
+        safe-defaulted.
+        """
+        if self._game_type not in _NPC_CONFIGS:
+            raise ValueError(f"NPC generation is not supported for game type: {self._game_type}")
+
+        npc_cfg = _NPC_CONFIGS[self._game_type]
+        stats_model, equipment_model, _ = NPC_PIPELINE_CONFIG[self._game_type]
+        game_type = self._game_type
+
+        prompt_dir = Path(__file__).parent / "prompt_templates"
+        profile_system_prompt = (prompt_dir / npc_cfg.profile_prompt).read_text(encoding="utf-8")
+        stats_system_prompt = (prompt_dir / npc_cfg.stats_prompt).read_text(encoding="utf-8")
+        equipment_system_prompt = (prompt_dir / npc_cfg.equipment_prompt).read_text(
+            encoding="utf-8"
+        )
+
+        interactions = crud_instance.get_interactions(mission_id, limit=10)
+        interactions_text = "\n\n".join(
+            interaction.format_interaction_summary() for interaction in interactions
+        ) or "(no narrative history yet)"
+
+        _log.info("GenerateNpc | game_type=%s | name=%s | mission_id=%d", self._game_type, name, mission_id)
+
+        profile_messages = [
+            Message(role=MessageRole.SYSTEM, content=MessageContent(text=profile_system_prompt)),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=f"Game: {self._game_name}\nNPC name: {name}\n\nRecent interactions:\n{interactions_text}"
+                ),
+            ),
+        ]
+        profile = parse_with_retry(
+            messages=profile_messages,
+            result_type=NpcProfile,
+            llm_client=self._llm_client_reasoning,
+            reasoning=True,
+            task=LLMTask.ARCHITECT,
+        )
+
+        valid_categories = get_npc_equipment_categories(game_type)
+        stats_messages = [
+            Message(role=MessageRole.SYSTEM, content=MessageContent(text=stats_system_prompt)),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=(
+                        f"NPC name: {name}\nDescription: {profile.character_description}\n\n"
+                        f"Valid equipment categories for this system (pick `equipment_categories` only "
+                        f"from this list, choosing the ones relevant to this NPC's archetype/role):\n"
+                        f"{', '.join(valid_categories)}"
+                    )
+                ),
+            ),
+        ]
+        stats = parse_with_retry(
+            messages=stats_messages,
+            result_type=stats_model,
+            llm_client=self._llm_client_reasoning,
+            reasoning=True,
+            task=LLMTask.ARCHITECT,
+        )
+
+        budget_cost = _parse_budget_cost(profile.value)
+        candidates = npc_equipment_candidates(
+            game_type, categories=stats.equipment_categories, max_cost=budget_cost
+        )
+        candidates_text = json.dumps(candidates, ensure_ascii=False, indent=2)
+        equipment_messages = [
+            Message(role=MessageRole.SYSTEM, content=MessageContent(text=equipment_system_prompt)),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(
+                    text=(
+                        f"NPC name: {name}\nDescription: {profile.character_description}\n"
+                        f"Equipment budget: {profile.value}\n\n"
+                        f"Available catalog items to choose from (pick only by exact name):\n{candidates_text}"
+                    )
+                ),
+            ),
+        ]
+        equipment = parse_with_retry(
+            messages=equipment_messages,
+            result_type=equipment_model,
+            llm_client=self._llm_client_reasoning,
+            reasoning=True,
+            task=LLMTask.ARCHITECT,
+        )
+
+        npc_id = int(time.time() * 1000)
+        content = merge_npc(game_type, npc_id, name, profile, stats, equipment)
+        _log.info("GenerateNpc complete | game_type=%s | name=%s", game_type, name)
+        return content

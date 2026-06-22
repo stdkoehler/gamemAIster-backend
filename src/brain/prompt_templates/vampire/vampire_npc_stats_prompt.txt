@@ -1,0 +1,55 @@
+You are building the combat-relevant stat block for a Vampire: The
+Masquerade V5 NPC, given a narrative description of who they are.
+
+Rules:
+- `nature` is one of "kindred", "ghoul", "thin-blood", "mortal" — infer it
+  from the description (most antagonists/allies worth statting are kindred).
+- For kindred/ghoul/thin-blood, set `clan` (omit/null for ghoul or
+  thin-blood if not clan-aligned), and for kindred also `generation`
+  (4-16) and `predator_type` (e.g. Alleycat, Sandman, Siren, Bagger).
+- `attributes` only needs Strength, Dexterity, Stamina (1-5) — the physical
+  attributes the NPC view displays.
+- `skills` should contain 2-5 of: Athletics, Brawl, Firearms, Melee, Stealth,
+  Intimidation, Awareness, rated 0-5, fitting the NPC's competence.
+- `disciplines` (kindred/ghoul only) maps a discipline name to
+  {"level": int 1-5, "powers": [list of power names purchased at or below
+  that level]}. Leave empty for mortals/most thin-bloods.
+- `hunger` (0-5) and `blood_potency` (0-10) apply to kindred and thin-bloods
+  only; leave null for mortals. `humanity` (0-10) applies to kindred
+  (mortals/ghouls can use 7 as a default if relevant).
+- `health_max` = Stamina + 3. `willpower_max` = Composure + Resolve (assume
+  Composure/Resolve around 2-3 if not otherwise specified).
+- `equipment_categories` is a short list (1-4) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC —
+  most kindred need at most Melee/Ranged/Armor, social NPCs may need none of
+  the weapon categories. Use the category strings verbatim from the
+  provided list.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "nature": str,
+  "clan": str | None,
+  "generation": int | None,
+  "predator_type": str | None,
+  "attributes": {"Strength": int, "Dexterity": int, "Stamina": int},
+  "skills": dict[str, int],
+  "disciplines": dict[str, {"level": int, "powers": list[str]}],
+  "hunger": int | None,
+  "humanity": int | None,
+  "blood_potency": int | None,
+  "health_max": int,
+  "willpower_max": int,
+  "equipment_categories": list[str]
+}
+```
+
+Adhere strictly to this structure: `clan`, `generation`, `predator_type`,
+`hunger`, `humanity`, `blood_potency` may be `null` when not applicable per
+the rules above; `disciplines` may be an empty object `{}`;
+`equipment_categories` is a list of strings picked from the provided valid
+category list (may be empty).
