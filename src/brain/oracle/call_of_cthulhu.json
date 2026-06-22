@@ -417,6 +417,46 @@
         {
             "name": "dimensional being",
             "probability": 0.6
+        },
+        {
+            "name": "con artist",
+            "probability": 0.9
+        },
+        {
+            "name": "blackmailer",
+            "probability": 0.9
+        },
+        {
+            "name": "jealous rival",
+            "probability": 0.85
+        },
+        {
+            "name": "corrupt official",
+            "probability": 0.85
+        },
+        {
+            "name": "obsessed collector",
+            "probability": 0.85
+        },
+        {
+            "name": "desperate smuggler",
+            "probability": 0.8
+        },
+        {
+            "name": "grieving widow",
+            "probability": 0.8
+        },
+        {
+            "name": "disgruntled employee",
+            "probability": 0.8
+        },
+        {
+            "name": "rival academic",
+            "probability": 0.85
+        },
+        {
+            "name": "petty thief",
+            "probability": 0.85
         }
     ],
     "mythos_phenomena": [
@@ -558,6 +598,38 @@
         },
         {
             "name": "whispering voices",
+            "probability": 0.8
+        },
+        {
+            "name": "forged document",
+            "probability": 0.9
+        },
+        {
+            "name": "coincidence",
+            "probability": 0.85
+        },
+        {
+            "name": "mundane illness",
+            "probability": 0.85
+        },
+        {
+            "name": "financial fraud",
+            "probability": 0.85
+        },
+        {
+            "name": "old grudge",
+            "probability": 0.85
+        },
+        {
+            "name": "misunderstanding",
+            "probability": 0.8
+        },
+        {
+            "name": "staged robbery",
+            "probability": 0.8
+        },
+        {
+            "name": "staged haunting",
             "probability": 0.8
         }
     ],

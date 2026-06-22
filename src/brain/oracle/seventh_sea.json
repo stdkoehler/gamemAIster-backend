@@ -241,6 +241,46 @@
         {
             "name": "A warship goes rogue after a diplomatic incident",
             "probability": 0.8
+        },
+        {
+            "name": "A tavern bar tab dispute turns into a public brawl",
+            "probability": 0.9
+        },
+        {
+            "name": "A crew member's old flame turns up unexpectedly",
+            "probability": 0.85
+        },
+        {
+            "name": "A minor cargo shortfall threatens the crew's reputation with a local merchant",
+            "probability": 0.85
+        },
+        {
+            "name": "A rival crew spreads rumors at the docks",
+            "probability": 0.8
+        },
+        {
+            "name": "A local festival requires the crew's participation",
+            "probability": 0.8
+        },
+        {
+            "name": "A small debt comes due to a dockside moneylender",
+            "probability": 0.85
+        },
+        {
+            "name": "A crew member is challenged to a minor duel over pride",
+            "probability": 0.85
+        },
+        {
+            "name": "A lost letter needs delivering to an old friend",
+            "probability": 0.8
+        },
+        {
+            "name": "A market vendor accuses a crew member of cheating",
+            "probability": 0.8
+        },
+        {
+            "name": "A minor storm damages the ship, requiring quick repairs in port",
+            "probability": 0.85
         }
     ],
     "themes": [

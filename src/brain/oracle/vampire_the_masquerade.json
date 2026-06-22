@@ -188,7 +188,7 @@
         },
         {
             "name": "An ancient vampire awakens from torpor",
-            "probability": 0.8
+            "probability": 0.3
         },
         {
             "name": "A valuable artifact has been stolen",
@@ -224,7 +224,7 @@
         },
         {
             "name": "A supernatural disaster threatens the city",
-            "probability": 0.7
+            "probability": 0.25
         },
         {
             "name": "A diablerie is suspected among prominent Kindred",
@@ -280,7 +280,7 @@
         },
         {
             "name": "A Methuselah manipulates events from the shadows",
-            "probability": 0.6
+            "probability": 0.2
         },
         {
             "name": "A Second Inquisition strike team enters the city",
@@ -300,7 +300,7 @@
         },
         {
             "name": "A secret society unveils an ancient prophecy",
-            "probability": 0.6
+            "probability": 0.35
         },
         {
             "name": "A powerful artifact resurfaces after centuries",
@@ -337,6 +337,62 @@
         {
             "name": "A clan-specific curse intensifies mysteriously",
             "probability": 0.6
+        },
+        {
+            "name": "A coterie member's mortal friend asks for a small favor",
+            "probability": 0.9
+        },
+        {
+            "name": "A blood doll threatens to go public with their relationship",
+            "probability": 0.8
+        },
+        {
+            "name": "A minor debt among Kindred comes due",
+            "probability": 0.85
+        },
+        {
+            "name": "A coterie member is invited to a low-key Kindred social gathering",
+            "probability": 0.85
+        },
+        {
+            "name": "A haven needs minor repairs after a mundane accident",
+            "probability": 0.8
+        },
+        {
+            "name": "A rival neonate spreads petty gossip",
+            "probability": 0.85
+        },
+        {
+            "name": "A herd member is poached by a rival",
+            "probability": 0.8
+        },
+        {
+            "name": "A mortal pawnbroker recognizes stolen Kindred property",
+            "probability": 0.8
+        },
+        {
+            "name": "A coterie member's day job creates a scheduling conflict with night activities",
+            "probability": 0.85
+        },
+        {
+            "name": "A minor favor is called in by a low-ranking contact",
+            "probability": 0.9
+        },
+        {
+            "name": "A new Kindred moves into the domain and needs introductions",
+            "probability": 0.85
+        },
+        {
+            "name": "A mortal acquaintance starts asking too many questions",
+            "probability": 0.9
+        },
+        {
+            "name": "A Kindred-owned business has a mundane tax problem",
+            "probability": 0.75
+        },
+        {
+            "name": "A small Elysium etiquette breach causes minor embarrassment",
+            "probability": 0.8
         }
     ],
     "themes": [

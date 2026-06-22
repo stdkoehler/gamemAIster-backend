@@ -301,6 +301,46 @@
         {
             "name": "A war criminal resurfaces",
             "probability": 0.6
+        },
+        {
+            "name": "A routine cargo run is delayed by paperwork",
+            "probability": 0.9
+        },
+        {
+            "name": "A crew member's family member needs help relocating",
+            "probability": 0.85
+        },
+        {
+            "name": "A minor equipment malfunction requires an unplanned stop",
+            "probability": 0.85
+        },
+        {
+            "name": "A debt to a fellow trader comes due",
+            "probability": 0.85
+        },
+        {
+            "name": "A friendly competitor asks for a favor",
+            "probability": 0.8
+        },
+        {
+            "name": "A union dispute affects loading schedules",
+            "probability": 0.8
+        },
+        {
+            "name": "An old contact resurfaces looking for help",
+            "probability": 0.85
+        },
+        {
+            "name": "A small-time smuggler asks for protection",
+            "probability": 0.8
+        },
+        {
+            "name": "A misdelivered shipment needs sorting out",
+            "probability": 0.85
+        },
+        {
+            "name": "A crew member's reputation is challenged in a card game",
+            "probability": 0.8
         }
     ],
     "themes": [
