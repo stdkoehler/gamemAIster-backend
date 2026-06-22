@@ -117,7 +117,7 @@ Your output is generated considering the input as seed and must strictly follow 
     },
     "..."
   ],
-  "practicalQuestions": [
+  "dramaticQuestions": [
     "Can the characters find a way to meet their quota despite the equipment problems?",
     "Will they be able to afford the repairs before the next inspection?",
     "How can they help their neighbor without endangering their own family?",
@@ -250,7 +250,7 @@ Your output is generated considering the input as seed and must strictly follow 
       "challenges": "Thin walls, limited privacy, vulnerable to utility cost increases"
     }
   ],
-  "practicalQuestions": [
+  "dramaticQuestions": [
     "Can the characters find a way to get the parts needed without going through official channels?",
     "How can they pressure the administrator to prioritize the repairs?",
     "What temporary solutions can keep the system running while they work on the main problem?"
@@ -391,7 +391,7 @@ Your output is generated considering the input as seed and must strictly follow 
       "challenges": "High prices, limited credit terms, corporate bureaucracy"
     }
   ],
-  "practicalQuestions": [
+  "dramaticQuestions": [
     "Can the crew modify their equipment to handle higher extraction rates safely?",
     "How can they reduce maintenance costs without compromising safety?",
     "What alternatives exist if they can't meet the new contract terms?"

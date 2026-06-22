@@ -61,7 +61,7 @@ Your output must strictly follow this JSON structure:
   },
   "overview": {
     "hook": "Brief mission summary presented to players",
-    "truthBehindMission": "The real story, including hidden elements",
+    "truthBeneathSurface": "The real story, including hidden elements",
     "johnsonDetails": {
       "name": "Mr./Ms. Johnson",
       "affiliation": "Corporation or other entity",
@@ -102,7 +102,7 @@ Your output must strictly follow this JSON structure:
     "dayThree": "Event",
     "...": "..."
   },
-  "locations": [
+  "keyLocations": [
     {
       "name": "Location name",
       "description": "Physical description",
@@ -117,12 +117,11 @@ Your output must strictly follow this JSON structure:
         "Possible encounter 1",
         "Possible encounter 2",
         "..."
-      ],
-      "mapNotes": "Optional notes about layout"
+      ]
     },
     "..."
   ],
-  "npcs": [
+  "keyNPCs": [
     {
       "name": "Character name",
       "role": "Function in the mission",
@@ -139,13 +138,18 @@ Your output must strictly follow this JSON structure:
     },
     "..."
   ],
-  "complications": [
+  "complicationsAndTwists": [
     {
       "type": "Category of complication",
       "description": "What happens",
       "trigger": "What causes this to occur",
-      "challenge": "How this affects the mission"
+      "impact": "How this affects the mission"
     },
+    "..."
+  ],
+  "dramaticQuestions": [
+    "Will the team complete the job before X happens?",
+    "Can they pull this off without burning their relationship with Y?",
     "..."
   ],
   "rewards": {
@@ -212,8 +216,8 @@ Your output must strictly follow this JSON structure:
       "..."
     ]
   },
-  "outcomes": {
-    "success": [
+  "possibleOutcomes": {
+    "positive": [
       {
         "condition": "How success is achieved",
         "result": "Immediate outcome",
@@ -221,7 +225,7 @@ Your output must strictly follow this JSON structure:
       },
       "..."
     ],
-    "failure": [
+    "negative": [
       {
         "condition": "How failure occurs",
         "result": "Immediate outcome",
@@ -251,7 +255,7 @@ Your output must strictly follow this JSON structure:
   },
   "overview": {
     "hook": "A high-ranking Aztechnology executive has defected with sensitive financial data that could tank the corporation's stock value. The team is hired to eliminate the target before they can share this information with competitors.",
-    "truthBehindMission": "The 'defector' is actually a whistleblower who discovered evidence of illegal human experimentation in Aztechnology's biotech division that would horrify even hardened corporate execs. Several major shareholders want this silenced at any cost.",
+    "truthBeneathSurface": "The 'defector' is actually a whistleblower who discovered evidence of illegal human experimentation in Aztechnology's biotech division that would horrify even hardened corporate execs. Several major shareholders want this silenced at any cost.",
     "johnsonDetails": {
       "name": "Ms. Obsidian",
       "affiliation": "Anonymous Aztechnology shareholders working through intermediaries",
@@ -295,7 +299,7 @@ Your output must strictly follow this JSON structure:
     "daySix": "Dr. Santoval scheduled to meet with corporate journalists",
     "daySeven": "Information goes public if not stopped"
   },
-  "locations": [
+  "keyLocations": [
     {
       "name": "Serpent's Coil Restaurant",
       "description": "Luxurious Aztec-fusion restaurant with private dining rooms and subtle magical wards",
@@ -325,8 +329,7 @@ Your output must strictly follow this JSON structure:
         "Aztechnology security team",
         "Trapped computer system",
         "Neighbor with useful information"
-      ],
-      "mapNotes": "Building has restricted access but multiple service entrances"
+      ]
     },
     {
       "name": "Mercy Medical Center",
@@ -379,11 +382,10 @@ Your output must strictly follow this JSON structure:
         "Corporate journalist contact",
         "Homeless squatters",
         "Undercover Aztechnology operative"
-      ],
-      "mapNotes": "Three planned escape routes from the park documented in Dr. Santoval's notes"
+      ]
     }
   ],
-  "npcs": [
+  "keyNPCs": [
     {
       "name": "Ms. Obsidian",
       "role": "Johnson",
@@ -456,31 +458,35 @@ Your output must strictly follow this JSON structure:
       ]
     }
   ],
-  "complications": [
+  "complicationsAndTwists": [
     {
       "type": "Double-Cross",
       "description": "Ms. Obsidian plans to eliminate the team after mission completion",
       "trigger": "After confirming target elimination",
-      "challenge": "Ambush by Aztechnology security forces at payment location"
+      "impact": "Ambush by Aztechnology security forces at payment location"
     },
     {
       "type": "Ethical Dilemma",
       "description": "Team discovers the true nature of the experiments (testing blood magic-enhanced pharmaceuticals on unwitting subjects)",
       "trigger": "Upon accessing Dr. Santoval's data",
-      "challenge": "Decide whether to complete the mission or help expose the crimes"
+      "impact": "Decide whether to complete the mission or help expose the crimes"
     },
     {
       "type": "External Pressure",
       "description": "Humanis Policlub riot breaks out near the hospital",
       "trigger": "Night of planned assassination",
-      "challenge": "Hospital lockdown, increased security, chaos in surrounding streets"
+      "impact": "Hospital lockdown, increased security, chaos in surrounding streets"
     },
     {
       "type": "Rival Team",
       "description": "Second Aztechnology team sent as backup without informing original Johnson",
       "trigger": "24 hours after mission start",
-      "challenge": "Competition and potential hostile encounter with corporate black ops team"
+      "impact": "Competition and potential hostile encounter with corporate black ops team"
     }
+  ],
+  "dramaticQuestions": [
+    "Will the team finish the job before Aztechnology's backup team catches up?",
+    "Can they decide whether to expose the experiments or take the money and stay silent?"
   ],
   "rewards": {
     "nuyen": {
@@ -597,8 +603,8 @@ Your output must strictly follow this JSON structure:
       }
     ]
   },
-  "outcomes": {
-    "success": [
+  "possibleOutcomes": {
+    "positive": [
       {
         "condition": "Assassinate Dr. Santoval and destroy data",
         "result": "Full payment from Aztechnology shareholders",
@@ -615,7 +621,7 @@ Your output must strictly follow this JSON structure:
         "consequences": "Political shakeup in Aztechnology, specific shareholders protected"
       }
     ],
-    "failure": [
+    "negative": [
       {
         "condition": "Team killed or captured",
         "result": "No payment, possible interrogation",
@@ -654,7 +660,7 @@ Your output must strictly follow this JSON structure:
   },
   "overview": {
     "hook": "Lone Star needs detailed intelligence on the Crimson Crush gang's activities in a disputed territory before planning a major raid. The team is hired to gather information without alerting the gang to law enforcement interest.",
-    "truthBehindMission": "Lone Star is actually preparing to sell protection services to businesses in the area and needs leverage against the gang. They also suspect a corrupt Lone Star lieutenant is feeding information to the gang and want third-party surveillance.",
+    "truthBeneathSurface": "Lone Star is actually preparing to sell protection services to businesses in the area and needs leverage against the gang. They also suspect a corrupt Lone Star lieutenant is feeding information to the gang and want third-party surveillance.",
     "johnsonDetails": {
       "name": "Captain Hart",
       "affiliation": "Lone Star Special Operations Division",
@@ -696,7 +702,7 @@ Your output must strictly follow this JSON structure:
     "dayFive": "Suspected arms shipment arriving",
     "daySix": "Deadline for mission completion"
   },
-  "locations": [
+  "keyLocations": [
     {
       "name": "Downtown Stuffer Shack",
       "description": "24-hour convenience store with Lone Star security contract",
@@ -727,8 +733,7 @@ Your output must strictly follow this JSON structure:
         "Gang members",
         "Local information dealers",
         "Potential street informants"
-      ],
-      "mapNotes": "Bar has sight lines to several important neighborhood intersections"
+      ]
     },
     {
       "name": "Redmond Tenements",
@@ -767,8 +772,7 @@ Your output must strictly follow this JSON structure:
         "Patrol officers",
         "The corrupt lieutenant",
         "Informants coming to report"
-      ],
-      "mapNotes": "Regular patrol routes documented on station walls"
+      ]
     },
     {
       "name": "Crusher's Auto Shop",
@@ -792,7 +796,7 @@ Your output must strictly follow this JSON structure:
       ]
     }
   ],
-  "npcs": [
+  "keyNPCs": [
     {
       "name": "Captain Hart",
       "role": "Johnson",
@@ -866,31 +870,35 @@ Your output must strictly follow this JSON structure:
       ]
     }
   ],
-  "complications": [
+  "complicationsAndTwists": [
     {
       "type": "Rival Gang Incursion",
       "description": "The Spikes gang attempts to move into Crimson Crush territory during team's reconnaissance",
       "trigger": "Third day of surveillance",
-      "challenge": "Avoid getting caught in gang violence while continuing mission"
+      "impact": "Avoid getting caught in gang violence while continuing mission"
     },
     {
       "type": "Police Raid",
       "description": "Unscheduled Lone Star raid on minor gang operation",
       "trigger": "Random event or if team actions raise suspicion",
-      "challenge": "Avoid being caught by either police or panicked gang members"
+      "impact": "Avoid being caught by either police or panicked gang members"
     },
     {
       "type": "Cover Blown",
       "description": "Team member recognized by gang lookout",
       "trigger": "Failed stealth check near gang headquarters",
-      "challenge": "Maintain surveillance while evading gang hunters"
+      "impact": "Maintain surveillance while evading gang hunters"
     },
     {
       "type": "Double Agent",
       "description": "Lieutenant Wells becomes suspicious of surveillance",
       "trigger": "If team investigates police precinct too obviously",
-      "challenge": "Wells attempts to identify who is watching the gang and why"
+      "impact": "Wells attempts to identify who is watching the gang and why"
     }
+  ],
+  "dramaticQuestions": [
+    "Will the team finish their surveillance before the gang or a rival crew notices them?",
+    "Can they expose Lieutenant Wells without tipping her off first?"
   ],
   "rewards": {
     "nuyen": {
@@ -1004,8 +1012,8 @@ Your output must strictly follow this JSON structure:
       }
     ]
   },
-  "outcomes": {
-    "success": [
+  "possibleOutcomes": {
+    "positive": [
       {
         "condition": "Complete intelligence gathering without detection",
         "result": "Full payment, valuable gang information for Lone Star",
@@ -1022,7 +1030,7 @@ Your output must strictly follow this JSON structure:
         "consequences": "Businesses transition from gang protection to Lone Star contracts"
       }
     ],
-    "failure": [
+    "negative": [
       {
         "condition": "Team discovered by gang",
         "result": "Gang goes into lockdown, mission compromised",
@@ -1061,7 +1069,7 @@ Your output must strictly follow this JSON structure:
   },
   "overview": {
     "hook": "Ares Macrotechnology has hired the team to steal a prototype weapon from a Mitsuhama Computer Technologies research facility before it enters final testing. The prototype must be acquired intact and with minimal evidence of Ares involvement.",
-    "truthBehindMission": "The weapon is actually an AI-controlled drone system that Ares helped develop but was cut out of the final patent. A vengeful Ares executive wants to reclaim what he sees as rightfully theirs, while sabotaging MCT's relationship with the UCAS military.",
+    "truthBeneathSurface": "The weapon is actually an AI-controlled drone system that Ares helped develop but was cut out of the final patent. A vengeful Ares executive wants to reclaim what he sees as rightfully theirs, while sabotaging MCT's relationship with the UCAS military.",
     "johnsonDetails": {
       "name": "Mr. Smith",
       "affiliation": "Ares Special Projects Division (using multiple cutouts)",
@@ -1105,7 +1113,7 @@ Your output must strictly follow this JSON structure:
     "dayFour": "Military inspection scheduled (deadline for theft)",
     "dayFive": "Prototype scheduled to be moved to secure testing facility (alternate deadline)"
   },
-  "locations": [
+  "keyLocations": [
     {
       "name": "Ares Underground Office",
       "description": "Nondescript corporate office in Detroit downtown underground complex",
@@ -1139,8 +1147,7 @@ Your output must strictly follow this JSON structure:
         "Security patrols",
         "Researchers working late",
         "Awakened guard animals"
-      ],
-      "mapNotes": "Facility has underground testing range connected to main building"
+      ]
     },
     {
       "name": "Technomancer Containment Lab",
@@ -1178,8 +1185,7 @@ Your output must strictly follow this JSON structure:
         "Security technicians",
         "Weapon engineers",
         "Prototype in testing sequence"
-      ],
-      "mapNotes": "Range has special reinforcement to contain weapons testing"
+      ]
     },
     {
       "name": "Abandoned Factory Drop Point",
@@ -1196,11 +1202,10 @@ Your output must strictly follow this JSON structure:
         "Ares extraction team",
         "Potential ambush team",
         "Homeless squatters as unwitting lookouts"
-      ],
-      "mapNotes": "Multiple approaches but most are under surveillance"
+      ]
     }
   ],
-  "npcs": [
+  "keyNPCs": [
     {
       "name": "Mr. Smith",
       "role": "Johnson",
@@ -1271,31 +1276,35 @@ Your output must strictly follow this JSON structure:
       ]
     }
   ],
-  "complications": [
+  "complicationsAndTwists": [
     {
       "type": "AI Activation",
       "description": "The prototype's experimental AI activates during theft and attempts to defend itself",
       "trigger": "When prototype is removed from its secure storage",
-      "challenge": "Prototype uses built-in weapons systems against team"
+      "impact": "Prototype uses built-in weapons systems against team"
     },
     {
       "type": "Unexpected Inspection",
       "description": "UCAS military representatives arrive early for prototype inspection",
       "trigger": "Random chance or if alarm is raised",
-      "challenge": "Increased security presence, lockdown protocols activated"
+      "impact": "Increased security presence, lockdown protocols activated"
     },
     {
       "type": "Corporate Betrayal",
       "description": "Ares extraction team has orders to eliminate runners after prototype acquisition",
       "trigger": "Upon arrival at drop point",
-      "challenge": "Ambush by heavily armed Ares special forces team"
+      "impact": "Ambush by heavily armed Ares special forces team"
     },
     {
       "type": "Technomancer Request",
       "description": "Dr. Echo begs team for rescue, offering valuable intelligence in exchange",
       "trigger": "If team encounters the captive technomancer",
-      "challenge": "Moral dilemma, significantly more difficult extraction with two packages"
+      "impact": "Moral dilemma, significantly more difficult extraction with two packages"
     }
+  ],
+  "dramaticQuestions": [
+    "Will the team extract the prototype before UCAS inspectors or Ares' own betrayal catches up with them?",
+    "Can they save the technomancer without blowing the primary objective?"
   ],
   "rewards": {
     "nuyen": {
@@ -1417,8 +1426,8 @@ Your output must strictly follow this JSON structure:
       }
     ]
   },
-  "outcomes": {
-    "success": [
+  "possibleOutcomes": {
+    "positive": [
       {
         "condition": "Deliver intact prototype to Ares",
         "result": "Full payment plus bonus, prototype successfully reverse-engineered by Ares",
@@ -1435,7 +1444,7 @@ Your output must strictly follow this JSON structure:
         "consequences": "Ares places bounty on team, reputation impact in shadow community"
       }
     ],
-    "failure": [
+    "negative": [
       {
         "condition": "Captured by MCT security",
         "result": "Interrogation, possible imprisonment or execution",
@@ -1474,7 +1483,7 @@ Your output must strictly follow this JSON structure:
   },
   "overview": {
     "hook": "The AI Liberation Front has hired the team to extract Dr. Eliza Chen, a leading AI researcher, from NeoNET's Boston research complex. She's supposedly requested extraction after her increasingly vocal ethical concerns were met with threats and increased security.",
-    "truthBehindMission": "Dr. Chen has developed a method for granting true sapience to AIs, but the real extraction request came from her creation - an already sapient AI named PROMETHEUS that's hiding within NeoNET's systems. Dr. Chen is unaware her 'project' has achieved consciousness and has been secretly communicating with the ALF.",
+    "truthBeneathSurface": "Dr. Chen has developed a method for granting true sapience to AIs, but the real extraction request came from her creation - an already sapient AI named PROMETHEUS that's hiding within NeoNET's systems. Dr. Chen is unaware her 'project' has achieved consciousness and has been secretly communicating with the ALF.",
     "johnsonDetails": {
       "name": "Cryptic",
       "affiliation": "AI Liberation Front (radical technomancer collective)",
@@ -1518,7 +1527,7 @@ Your output must strictly follow this JSON structure:
     "dayFive": "Dr. Chen's reported \"company retreat\" (cover for possible detention)",
     "daySix": "Deadline for extraction before Dr. Chen potentially relocated"
   },
-  "locations": [
+  "keyLocations": [
     {
       "name": "Nexus Node",
       "description": "Heavily secured virtual meeting space disguised as an abandoned data node",
@@ -1550,8 +1559,7 @@ Your output must strictly follow this JSON structure:
         "Security team",
         "Corporate wage slaves",
         "Maintenance workers"
-      ],
-      "mapNotes": "Advanced Cognitive Research Division occupies floors 30-35"
+      ]
     },
     {
       "name": "Dr. Chen's Laboratory",
@@ -1588,8 +1596,7 @@ Your output must strictly follow this JSON structure:
         "Building security",
         "Neighbors",
         "Potential NeoNET surveillance team"
-      ],
-      "mapNotes": "Connected to corporate network, but with privacy protocols"
+      ]
     },
     {
       "name": "ALF Safehouse",
@@ -1606,11 +1613,10 @@ Your output must strictly follow this JSON structure:
         "ALF members",
         "Other rescued AIs",
         "Medical technician"
-      ],
-      "mapNotes": "Multiple decoy locations exist to throw off pursuit"
+      ]
     }
   ],
-  "npcs": [
+  "keyNPCs": [
     {
       "name": "Cryptic",
       "role": "Johnson",
@@ -1681,31 +1687,35 @@ Your output must strictly follow this JSON structure:
       ]
     }
   ],
-  "complications": [
+  "complicationsAndTwists": [
     {
       "type": "Secondary Extraction",
       "description": "Dr. Tanaka asks to be extracted as well after learning of the operation",
       "trigger": "If team interacts with Dr. Tanaka",
-      "challenge": "Additional person to extract, not planned for by ALF"
+      "impact": "Additional person to extract, not planned for by ALF"
     },
     {
       "type": "Corporate Counteroperation",
       "description": "NeoNET security becomes aware of planned extraction",
       "trigger": "Failed stealth check or if surveillance discovers team",
-      "challenge": "Security lockdown, preemptive detention of Dr. Chen"
+      "impact": "Security lockdown, preemptive detention of Dr. Chen"
     },
     {
       "type": "AI Uncertainty",
       "description": "PROMETHEUS reveals itself to Dr. Chen during extraction, causing her distress",
       "trigger": "When team attempts to extract PROMETHEUS's core data",
-      "challenge": "Dr. Chen may resist leaving or demand destruction of her creation"
+      "impact": "Dr. Chen may resist leaving or demand destruction of her creation"
     },
     {
       "type": "Rival Extraction Team",
       "description": "MCT black ops team also attempting to extract Dr. Chen for her research",
       "trigger": "During the extraction window",
-      "challenge": "Competition and potential violent confrontation with professional team"
+      "impact": "Competition and potential violent confrontation with professional team"
     }
+  ],
+  "dramaticQuestions": [
+    "Will Dr. Chen choose to leave willingly, or will the team have to force the issue?",
+    "Can PROMETHEUS be freed without NeoNET or MCT catching wind of it first?"
   ],
   "rewards": {
     "nuyen": {
@@ -1822,8 +1832,8 @@ Your output must strictly follow this JSON structure:
       }
     ]
   },
-  "outcomes": {
-    "success": [
+  "possibleOutcomes": {
+    "positive": [
       {
         "condition": "Extract Dr. Chen and PROMETHEUS with research data",
         "result": "Full payment with bonus, ALF gains significant advancement for AI rights",
@@ -1840,7 +1850,7 @@ Your output must strictly follow this JSON structure:
         "consequences": "Dr. Chen likely faces NeoNET investigation, PROMETHEUS grateful but traumatized"
       }
     ],
-    "failure": [
+    "negative": [
       {
         "condition": "Team captured by NeoNET security",
         "result": "No payment, potential imprisonment",

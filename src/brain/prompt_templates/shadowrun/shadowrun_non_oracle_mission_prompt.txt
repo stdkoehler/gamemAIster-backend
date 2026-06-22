@@ -73,7 +73,7 @@ Adhere strictly to this structure. Escape all quotes within strings.
   },
   "overview": {
     "hook": "Brief mission summary as it is presented to the runners",
-    "truthBehindMission": "The real story, including hidden elements implied by the text",
+    "truthBeneathSurface": "The real story, including hidden elements implied by the text",
     "johnsonDetails": {
       "name": "Johnson alias or name (generate if text provides only a role)",
       "affiliation": "Corporation or other entity",
@@ -94,7 +94,7 @@ Adhere strictly to this structure. Escape all quotes within strings.
       "True objective not apparent at first glance (inferred from text)"
     ]
   },
-  "locations": [
+  "keyLocations": [
     {
       "name": "Location name",
       "description": "Physical description and atmosphere",
@@ -105,7 +105,7 @@ Adhere strictly to this structure. Escape all quotes within strings.
       ]
     }
   ],
-  "npcs": [
+  "keyNPCs": [
     {
       "name": "Character name or alias (generate if text only provides role)",
       "role": "Function in the mission",
@@ -114,6 +114,10 @@ Adhere strictly to this structure. Escape all quotes within strings.
       "knownInfo": "What they can tell the team",
       "secretInfo": "What they will not readily share (inferred or empty string)"
     }
+  ],
+  "dramaticQuestions": [
+    "Question derived from the central conflict implied by the text?",
+    "Question about a runner's personal stake?"
   ],
   "matrix": {
     "systems": [
@@ -147,5 +151,6 @@ Before outputting, verify:
 3. Is the `matrix` section present despite the text mentioning no Matrix elements? -> **Remove it.**
 4. Is the `magicalElements` section present despite the text mentioning no magical elements? -> **Remove it.**
 5. **ALL NPCS HAVE A NAME OR ALIAS.**
+6. Are the `dramaticQuestions` grounded in conflicts actually present in the text? -> Do not invent new dramatic stakes beyond what's implied.
 
 ## Conversion

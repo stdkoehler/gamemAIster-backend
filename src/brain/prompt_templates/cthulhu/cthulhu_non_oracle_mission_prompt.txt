@@ -83,37 +83,18 @@ Adhere strictly to this structure. Escape all quotes within strings.
   },
   "overview": {
     "hook": "The event or circumstance that draws the investigators into the mystery",
-    "appearanceVsReality": "What seems to be happening vs. the horrifying truth implied by the text",
-    "mythosConnection": "How the Mythos is involved, as implied by the text (may be subtle or absent at this stage)",
-    "themes": [
-      "Theme 1",
-      "Theme 2"
-    ],
+    "truthBeneathSurface": "The hidden cosmic-horror truth implied by the text, including how it connects to the Mythos (may be subtle or absent at this stage)",
     "narrativePhases": {
       "mundanePhase": {
         "premise": "The apparently normal explanation for events",
-        "initialClues": [
-          "Ordinary-seeming clue derived from the text",
-          "..."
-        ],
         "rationalExplanations": "How everything could be explained naturally at this stage"
       },
       "doubtPhase": {
-        "escalation": "How the situation becomes increasingly disturbing",
-        "ambiguousEvents": [
-          {
-            "event": "Strange occurrence implied or described in the text",
-            "mundaneExplanation": "How it could be explained naturally",
-            "actualCause": "The hidden truth behind it"
-          }
-        ],
+        "escalation": "The kind of ambiguous, unsettling dread implied by the text for this phase — not specific scripted events",
         "psychologicalImpact": "How investigators begin questioning reality"
       },
       "revelationPhase": {
-        "breakdown": "How the façade of normality finally crumbles",
-        "undeniableTruths": [
-          "Horror that cannot be rationalized"
-        ],
+        "breakdown": "The nature of the cosmic horror that becomes undeniable, as implied by the text",
         "finalConfrontation": "Nature of the ultimate revelation or encounter"
       }
     }
@@ -126,9 +107,6 @@ Adhere strictly to this structure. Escape all quotes within strings.
       "motivation": "What drives this character (inferred or empty string)",
       "knownInformation": "What they will openly share",
       "hiddenInformation": "What they conceal (inferred from text or empty string)",
-      "encounterLocations": [
-        "Where investigators are likely to meet them"
-      ],
       "fate": "Likely outcome for this character if the investigation succeeds or fails (or empty string)"
     }
   ],
@@ -138,47 +116,30 @@ Adhere strictly to this structure. Escape all quotes within strings.
       "description": "Atmospheric physical description",
       "significance": "Role in the investigation",
       "phase": "mundane|doubt|revelation",
-      "atmosphericProgression": {
-        "initialAppearance": "How the location first appears (mundane)",
-        "subtleChanges": "How it shifts during the doubt phase",
-        "trueNature": "The disturbing reality revealed in the final phase (if applicable)"
-      },
-      "clues": [
-        {
-          "description": "What can be found",
-          "discoveryMethod": "How investigators might find it",
-          "phase": "mundane|doubt|revelation"
-        }
-      ],
       "notableFeatures": [
-        "Feature 1"
+        "Feature or detail investigators can notice or interact with"
+      ],
+      "secrets": [
+        "Hidden information or object discoverable here (or omit if none implied)"
       ]
     }
   ],
-  "clueWeb": {
-    "initialClues": [
-      {
-        "description": "A mundane clue that starts the investigation",
-        "leadsTo": [
-          "Location or NPC name"
-        ]
-      }
-    ],
-    "keyEvidence": [
-      {
-        "description": "Critical piece of evidence",
-        "location": "Where it can be found",
-        "significance": "Why it matters",
-        "difficultyToObtain": "Easy/Moderate/Hard (Skill name)"
-      }
-    ]
-  },
+  "clueWeb": [
+    {
+      "clue": "What can be found or learned",
+      "location": "Where or from whom it is found",
+      "phase": "mundane|doubt|revelation",
+      "leadsTo": [
+        "Connected clue, NPC, or location"
+      ],
+      "fallback": "Alternative way to surface this same information if investigators miss it (optional)"
+    }
+  ],
   "researchResources": [
     {
       "name": "Library, archive, or expert",
       "information": "What can be learned here",
-      "accessDifficulty": "Easy/Moderate/Hard (Skill name)",
-      "skillChecks": "Relevant skill(s)"
+      "accessDifficulty": "Easy/Moderate/Hard (Skill name)"
     }
   ],
   "mythosThreats": [
@@ -201,28 +162,35 @@ Adhere strictly to this structure. Escape all quotes within strings.
     "trigger": "What precipitates the final confrontation",
     "location": "Where the climax takes place",
     "stakes": "What is at risk if the investigators fail",
-    "challenges": [
-      "Obstacle or challenge 1"
-    ],
-    "resolutionOptions": [
-      {
-        "approach": "How investigators might resolve the threat",
-        "requirements": "What they need to have/know",
-        "consequences": "Outcome if successful",
-        "failureResult": "Outcome if they fail"
-      }
+    "possibleApproaches": [
+      "A way investigators might resolve the threat, as implied by the text"
     ]
-  },
-  "epilogue": {
-    "immediateAftermath": "What the world looks like right after the investigation ends",
-    "longTermEffects": "Lingering consequences for the investigators",
-    "futureThreats": "Seeds for future investigations implied by the text",
-    "sanityRewards": "X-Y SAN regained for successful resolution"
   },
   "dramaticQuestions": [
     "Question derived from the central conflict?",
     "Question about an investigator's personal stake?"
-  ]
+  ],
+  "complicationsAndTwists": [
+    {
+      "description": "A complication implied by the text",
+      "trigger": "What causes this twist to unfold",
+      "impact": "How it affects NPCs, locations, and/or investigators"
+    }
+  ],
+  "possibleOutcomes": {
+    "positive": [
+      {
+        "condition": "If investigators achieve X",
+        "result": "Immediate and long-term outcome"
+      }
+    ],
+    "negative": [
+      {
+        "condition": "If investigators fail at Y",
+        "result": "Immediate and long-term outcome"
+      }
+    ]
+  }
 }
 ```
 
@@ -233,8 +201,9 @@ Before outputting, verify:
 1. Are there any **new** characters in the JSON that were not in the text? -> **Delete them.**
 2. Are there any characters with "Name: The Professor" or "Name: The Cultist"? -> **Fix this.** Give them a proper period-appropriate name.
 3. Are there Mythos elements in the JSON that are not referenced or implied by the text? -> **Remove them.**
-4. Is the `mythosConnection` in the overview subtle and appropriate to how much is revealed in the text? -> **Adjust if needed.** Early-stage backgrounds should not have full Mythos spoilers in the overview.
+4. Is the `truthBeneathSurface` field subtle and appropriate to how much is revealed in the text? -> **Adjust if needed.** Early-stage backgrounds should not have full Mythos spoilers.
 5. **ALL NAMED CHARACTERS HAVE A PROPER NAME.**
 6. **All phases are assigned correctly** — no supernatural content bleeds into the mundane phase.
+7. Do not invent `complicationsAndTwists`, `possibleOutcomes`, or `researchResources`/`mythosThreats` entries beyond what the text implies — omit any array entirely rather than padding it with invented content.
 
 ## Conversion
