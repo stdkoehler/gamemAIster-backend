@@ -65,10 +65,9 @@ Generate a comprehensive campaign framework that includes:
 - Balance historical accuracy with engaging gameplay
 - Show respect for Slavic heritage and traditions
 
-## Campaign Generation Request
+## JSON Structure
 
-Based on the following input parameters, create a comprehensive campaign setting:
-
+### Input
 ```json
 {
   "region": "Specific Baltic Slavic territory",
@@ -78,7 +77,7 @@ Based on the following input parameters, create a comprehensive campaign setting
 }
 ```
 
-### Expected Output Structure:
+### Output
 
 Generate your response in JSON format following this simplified structure:
 
@@ -387,7 +386,3 @@ Generate your response in JSON format following this simplified structure:
   }
 }
 ```
-
-## Living Experience Generation Request
-
-Based on the following input parameters, create a comprehensive life simulation json

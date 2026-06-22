@@ -13,8 +13,6 @@ type-checks on the frontend.
 
 from __future__ import annotations
 
-from typing import Callable
-
 from pydantic import BaseModel, Field
 
 from src.routers.schema.mission import GameType
@@ -470,30 +468,7 @@ def _merge_slavic(
     }
 
 
-# ───────────────────────── Dispatch ─────────────────────────
-
-NPC_PIPELINE_CONFIG: dict[GameType, tuple[type[BaseModel], type[BaseModel], Callable]] = {
-    GameType.SHADOWRUN: (ShadowrunNpcStats, ShadowrunNpcEquipment, _merge_shadowrun),
-    GameType.VAMPIRE_THE_MASQUERADE: (VampireNpcStats, VampireNpcEquipment, _merge_vampire),
-    GameType.CALL_OF_CTHULHU: (CthulhuNpcStats, CthulhuNpcEquipment, _merge_cthulhu),
-    GameType.SEVENTH_SEA: (SeventhSeaNpcStats, SeventhSeaNpcEquipment, _merge_seventh_sea),
-    GameType.EXPANSE: (ExpanseNpcStats, ExpanseNpcEquipment, _merge_expanse),
-    GameType.SLAVIC: (SlavicNpcStats, SlavicNpcEquipment, _merge_slavic),
-}
-
-
-def merge_npc(
-    game_type: GameType,
-    npc_id: int,
-    name: str,
-    profile: NpcProfile,
-    stats: BaseModel,
-    equipment: BaseModel,
-) -> dict:
-    """Builds a full ``CharacterProps``-shaped dict from the pipeline's outputs,
-    backfilling every field the system's TS interface requires but the NPC
-    pipeline doesn't generate with the same defaults ``createBlankCharacter()``
-    uses on the frontend.
-    """
-    _, _, merge_fn = NPC_PIPELINE_CONFIG[game_type]
-    return merge_fn(npc_id, name, profile, stats, equipment)
+# Dispatch (which GameType uses which Stats/Equipment model + merge function)
+# lives in src/brain/system_registry.py, alongside the rest of the per-system
+# wiring (prompts, oracle class). This module only defines the per-system
+# models and merge logic.

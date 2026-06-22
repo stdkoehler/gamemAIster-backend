@@ -78,18 +78,18 @@ class SummaryMemory:
     def __init__(
         self,
         llm_client: LLMClientBase,
-        summary_template: str,
-        entity_template: str,
-        scene_template: str,
+        summary_prompt: str,
+        entity_prompt: str,
+        scene_prompt: str,
         game_name: str,
         last_k: int,
         mission_id: int,
         min_summary_tokens: int = 2048,
     ):
         self._llm_client = llm_client
-        self._summary_template = summary_template
-        self._entity_template = entity_template
-        self._scene_template = scene_template
+        self._summary_prompt = summary_prompt
+        self._entity_prompt = entity_prompt
+        self._scene_prompt = scene_prompt
         self._game_name = game_name
         self._last_k = last_k
         self._mission_id = mission_id
@@ -192,7 +192,7 @@ class SummaryMemory:
             Message(
                 role=MessageRole.SYSTEM,
                 content=MessageContent(
-                    text=self._scene_template.replace("__RPG__", self._game_name)
+                    text=self._scene_prompt.replace("__RPG__", self._game_name)
                 ),
             ),
             Message(
@@ -226,7 +226,7 @@ class SummaryMemory:
             Message(
                 role=MessageRole.SYSTEM,
                 content=MessageContent(
-                    text=self._entity_template.replace("__RPG__", self._game_name)
+                    text=self._entity_prompt.replace("__RPG__", self._game_name)
                 ),
             ),
             Message(
@@ -256,7 +256,7 @@ class SummaryMemory:
         messages = [
             Message(
                 role=MessageRole.SYSTEM,
-                content=MessageContent(text=self._summary_template),
+                content=MessageContent(text=self._summary_prompt),
             ),
             Message(
                 role=MessageRole.USER,
@@ -487,18 +487,18 @@ class SummaryChat:
         self,
         llm_client_reasoning: LLMClientBase,
         llm_client_chat: LLMClientBase,
-        role: str,
-        summary_template: str,
-        entity_template: str,
-        scene_template: str,
-        summary_provider_template: str,
+        story_prompt: str,
+        summary_prompt: str,
+        entity_prompt: str,
+        scene_prompt: str,
+        summary_provider_prompt: str,
         game_name: str,
         mission_id: int,
         last_k: int = 2,
         min_summary_tokens: int = 2048,
     ):
         self._llm_client_chat = llm_client_chat
-        self._role = role
+        self._story_prompt = story_prompt
         mission = crud_instance.get_mission_description(mission_id=mission_id)
         if mission is None:
             raise ValueError("No mission could be loaded from database.")
@@ -510,12 +510,12 @@ class SummaryChat:
             mission.game_type.value,
             [{"content": s.content, "is_protagonist": s.is_protagonist} for s in sheets],
         )
-        self._summary_provider_template = summary_provider_template
+        self._summary_provider_prompt = summary_provider_prompt
         self._memory = SummaryMemory(
             llm_client=llm_client_reasoning,
-            summary_template=summary_template,
-            entity_template=entity_template,
-            scene_template=scene_template,
+            summary_prompt=summary_prompt,
+            entity_prompt=entity_prompt,
+            scene_prompt=scene_prompt,
             game_name=game_name,
             last_k=last_k,
             min_summary_tokens=min_summary_tokens,
@@ -539,7 +539,7 @@ class SummaryChat:
             list[Message]: The list of messages to be sent to the LLM.
         """
 
-        system_prompt = self._role.format(
+        system_prompt = self._story_prompt.format(
             MISSION=self._mission, BACKGROUND=self._background
         )
         if self._character_summary:
@@ -569,7 +569,7 @@ class SummaryChat:
                 Message(
                     role=MessageRole.USER,
                     content=MessageContent(
-                        text=self._summary_provider_template.format(
+                        text=self._summary_provider_prompt.format(
                             SUMMARY=self._memory.summary,
                             SCENES=self._memory.get_scenes_json(),
                             ENTITIES=self._memory.get_entities_json(),
