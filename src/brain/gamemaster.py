@@ -13,8 +13,9 @@ from pathlib import Path
 
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
-from src.brain.npc_models import NpcProfile, NPC_PIPELINE_CONFIG, merge_npc
+from src.brain.npc_models import NpcProfile
 from src.brain.npc_equipment.catalog import get_npc_equipment_categories, npc_equipment_candidates
+from src.brain.system_registry import GAME_CONFIGS, NPC_CONFIGS, merge_npc
 from src.crud.crud import crud_instance
 from src.llmclient.llm_client import (
     LLMClientBase,
@@ -31,17 +32,6 @@ from src.llmclient.llm_client import (
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_config_registry import LLMTask
 
-from src.brain.oracle import (
-    BaseOracle,
-    CustomOracle,
-    ExpanseNonHeroOracle,
-    ExpanseOracle,
-    SeventhSeaOracle,
-    ShadowrunOracle,
-    SlavicOracle,
-    VampireOracle,
-    CthulhuOracle,
-)
 from src.brain.structured_output import parse_with_retry
 from src.utils.logger import configure_logger
 from src.utils.sqllogger import SQLLogger
@@ -112,10 +102,14 @@ class _MissionBody(_FlexBase):
 # Prompt loading with optional example-count trimming.
 # ---------------------------------------------------------------------------
 
-# Matches all heading styles used across prompt files:
-#   "# Example 1"  (Cthulhu)
-#   "## Example #1" (Shadowrun)
-#   "## Example 1"  (Vampire, 7th Sea, Expanse)
+# Matches mission_prompt's top-level "## Example N" few-shot headings. Only
+# mission_prompt is trimmed: its examples run to EOF (often 60-80% of the
+# file, see e.g. shadowrun/cthulhu's 4 x ~400-line examples), so truncating
+# at the cut position is safe. story_prompt is intentionally never trimmed
+# here — its examples are a much smaller share of an already-modest file,
+# and trimming would also need to splice around the "Negative Examples"
+# section and guidance that follows them, which isn't worth the complexity
+# for the context-budget it would actually save.
 _EXAMPLE_HEADING = re.compile(r"^#{1,3} Example", re.MULTILINE)
 
 
@@ -138,131 +132,6 @@ def _load_prompt(path: Path, max_examples: int | None = None) -> str:
     if not positions or max_examples >= len(positions):
         return text
     return text[: positions[max_examples]].rstrip()
-
-
-# ---------------------------------------------------------------------------
-# Per-game configuration: prompts + oracle class in one place.
-# Adding a new game type means one entry here only — no other dispatch needed.
-# ---------------------------------------------------------------------------
-
-_GT = api_schema_mission.GameType
-
-
-@dataclass(frozen=True)
-class _GameConfig:
-    game_name: str
-    system_prompt: str              # relative to prompt_templates/
-    mission_prompt: str             # relative to prompt_templates/
-    mission_prompt_non_oracle: str
-    oracle_class: type[BaseOracle]
-
-
-_GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], _GameConfig] = {
-    (_GT.SHADOWRUN, False): _GameConfig(
-        game_name="Shadowrun 6th Edition",
-        system_prompt="shadowrun/shadowrun_system_prompt.txt",
-        mission_prompt="shadowrun/shadowrun_mission_prompt.txt",
-        mission_prompt_non_oracle="shadowrun/shadowrun_mission_prompt.txt",
-        oracle_class=ShadowrunOracle,
-    ),
-    (_GT.VAMPIRE_THE_MASQUERADE, False): _GameConfig(
-        game_name="Vampire the Masquerade 5th Edition",
-        system_prompt="vampire/vampire_system_prompt.txt",
-        mission_prompt="vampire/vampire_mission_prompt.txt",
-        mission_prompt_non_oracle="vampire/vampire_non_oracle_mission_prompt.txt",
-        oracle_class=VampireOracle,
-    ),
-    (_GT.CALL_OF_CTHULHU, False): _GameConfig(
-        game_name="Call of Cthulhu 7th Edition",
-        system_prompt="cthulhu/cthulhu_system_prompt.txt",
-        mission_prompt="cthulhu/cthulhu_mission_prompt.txt",
-        mission_prompt_non_oracle="cthulhu/cthulhu_non_oracle_mission_prompt.txt",
-        oracle_class=CthulhuOracle,
-    ),
-    (_GT.SEVENTH_SEA, False): _GameConfig(
-        game_name="Seventh Sea 2nd Edition",
-        system_prompt="seventh_sea/seventh_sea_system_prompt.txt",
-        mission_prompt="seventh_sea/seventh_sea_mission_prompt.txt",
-        mission_prompt_non_oracle="seventh_sea/seventh_sea_non_oracle_mission_prompt.txt",
-        oracle_class=SeventhSeaOracle,
-    ),
-    (_GT.EXPANSE, False): _GameConfig(
-        game_name="The Expanse RPG",
-        system_prompt="expanse/expanse_system_prompt.txt",
-        mission_prompt="expanse/expanse_mission_prompt.txt",
-        mission_prompt_non_oracle="expanse/expanse_mission_prompt.txt",
-        oracle_class=ExpanseOracle,
-    ),
-    (_GT.EXPANSE, True): _GameConfig(
-        game_name="The Expanse RPG",
-        system_prompt="expanse/expanse_system_prompt_non_hero.txt",
-        mission_prompt="expanse/expanse_mission_prompt_non_hero.txt",
-        mission_prompt_non_oracle="expanse/expanse_mission_prompt_non_hero.txt",
-        oracle_class=ExpanseNonHeroOracle,
-    ),
-    (_GT.SLAVIC, False): _GameConfig(
-        game_name="Baltic Slavic 800 A.D.",
-        system_prompt="slavic/slavic_system_prompt.txt",
-        mission_prompt="slavic/slavic_mission_prompt.txt",
-        mission_prompt_non_oracle="slavic/slavic_mission_prompt.txt",
-        oracle_class=SlavicOracle,
-    ),
-    (_GT.CUSTOM, False): _GameConfig(
-        game_name="Custom RPG",
-        system_prompt="custom/custom_system_prompt.txt",
-        mission_prompt="custom/custom_mission_prompt.txt",
-        mission_prompt_non_oracle="custom/custom_mission_prompt.txt",
-        oracle_class=CustomOracle,
-    ),
-    (_GT.CUSTOM, True): _GameConfig(
-        game_name="Custom RPG",
-        system_prompt="custom/custom_system_prompt.txt",
-        mission_prompt="custom/custom_mission_prompt.txt",
-        mission_prompt_non_oracle="custom/custom_mission_prompt.txt",
-        oracle_class=CustomOracle,
-    ),
-}
-
-
-@dataclass(frozen=True)
-class _NpcConfig:
-    profile_prompt: str     # relative to prompt_templates/ — system-specific NPC tiers/budgets
-    stats_prompt: str       # relative to prompt_templates/
-    equipment_prompt: str   # relative to prompt_templates/
-
-
-_NPC_CONFIGS: dict[api_schema_mission.GameType, _NpcConfig] = {
-    _GT.SHADOWRUN: _NpcConfig(
-        profile_prompt="shadowrun/shadowrun_npc_profile_prompt.txt",
-        stats_prompt="shadowrun/shadowrun_npc_stats_prompt.txt",
-        equipment_prompt="shadowrun/shadowrun_npc_equipment_prompt.txt",
-    ),
-    _GT.VAMPIRE_THE_MASQUERADE: _NpcConfig(
-        profile_prompt="vampire/vampire_npc_profile_prompt.txt",
-        stats_prompt="vampire/vampire_npc_stats_prompt.txt",
-        equipment_prompt="vampire/vampire_npc_equipment_prompt.txt",
-    ),
-    _GT.CALL_OF_CTHULHU: _NpcConfig(
-        profile_prompt="cthulhu/cthulhu_npc_profile_prompt.txt",
-        stats_prompt="cthulhu/cthulhu_npc_stats_prompt.txt",
-        equipment_prompt="cthulhu/cthulhu_npc_equipment_prompt.txt",
-    ),
-    _GT.SEVENTH_SEA: _NpcConfig(
-        profile_prompt="seventh_sea/seventh_sea_npc_profile_prompt.txt",
-        stats_prompt="seventh_sea/seventh_sea_npc_stats_prompt.txt",
-        equipment_prompt="seventh_sea/seventh_sea_npc_equipment_prompt.txt",
-    ),
-    _GT.EXPANSE: _NpcConfig(
-        profile_prompt="expanse/expanse_npc_profile_prompt.txt",
-        stats_prompt="expanse/expanse_npc_stats_prompt.txt",
-        equipment_prompt="expanse/expanse_npc_equipment_prompt.txt",
-    ),
-    _GT.SLAVIC: _NpcConfig(
-        profile_prompt="slavic/slavic_npc_profile_prompt.txt",
-        stats_prompt="slavic/slavic_npc_stats_prompt.txt",
-        equipment_prompt="slavic/slavic_npc_equipment_prompt.txt",
-    ),
-}
 
 
 def build_gamemaster(
@@ -397,34 +266,34 @@ class Gamemaster:
         self._mission_options = mission_options
 
         key = (game_type, mission_options.non_hero_mode)
-        if key not in _GAME_CONFIGS:
-            if mission_options.non_hero_mode and (game_type, False) in _GAME_CONFIGS:
+        if key not in GAME_CONFIGS:
+            if mission_options.non_hero_mode and (game_type, False) in GAME_CONFIGS:
                 raise ValueError(
-                    f"Non-hero mode is not supported for {_GAME_CONFIGS[(game_type, False)].game_name}"
+                    f"Non-hero mode is not supported for {GAME_CONFIGS[(game_type, False)].game_name}"
                 )
             raise ValueError(f"Unknown game type: {game_type}")
 
-        cfg = _GAME_CONFIGS[key]
+        cfg = GAME_CONFIGS[key]
         self._game_name = cfg.game_name
 
         prompt_dir = Path(__file__).parent / "prompt_templates"
         # Local models get fewer few-shot examples to reduce context size and
         # improve instruction-following; cloud models receive the full prompt.
         max_examples = 1 if isinstance(llm_client_reasoning, LLMClientLocal) else None
-        self._role = (prompt_dir / cfg.system_prompt).read_text(encoding="utf-8")
-        self._mission_template = _load_prompt(prompt_dir / cfg.mission_prompt, max_examples)
-        self._mission_template_non_oracle = _load_prompt(prompt_dir / cfg.mission_prompt_non_oracle)
+        self._story_prompt = (prompt_dir / cfg.story_prompt).read_text(encoding="utf-8")
+        self._mission_prompt = _load_prompt(prompt_dir / cfg.mission_prompt, max_examples)
+        self._mission_prompt_non_oracle = _load_prompt(prompt_dir / cfg.mission_prompt_non_oracle)
 
         with open(prompt_dir / "text_summary_prompt.txt", "r", encoding="utf-8") as f:
-            self._summary_template = f.read()
+            self._summary_prompt = f.read()
 
         with open(prompt_dir / "text_entity_prompt.txt", "r", encoding="utf-8") as f:
-            self._entity_template = f.read()
+            self._entity_prompt = f.read()
 
         with open(
             prompt_dir / "text_scene_prompt_examples.txt", "r", encoding="utf-8"
         ) as f:
-            self._scene_template = f.read()
+            self._scene_prompt = f.read()
 
         # currently we provide the complete history to the LLM
         # moving to RAG style summary could be better for longer sessions
@@ -435,7 +304,7 @@ class Gamemaster:
         # let a LLM request extract the entities that are relevant to the current
         # k interactions and only provide those in the summary
         with open(prompt_dir / "summary_provider.txt", "r", encoding="utf-8") as f:
-            self._summary_provider_template = f.read()
+            self._summary_provider_prompt = f.read()
 
     async def stream_interaction_response(
         self, prompt: api_schema_interaction.InteractionPrompt
@@ -454,11 +323,11 @@ class Gamemaster:
             llm_client_reasoning=self._llm_client_reasoning,
             last_k=logic_config.last_k,  # type: ignore
             min_summary_tokens=logic_config.min_summary_tokens,  # type: ignore
-            role=self._role,
-            summary_template=self._summary_template,
-            entity_template=self._entity_template,
-            scene_template=self._scene_template,
-            summary_provider_template=self._summary_provider_template,
+            story_prompt=self._story_prompt,
+            summary_prompt=self._summary_prompt,
+            entity_prompt=self._entity_prompt,
+            scene_prompt=self._scene_prompt,
+            summary_provider_prompt=self._summary_provider_prompt,
             game_name=self._game_name,
             mission_id=prompt.mission_id,
         )
@@ -492,17 +361,17 @@ class Gamemaster:
             full_background = background
 
         if self._mission_options.oracle:
-            cfg = _GAME_CONFIGS[(self._game_type, self._mission_options.non_hero_mode)]
+            cfg = GAME_CONFIGS[(self._game_type, self._mission_options.non_hero_mode)]
             oracle = cfg.oracle_class(llm_client=self._llm_client_reasoning)
             oracle_result = oracle.mission(full_background)
             topic = oracle_result.topic
-            system_prompt = self._mission_template
+            system_prompt = self._mission_prompt
         else:
             oracle_result = None
             topic = json.dumps(
                 {"background": full_background}, ensure_ascii=False, indent=2
             )
-            system_prompt = self._mission_template_non_oracle
+            system_prompt = self._mission_prompt_non_oracle
 
         _log.info("GenerateMission | game_type=%s | oracle=%s | seed_len=%d", self._game_type, self._mission_options.oracle, len(topic))
 
@@ -564,11 +433,11 @@ class Gamemaster:
         NpcCard.tsx's NPC view renders, with all other required fields
         safe-defaulted.
         """
-        if self._game_type not in _NPC_CONFIGS:
+        if self._game_type not in NPC_CONFIGS:
             raise ValueError(f"NPC generation is not supported for game type: {self._game_type}")
 
-        npc_cfg = _NPC_CONFIGS[self._game_type]
-        stats_model, equipment_model, _ = NPC_PIPELINE_CONFIG[self._game_type]
+        npc_cfg = NPC_CONFIGS[self._game_type]
+        stats_model, equipment_model = npc_cfg.stats_model, npc_cfg.equipment_model
         game_type = self._game_type
 
         prompt_dir = Path(__file__).parent / "prompt_templates"

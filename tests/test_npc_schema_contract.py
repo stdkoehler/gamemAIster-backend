@@ -35,8 +35,8 @@ from src.brain.npc_models import (
     SlavicNpcStats,
     VampireNpcEquipment,
     VampireNpcStats,
-    merge_npc,
 )
+from src.brain.system_registry import merge_npc
 from src.routers.schema.mission import GameType
 
 _SCHEMA_DIR = Path(__file__).parent / "schemas"

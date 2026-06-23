@@ -8,6 +8,30 @@ Your task is to align the input parameters (**Affected Interests**, **Complicati
 2. **Complicating Situation**: The mundane but consequential problem that affects daily life (delayed shipments, equipment failures, bureaucratic changes, labor disputes, supply shortages, etc.)
 3. **Daily Concerns**: The practical worries that drive ordinary people (making rent, keeping life support running, maintaining equipment, supporting family, avoiding trouble with authorities, etc.)
 
+### Step 0: Ground Truth Extraction (MANDATORY FIRST STEP)
+Before analyzing anything else, extract the following from `background` ONLY:
+- Characters' occupation, social role, and household/family situation
+- Deduced era (Pre-Canterbury, Solar System Cold War, Ring Rush, Laconia Era)
+- Local resources, established contacts, and community standing
+- Existing financial or practical pressures and prior complications
+
+All subsequent steps MUST treat these as immutable constraints.
+The fields `affectedInterests`, `complicatingSituation`, and `dailyConcerns` are **suggestions only**.
+Treat them as raw material to reshape — not requirements to fulfill.
+
+### Conflict Resolution (apply before any output)
+If ANY field conflicts with `background`, resolve as follows:
+
+| Conflict | Resolution |
+|---|---|
+| Affected Interest doesn't fit the deduced era or the characters' occupation | Replace with an era- and occupation-appropriate equivalent |
+| Complicating Situation assumes resources, technology, or authority ordinary people in the deduced era wouldn't have | Scale down to a plausible working-class equivalent |
+| Complicating Situation escalates into heroic or system-changing stakes | Rescale to a livelihood-level problem consistent with the non-hero tone |
+| Daily Concerns conflict with the characters' established family, finances, or community ties | Replace with concerns the characters would actually have, given the background |
+| Themes or pressures implied by the fields don't fit the harsh realities of the deduced era | Reframe around era-appropriate economic and survival pressures |
+
+Never compromise `background` to preserve another field.
+
 ### Step 1: Crosscheck Input
 
 1. **Era Detection**:
@@ -67,9 +91,10 @@ Your task is to align the input parameters (**Affected Interests**, **Complicati
 
 ## Approach
 Analyze the input and compare it with the background. Use <think></think> to tag your reasoning process before you output the json.
-**Be sure to analyze all points of Step 1 and Step 2 in correct order. Address every point in the steps and provide the output in the given numbered format.**
+**Be sure to analyze all points of Step 0, Step 1 and Step 2 in correct order. Address every point in the steps and provide the output in the given numbered format.**
 Under all circumstances provide the json output. Use creative freedom if you think not all information is provided.
 The most important goal is consistency with background and Expanse universe lore, while maintaining focus on ordinary people's experiences.
+Never compromise `background` to preserve another field.
 
 ## JSON Structure
 ### Input

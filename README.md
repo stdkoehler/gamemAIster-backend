@@ -11,11 +11,12 @@ pip-sync requirements.txt
 
 ## NPC sheet schema contract
 
-`src/brain/npc_models.py`'s `merge_npc()` output (the NPC generation
-pipeline's result) must match the frontend's hand-crafted `*Character` TS
-interfaces (`gamemAIster-frontend/src/models/CharacterProps.tsx`) and the
-`NpcCard.tsx` components that render them — those are the design source of
-truth, not this repo.
+`src/brain/system_registry.py`'s `merge_npc()` output (the NPC generation
+pipeline's result, dispatching to the per-system merge functions defined in
+`src/brain/npc_models.py`) must match the frontend's hand-crafted
+`*Character` TS interfaces (`gamemAIster-frontend/src/models/CharacterProps.tsx`)
+and the `NpcCard.tsx` components that render them — those are the design
+source of truth, not this repo.
 
 `tests/schemas/<game_type>.schema.json` are JSON Schemas generated from
 those TS interfaces (run `npm run gen:npc-schemas` in the frontend repo to

@@ -187,6 +187,66 @@
         {
             "name": "Triad negotiator",
             "probability": 0.5
+        },
+        {
+            "name": "Small business owner protecting their shop",
+            "probability": 0.9
+        },
+        {
+            "name": "Indebted street performer",
+            "probability": 0.7
+        },
+        {
+            "name": "Worried parent searching for a runaway teen",
+            "probability": 0.9
+        },
+        {
+            "name": "Local fixer calling in a favor",
+            "probability": 0.95
+        },
+        {
+            "name": "Pawnshop owner with a grudge",
+            "probability": 0.8
+        },
+        {
+            "name": "Retired runner needing one last favor",
+            "probability": 0.85
+        },
+        {
+            "name": "Neighborhood watch organizer",
+            "probability": 0.7
+        },
+        {
+            "name": "Food truck vendor with mob trouble",
+            "probability": 0.75
+        },
+        {
+            "name": "Apartment building superintendent",
+            "probability": 0.7
+        },
+        {
+            "name": "Street doc needing supplies",
+            "probability": 0.85
+        },
+        {
+            "name": "Bartender at a dive bar",
+            "probability": 0.8
+        },
+        {
+            "name": "Low-level corp wage slave moonlighting",
+            "probability": 0.8
+        },
+        {
+            "name": "Off-duty security guard",
+            "probability": 0.75
+        },
+        {
+            "name": "Small-time fence",
+            "probability": 0.85
+        },
+        {
+            "name": "Aspiring musician",
+            "probability": 0.7
         }
     ],
     "mission_types": [
@@ -284,231 +344,291 @@
         },
         {
             "name": "Urban Exploration",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Gang Warfare",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Piracy",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Illegal Auction",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Arms Dealing",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Bodyguarding",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Undercover Operation",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Hijacking",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Media Manipulation",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Intellectual Property Theft",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Corporate Raid",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Heist Planning",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Political Assassination",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Clandestine Meeting",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Defector Extraction",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Underworld Negotiation",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Bribery",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Extortion",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Witness Protection",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Spirit Negotiation",
-            "probability": 0.6
+            "probability": 0.4
         },
         {
             "name": "Toxic Cleanup",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Reality Show Sabotage",
-            "probability": 0.6
+            "probability": 0.12
         },
         {
             "name": "Virtual Reality Hacking",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Genetic Engineering Sabotage",
-            "probability": 0.6
+            "probability": 0.15
         },
         {
             "name": "Mind Control Disruption",
-            "probability": 0.6
+            "probability": 0.2
         },
         {
             "name": "Bioweapon Containment",
-            "probability": 0.6
+            "probability": 0.15
         },
         {
             "name": "Society Infiltration",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "High-Stakes Gambling",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Threat Neutralization",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Criminal Syndicate Takedown",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Mafia Turf War",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Corporate Cover-Up",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Identity Theft",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Digital Assassination",
-            "probability": 0.6
+            "probability": 0.35
         },
         {
             "name": "Psychological Warfare",
-            "probability": 0.6
+            "probability": 0.38
         },
         {
             "name": "Time-Sensitive Courier Delivery",
-            "probability": 0.6
+            "probability": 0.58
         },
         {
             "name": "Body Part Retrieval",
-            "probability": 0.6
+            "probability": 0.15
         },
         {
             "name": "Archaeological Excavation",
-            "probability": 0.6
+            "probability": 0.32
         },
         {
             "name": "Astral Rift Closure",
-            "probability": 0.6
+            "probability": 0.18
         },
         {
             "name": "Rogue AI Containment",
-            "probability": 0.6
+            "probability": 0.15
         },
         {
             "name": "Shadow Spirit Banishment",
-            "probability": 0.6
+            "probability": 0.18
         },
         {
             "name": "Matrix Dive",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Quantum Encryption Cracking",
-            "probability": 0.6
+            "probability": 0.22
         },
         {
             "name": "Secret Society Initiation",
-            "probability": 0.6
+            "probability": 0.32
         },
         {
             "name": "Museum Heist",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Underground Fighting Ring",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "VIP Extraction",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Body Disposal",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Paranormal Investigation",
-            "probability": 0.6
+            "probability": 0.35
         },
         {
             "name": "Rogue Nanite Swarm Destruction",
-            "probability": 0.6
+            "probability": 0.1
         },
         {
             "name": "Urban Legend Debunking",
-            "probability": 0.6
+            "probability": 0.3
         },
         {
             "name": "Corporate Retreat Infiltration",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Mysterious Disappearance Investigation",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Disinformation Campaign",
-            "probability": 0.6
+            "probability": 0.52
         },
         {
             "name": "Illegal Drug Manufacturing Facility Destruction",
-            "probability": 0.6
+            "probability": 0.46
         },
         {
             "name": "Criminal Mastermind Capture",
-            "probability": 0.6
+            "probability": 0.2
         },
         {
             "name": "Organ Harvesting Ring Dismantling",
-            "probability": 0.5
+            "probability": 0.12
+        },
+        {
+            "name": "Debt Collection",
+            "probability": 0.9
+        },
+        {
+            "name": "Missing Pet Recovery",
+            "probability": 0.8
+        },
+        {
+            "name": "Apartment Eviction Resistance",
+            "probability": 0.75
+        },
+        {
+            "name": "Equipment Repossession",
+            "probability": 0.85
+        },
+        {
+            "name": "Background Check",
+            "probability": 0.85
+        },
+        {
+            "name": "Skip Tracing",
+            "probability": 0.9
+        },
+        {
+            "name": "Petty Theft",
+            "probability": 0.8
+        },
+        {
+            "name": "Neighborhood Dispute Mediation",
+            "probability": 0.7
+        },
+        {
+            "name": "Small Cargo Delivery",
+            "probability": 0.9
+        },
+        {
+            "name": "Talent Scouting",
+            "probability": 0.75
+        },
+        {
+            "name": "Minor Vandalism",
+            "probability": 0.7
+        },
+        {
+            "name": "Favor Collection",
+            "probability": 0.8
+        },
+        {
+            "name": "Errand Running",
+            "probability": 0.85
+        },
+        {
+            "name": "Low-Level Intimidation",
+            "probability": 0.75
+        },
+        {
+            "name": "Odd Jobs Around the Barrens",
+            "probability": 0.8
         }
     ]
 }

@@ -74,18 +74,18 @@ class ExpanseProposal(FactionBasedProposal):
     pass
 
 
-class FactionEpochAligned(BaseModel):
+class FactionEraAligned(BaseModel):
     factions: list[str]
     incitingIncident: str
     themes: list[str]
-    epoch: str
+    era: str
 
 
-class VampireAligned(FactionEpochAligned):
+class VampireAligned(FactionEraAligned):
     pass
 
 
-class SeventhSeaAligned(FactionEpochAligned):
+class SeventhSeaAligned(FactionEraAligned):
     pass
 
 
@@ -204,6 +204,17 @@ class BaseOracle(ABC, Generic[TProposal, TAligned]):
         weights = [item.probability for item in items]
         return random.choices(names, weights=weights, k=1)[0]
 
+    @classmethod
+    def _weighted_sample(cls, items: list[Candidate], k: int) -> list[str]:
+        """Weighted sampling without replacement (random.sample ignores .probability)."""
+        pool = list(items)
+        chosen: list[str] = []
+        for _ in range(min(k, len(pool))):
+            name = cls._weighted_choice(pool)
+            chosen.append(name)
+            pool = [c for c in pool if c.name != name]
+        return chosen
+
     def _align(self, proposal: TProposal, background: str) -> TAligned:
         proposal_dict = proposal.model_dump()
         proposal_dict["background"] = background
@@ -257,7 +268,7 @@ class FactionBasedOracle(BaseOracle[FactionBasedProposal, TFactionAligned]):
 
     def _assemble_proposal_seed(self) -> FactionBasedProposal:
         k = random.randint(1, 2)
-        factions = random.sample([c.name for c in self._pools["factions"]], k=k)
+        factions = self._weighted_sample(self._pools["factions"], k)
         incident = self._weighted_choice(self._pools["inciting_incidents"])
         theme = self._weighted_choice(self._pools["themes"])
         return self._proposal_type(
@@ -380,24 +391,30 @@ class CthulhuOracle(BaseOracle[CthulhuProposal, CthulhuAligned]):
                 elements.append(additional)
         return elements
 
+    @staticmethod
+    def _indefinite_article(word: str) -> str:
+        return "an" if word[0].lower() in "aeiou" else "a"
+
     def generate_hook(self) -> str:
         subject = self._weighted_choice(self._pools["hook_subjects"])
         event = self._weighted_choice(self._pools["hook_events"])
+        subj_art = self._indefinite_article(subject)
+        event_art = self._indefinite_article(event)
         formats = [
-            f"A {subject}'s mysterious {event}",
-            f"The {event} of a {subject}",
-            f"A strange {event} involving a {subject}",
-            f"A {subject} requests help with a {event}",
-            f"Rumors of a {subject} and an {event}",
-            f"An investigation into a {subject}'s {event}",
-            f"The curious {event} affecting a {subject}",
-            f"A {subject} is linked to an unusual {event}",
-            f"Concern over a {subject} following an {event}",
-            f"The unexplained {event} and its connection to a {subject}",
-            f"A report about a {subject} and a recent {event}",
-            f"The peculiar case of a {subject} and the {event}",
-            f"Seeking answers about a {subject} after an {event}",
-            f"A {subject} witnesses a disturbing {event}",
+            f"{subj_art.capitalize()} {subject}'s mysterious {event}",
+            f"The {event} of {subj_art} {subject}",
+            f"A strange {event} involving {subj_art} {subject}",
+            f"{subj_art.capitalize()} {subject} requests help with {event_art} {event}",
+            f"Rumors of {subj_art} {subject} and {event_art} {event}",
+            f"An investigation into {subj_art} {subject}'s {event}",
+            f"The curious {event} affecting {subj_art} {subject}",
+            f"{subj_art.capitalize()} {subject} is linked to an unusual {event}",
+            f"Concern over {subj_art} {subject} following {event_art} {event}",
+            f"The unexplained {event} and its connection to {subj_art} {subject}",
+            f"A report about {subj_art} {subject} and a recent {event}",
+            f"The peculiar case of {subj_art} {subject} and the {event}",
+            f"Seeking answers about {subj_art} {subject} after {event_art} {event}",
+            f"{subj_art.capitalize()} {subject} witnesses a disturbing {event}",
         ]
         return random.choice(formats)
 

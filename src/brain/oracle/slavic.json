@@ -283,6 +283,42 @@
         {
             "name": "Village well contaminated by dead animal, threatening water supply",
             "probability": 0.5
+        },
+        {
+            "name": "Neighbor's goat keeps eating the vegetable garden",
+            "probability": 0.85
+        },
+        {
+            "name": "A broken cart wheel delays the journey to market",
+            "probability": 0.85
+        },
+        {
+            "name": "Two children in the village are fighting over a toy",
+            "probability": 0.8
+        },
+        {
+            "name": "The well rope snapped and needs replacing",
+            "probability": 0.8
+        },
+        {
+            "name": "A traveling merchant overcharged for goods",
+            "probability": 0.85
+        },
+        {
+            "name": "The roof needs rethatching before the rains come",
+            "probability": 0.85
+        },
+        {
+            "name": "A minor disagreement over grazing rights with a neighbor",
+            "probability": 0.85
+        },
+        {
+            "name": "The local matchmaker has an unwanted proposal",
+            "probability": 0.8
+        },
+        {
+            "name": "A borrowed tool was returned broken",
+            "probability": 0.8
         }
     ],
     "seasonalContexts": [

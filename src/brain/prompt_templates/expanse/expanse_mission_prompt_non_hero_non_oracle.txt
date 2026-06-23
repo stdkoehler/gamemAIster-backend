@@ -114,7 +114,7 @@ Adhere strictly to this structure. Escape all quotes within strings.
       "challenges": "What makes working or living here difficult"
     }
   ],
-  "practicalQuestions": [
+  "dramaticQuestions": [
     "Can the characters meet their quota despite the equipment problems?",
     "Will they be able to afford repairs before the next inspection?"
   ],
