@@ -1,0 +1,282 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/DragonlanceCharacter",
+  "definitions": {
+    "DragonlanceCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "dragonlance"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "race": {
+          "type": "string"
+        },
+        "characterClass": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string"
+        },
+        "alignment": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "abilities": {
+          "type": "object",
+          "properties": {
+            "Strength": {
+              "type": "number"
+            },
+            "Dexterity": {
+              "type": "number"
+            },
+            "Constitution": {
+              "type": "number"
+            },
+            "Intelligence": {
+              "type": "number"
+            },
+            "Wisdom": {
+              "type": "number"
+            },
+            "Charisma": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Strength",
+            "Dexterity",
+            "Constitution",
+            "Intelligence",
+            "Wisdom",
+            "Charisma"
+          ],
+          "additionalProperties": false
+        },
+        "proficiencyBonus": {
+          "type": "number"
+        },
+        "armorClass": {
+          "type": "number"
+        },
+        "speed": {
+          "type": "number"
+        },
+        "inspiration": {
+          "type": "boolean"
+        },
+        "hitDice": {
+          "type": "string"
+        },
+        "skills": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "skillProficiencies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "savingThrows": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "savingThrowProficiencies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "hitPoints": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "temporaryHitPoints": {
+          "type": "number"
+        },
+        "deathSaves": {
+          "type": "object",
+          "properties": {
+            "successes": {
+              "type": "number"
+            },
+            "failures": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "successes",
+            "failures"
+          ],
+          "additionalProperties": false
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DragonlanceWeapon"
+          }
+        },
+        "armorName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shield": {
+          "type": "boolean"
+        },
+        "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spellcasting": {
+          "type": "object",
+          "properties": {
+            "ability": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "saveDc": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "attackBonus": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "knownSpells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cantrips": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "spellSlots": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/StatTrack"
+              }
+            }
+          },
+          "required": [
+            "ability",
+            "saveDc",
+            "knownSpells"
+          ],
+          "additionalProperties": false
+        },
+        "featuresAndTraits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "proficienciesAndLanguages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "race",
+        "characterClass",
+        "background",
+        "description",
+        "abilities",
+        "proficiencyBonus",
+        "armorClass",
+        "speed",
+        "skills",
+        "hitPoints",
+        "weapons",
+        "armorName",
+        "shield",
+        "gear",
+        "spellcasting"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "DragonlanceWeapon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "damage": {
+          "type": "string"
+        },
+        "damageType": {
+          "type": "string"
+        },
+        "attackBonus": {
+          "type": "number"
+        },
+        "rangeFt": {
+          "type": "number"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "damage",
+        "damageType",
+        "attackBonus"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

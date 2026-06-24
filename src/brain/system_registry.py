@@ -40,10 +40,14 @@ from src.brain.npc_models import (
     SlavicNpcStats,
     SlavicNpcEquipment,
     _merge_slavic,
+    DragonlanceNpcStats,
+    DragonlanceNpcEquipment,
+    _merge_dragonlance,
 )
 from src.brain.oracle import (
     BaseOracle,
     CustomOracle,
+    DragonlanceOracle,
     ExpanseNonHeroOracle,
     ExpanseOracle,
     SeventhSeaOracle,
@@ -114,6 +118,13 @@ GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], GameConfig] = {
         mission_prompt="slavic/slavic_mission_prompt.txt",
         mission_prompt_non_oracle="slavic/slavic_mission_prompt.txt",
         oracle_class=SlavicOracle,
+    ),
+    (_GT.DRAGONLANCE, False): GameConfig(
+        game_name="Dragonlance: Shadow of the Dragon Queen (D&D 5E)",
+        story_prompt="dragonlance/dragonlance_story_prompt.txt",
+        mission_prompt="dragonlance/dragonlance_mission_prompt.txt",
+        mission_prompt_non_oracle="dragonlance/dragonlance_non_oracle_mission_prompt.txt",
+        oracle_class=DragonlanceOracle,
     ),
     (_GT.CUSTOM, False): GameConfig(
         game_name="Custom RPG",
@@ -190,6 +201,14 @@ NPC_CONFIGS: dict[api_schema_mission.GameType, NpcConfig] = {
         stats_model=SlavicNpcStats,
         equipment_model=SlavicNpcEquipment,
         merge_fn=_merge_slavic,
+    ),
+    _GT.DRAGONLANCE: NpcConfig(
+        profile_prompt="dragonlance/dragonlance_npc_profile_prompt.txt",
+        stats_prompt="dragonlance/dragonlance_npc_stats_prompt.txt",
+        equipment_prompt="dragonlance/dragonlance_npc_equipment_prompt.txt",
+        stats_model=DragonlanceNpcStats,
+        equipment_model=DragonlanceNpcEquipment,
+        merge_fn=_merge_dragonlance,
     ),
 }
 

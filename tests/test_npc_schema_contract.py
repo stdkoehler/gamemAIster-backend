@@ -24,6 +24,8 @@ import pytest
 from src.brain.npc_models import (
     CthulhuNpcEquipment,
     CthulhuNpcStats,
+    DragonlanceNpcEquipment,
+    DragonlanceNpcStats,
     ExpanseNpcEquipment,
     ExpanseNpcStats,
     NpcProfile,
@@ -160,6 +162,29 @@ _CASES = [
         ),
         SlavicNpcEquipment(
             weapons=["Hand Axe"], armor_name="Leather Jerkin", armor_rating=2, gear=["Waterskin"]
+        ),
+    ),
+    (
+        GameType.DRAGONLANCE,
+        DragonlanceNpcStats(
+            race="Human",
+            character_class="Fighter",
+            background="Soldier",
+            abilities={"Strength": 16, "Dexterity": 12, "Constitution": 14,
+                       "Intelligence": 10, "Wisdom": 11, "Charisma": 10},
+            skills={"Athletics": 5, "Intimidation": 2},
+            proficiency_bonus=2,
+            armor_class=16,
+            hit_points_max=22,
+            speed=30,
+            equipment_categories=["Melee", "Armor"],
+        ),
+        DragonlanceNpcEquipment(
+            weapons=[{"name": "Longsword", "damage": "1d8", "damageType": "Slashing",
+                      "attackBonus": 5, "rangeFt": 0, "properties": ["Versatile"]}],
+            armor_name="Chain Mail",
+            shield=True,
+            gear=["Bedroll"],
         ),
     ),
 ]

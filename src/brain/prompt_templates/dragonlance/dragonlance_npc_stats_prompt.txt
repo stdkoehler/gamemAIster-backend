@@ -1,0 +1,68 @@
+You are building the combat-relevant stat block for a Dragonlance: Shadow
+of the Dragon Queen (D&D 5th Edition) NPC, given a narrative description of
+who they are.
+
+Rules:
+- `race` is the NPC's race (Human, Qualinesti Elf, Silvanesti Elf, Kagonesti
+  Elf, Hill Dwarf, Mountain Dwarf, Kender, Gnome, Half-Elf, or another race
+  fitting the description).
+- `character_class` is their calling, inferred from the description (e.g.
+  "Knight of Solamnia, Order of the Crown", "Wizard of the Red Robes",
+  "Cleric of Mishakal", "Kender Wanderer", "Soldier", "Plainsman Hunter").
+  Use "Commoner" if nothing more specific fits.
+- `background` is a short 5e-style background label (e.g. "Soldier", "Sage",
+  "Folk Hero", "Acolyte", "Criminal", "Outlander").
+- `abilities` has all six: Strength, Dexterity, Constitution, Intelligence,
+  Wisdom, Charisma (typically 6-20; use 10-12 for ordinary folk, 13-16 for
+  skilled NPCs, 16-20 for veterans/legendary NPCs in their key abilities).
+- `skills` should contain 2-5 skill names (from the standard 5e skill list:
+  Athletics, Acrobatics, Sleight of Hand, Stealth, Arcana, History,
+  Investigation, Nature, Religion, Animal Handling, Insight, Medicine,
+  Perception, Survival, Deception, Intimidation, Performance, Persuasion)
+  mapped to their total bonus (ability modifier + proficiency bonus if
+  proficient), fitting the NPC's competence.
+- `proficiency_bonus` is 2 for ordinary/Tier 1-2 NPCs, 3-4 for Tier 3
+  veterans, 5-6 for Tier 4 legendary NPCs.
+- `armor_class` (8-22) and `hit_points_max` should reflect the NPC's tier and
+  role — a frightened farmhand might have AC 10 and 4 HP, a veteran Knight
+  in plate might have AC 18 and 45 HP.
+- `speed` in feet (30 for most races, 25 for Hill Dwarves and Kender).
+- `spellcasting_ability` is "Intelligence" (Wizards), "Wisdom" (Clerics,
+  some Rangers), "Charisma" (some other casters), or `null` for
+  non-casters. `spell_save_dc` (8 + proficiency_bonus + ability modifier)
+  applies only if `spellcasting_ability` is set, otherwise `null`.
+  `known_spells` is a short list (0-6) of spell names fitting the NPC's
+  level and calling; leave empty for non-casters.
+- `equipment_categories` is a short list (1-4) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC —
+  most martial NPCs need at most Melee/Ranged/Armor/Shield, social or
+  scholarly NPCs may need none of the weapon categories. Use the category
+  strings verbatim from the provided list.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "race": str,
+  "character_class": str,
+  "background": str,
+  "abilities": {"Strength": int, "Dexterity": int, "Constitution": int, "Intelligence": int, "Wisdom": int, "Charisma": int},
+  "skills": dict[str, int],
+  "proficiency_bonus": int,
+  "armor_class": int,
+  "hit_points_max": int,
+  "speed": int,
+  "spellcasting_ability": str | None,
+  "spell_save_dc": int | None,
+  "known_spells": list[str],
+  "equipment_categories": list[str]
+}
+```
+
+Adhere strictly to this structure: `spellcasting_ability` and
+`spell_save_dc` may be `null` for non-casters; `known_spells` may be an
+empty list `[]`; `equipment_categories` is a list of strings picked from
+the provided valid category list (may be empty).

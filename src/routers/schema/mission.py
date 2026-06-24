@@ -12,6 +12,7 @@ class GameType(StrEnum):
     SEVENTH_SEA = "seventh_sea"
     EXPANSE = "expanse"
     SLAVIC = "slavic"
+    DRAGONLANCE = "dragonlance"
     CUSTOM = "custom"
 
 

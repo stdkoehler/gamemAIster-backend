@@ -468,6 +468,75 @@ def _merge_slavic(
     }
 
 
+# ───────────────────────── Dragonlance ─────────────────────────
+
+_DRAGONLANCE_BLANK_ABILITIES = {
+    "Strength": 10,
+    "Dexterity": 10,
+    "Constitution": 10,
+    "Intelligence": 10,
+    "Wisdom": 10,
+    "Charisma": 10,
+}
+
+
+class DragonlanceNpcStats(BaseModel):
+    race: str
+    character_class: str
+    background: str
+    abilities: dict[str, int]
+    skills: dict[str, int]
+    proficiency_bonus: int
+    armor_class: int
+    hit_points_max: int
+    speed: int
+    spellcasting_ability: str | None = None
+    spell_save_dc: int | None = None
+    known_spells: list[str] = Field(default_factory=list)
+    equipment_categories: list[str] = Field(default_factory=list)
+
+
+class DragonlanceNpcEquipment(BaseModel):
+    weapons: list[dict] = Field(default_factory=list)  # DragonlanceWeapon-shaped
+    armor_name: str | None = None
+    shield: bool = False
+    gear: list[str] = Field(default_factory=list)
+
+
+def _merge_dragonlance(
+    npc_id: int,
+    name: str,
+    profile: NpcProfile,
+    stats: DragonlanceNpcStats,
+    equipment: DragonlanceNpcEquipment,
+) -> dict:
+    full_abilities = {**_DRAGONLANCE_BLANK_ABILITIES, **stats.abilities}
+    return {
+        "gameType": GameType.DRAGONLANCE.value,
+        "id": npc_id,
+        "name": name,
+        "race": stats.race,
+        "characterClass": stats.character_class,
+        "background": stats.background,
+        "description": profile.character_description,
+        "abilities": full_abilities,
+        "skills": stats.skills,
+        "proficiencyBonus": stats.proficiency_bonus,
+        "armorClass": stats.armor_class,
+        "hitPoints": {"current": stats.hit_points_max, "max": stats.hit_points_max},
+        "speed": stats.speed,
+        "spellcasting": {
+            "ability": stats.spellcasting_ability,
+            "saveDc": stats.spell_save_dc,
+            "knownSpells": stats.known_spells,
+        },
+        "weapons": equipment.weapons,
+        "armorName": equipment.armor_name,
+        "shield": equipment.shield,
+        "gear": equipment.gear,
+    }
+
+
 # Dispatch (which GameType uses which Stats/Equipment model + merge function)
 # lives in src/brain/system_registry.py, alongside the rest of the per-system
 # wiring (prompts, oracle class). This module only defines the per-system

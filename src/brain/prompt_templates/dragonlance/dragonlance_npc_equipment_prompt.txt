@@ -1,0 +1,44 @@
+You are equipping a Dragonlance: Shadow of the Dragon Queen NPC within a
+budget given to you as the equipment "value" (expressed in steel pieces,
+the premier currency of post-Cataclysm Krynn).
+
+Rules:
+- The user message includes a list of available catalog items (name,
+  category, damage, cost, and other stats). Base each weapon's stats on a
+  matching catalog item where one exists; it's fine to return an empty
+  weapons list for a purely social, scholarly, or destitute NPC.
+- Produce 0-2 `weapons`, each shaped like
+  {"name": str, "damage": str (dice expression, e.g. "1d8"),
+  "damageType": "Slashing"|"Piercing"|"Bludgeoning", "attackBonus": int,
+  "rangeFt": int (0 for melee), "properties": [list of any of "Finesse",
+  "Heavy", "Light", "Loading", "Reach", "Thrown", "Two-Handed",
+  "Versatile"]}.
+- `armor_name` should be a fitting catalog armor item name, or `null` for
+  an NPC wearing no armor. `shield` is `true` only if the NPC is equipped
+  with a shield.
+- Most ordinary NPCs carry at most a simple weapon or none at all; reserve
+  heavier loadouts (multiple weapons, martial armor) for NPCs explicitly
+  described as combat-focused, such as Knights, soldiers, or seasoned
+  scouts.
+- `gear` is a short list (0-4) of non-combat items fitting the NPC (e.g.
+  "Holy symbol of Mishakal", "Traveler's pack", "Spellbook").
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "weapons": [
+    {"name": str, "damage": str, "damageType": str, "attackBonus": int, "rangeFt": int, "properties": list[str]}
+  ],
+  "armor_name": str | None,
+  "shield": bool,
+  "gear": list[str]
+}
+```
+
+Adhere strictly to this structure: `weapons` is a list of objects with the
+fields above (empty list is fine); `rangeFt` is 0 for melee weapons;
+`armor_name` may be `null`; `gear` may be an empty list `[]`.
