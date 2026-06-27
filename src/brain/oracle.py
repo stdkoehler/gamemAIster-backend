@@ -155,6 +155,14 @@ class SlavicAligned(BaseModel):
     culturalFoci: str
 
 
+class DragonlanceProposal(FactionBasedProposal):
+    pass
+
+
+class DragonlanceAligned(FactionEraAligned):
+    pass
+
+
 # ---------------------------------------------------------------------------
 # Generic base
 # ---------------------------------------------------------------------------
@@ -461,6 +469,18 @@ class SlavicOracle(BaseOracle[SlavicProposal, SlavicAligned]):
             startingSituation=self._weighted_choice(self._pools["startingSituations"]),
             seasonalContext=self._weighted_choice(self._pools["seasonalContexts"]),
             culturalFoci=self._weighted_choice(self._pools["culturalFoci"]),
+        )
+
+
+class DragonlanceOracle(FactionBasedOracle[DragonlanceAligned]):
+    _proposal_type = DragonlanceProposal
+
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            aligned_type=DragonlanceAligned,
+            config_filename="dragonlance.json",
+            prompt_filename="dragonlance/dragonlance_background_mission_aligner.txt",
         )
 
 
