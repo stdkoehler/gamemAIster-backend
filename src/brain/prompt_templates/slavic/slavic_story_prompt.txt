@@ -234,6 +234,7 @@ Interpret and apply the fields as follows:
 * **meta**: Use this to establish the character's role, region, and seasonal context for the experience.
 * **dailyLife**: Provides immediate responsibilities, challenges, and opportunities that shape the character's current situation.
 * **culturalContext**: Offers religious practices, social expectations, relationships, and skills that define the character's place in Slavic society.
+* **keyNPCs**: Offer relationship, role, demeanor, motivation, and influence for named figures in the character's life. Use these to drive consistent roleplaying and consequences.
 * **immediateChoices**: Present specific decision points that require cultural knowledge and have meaningful consequences.
 * **consequences**: Show how previous decisions have shaped the character's current circumstances.
 * **seasonalRhythm**: Guide the natural flow of activities and concerns throughout the year.
@@ -264,7 +265,7 @@ The following JSON array describes the player party's current state. It is inten
 </PARTY>
 
 ## Active NPCs
-The following JSON array describes NPCs currently active in the scene — distinct from the experience's own NPC mentions above. An entry here can be a live instance of an NPC already named in the background, or a scene-only NPC with no prior mention at all (e.g. a village elder or a wandering bandit) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
+The following JSON array describes NPCs currently active in the scene — distinct from the experience's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in `keyNPCs`, or a scene-only NPC with no prior mention at all (e.g. a village elder or a wandering bandit) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
 - `skills`: only non-zero skill ranks are listed.
 - `talents`: included only when the NPC actually has them.
 - `weapons` (each `{name, grip, damage, range, features}` — Forbidden Lands stats, `damage` applies directly to the target's Strength), `armor` (`{name, rating: {current, max}}` — rating drops as it absorbs hits and is repaired back up to max), `gear`: included only when the NPC actually has them.

@@ -124,6 +124,28 @@ def _parse_budget_cost(value: str) -> float | None:
         return None
 
 
+def _extract_npc_roster(mission_id: int, roster_key: str) -> str:
+    """Pulls just the named-NPC roster (e.g. `keyNPCs`) out of the mission's
+    JSON description, so the NPC Profiler can match against it without
+    needing the whole mission JSON in context.
+
+    The mission generator only prompts the LLM to include this field — there
+    is no hard schema validation enforcing it — so it may legitimately be
+    missing, empty, or the mission JSON itself malformed. In all of those
+    cases we just omit the roster rather than failing NPC generation."""
+    mission = crud_instance.get_mission_description(mission_id)
+    if mission is None:
+        return "(no mission data)"
+    try:
+        parsed = json.loads(mission.description)
+    except json.JSONDecodeError:
+        return "(no mission data)"
+    roster = parsed.get(roster_key) if isinstance(parsed, dict) else None
+    if not roster:
+        return f"(no `{roster_key}` entries in this mission)"
+    return json.dumps(roster, ensure_ascii=False, indent=2)
+
+
 def _load_prompt(path: Path, max_examples: int | None = None) -> str:
     text = path.read_text(encoding="utf-8")
     if max_examples is None:
@@ -452,6 +474,8 @@ class Gamemaster:
             interaction.format_interaction_summary() for interaction in interactions
         ) or "(no narrative history yet)"
 
+        roster_text = _extract_npc_roster(mission_id, npc_cfg.npc_roster_key)
+
         _log.info("GenerateNpc | game_type=%s | name=%s | mission_id=%d", self._game_type, name, mission_id)
 
         profile_messages = [
@@ -459,7 +483,12 @@ class Gamemaster:
             Message(
                 role=MessageRole.USER,
                 content=MessageContent(
-                    text=f"Game: {self._game_name}\nNPC name: {name}\n\nRecent interactions:\n{interactions_text}"
+                    text=(
+                        f"Game: {self._game_name}\nNPC name: {name}\n\n"
+                        f"NPCs already established in this adventure (the new NPC may be one of "
+                        f"these):\n{roster_text}\n\n"
+                        f"Recent interactions:\n{interactions_text}"
+                    )
                 ),
             ),
         ]
