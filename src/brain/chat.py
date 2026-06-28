@@ -484,26 +484,33 @@ def _names_could_be_same(a: frozenset[str], b: frozenset[str]) -> bool:
     return bool(a) and bool(b) and (a <= b or b <= a)
 
 
-def _flag_active_key_npcs(mission_json: str, game_type, active_npc_names: set[str]) -> str:
+def _flag_active_key_npcs(
+    mission_json: str, game_type, active_npcs: list[tuple[str, str | None]]
+) -> str:
     """Annotates `keyNPCs` entries (or the system's equivalent roster field)
-    whose name matches a currently-active NPC, so the model isn't handed two
+    that correspond to a currently-active NPC, so the model isn't handed two
     silently conflicting descriptions of the same character — the adventure's
     static roster entry, and the live, scene-accurate Active NPCs entry.
 
-    Matching tries an exact case-insensitive name first, then falls back to a
-    token-subset match (a `keyNPCs` entry named "Vorath" or "Inquisitor"
-    matches an active NPC named "Inquisitor Vorath Bloodstone", and vice
-    versa). A `keyNPCs` entry or active NPC name that partially matches more
-    than one NPC on the other side is inherently ambiguous (e.g. two active
+    `active_npcs` is a list of `(name, matched_key_npc)` pairs, one per
+    active NPC. `matched_key_npc` is the roster entry name the NPC Profiler
+    matched at generation time (see `Gamemaster.generate_npc` /
+    `_validate_matched_key_npc`), already confirmed against this same
+    roster — so it's used as a direct, trusted lookup with no fuzziness.
+
+    Active NPCs with no recorded match (manually-created sheets, or ones
+    generated before this field existed) fall back to a token-subset name
+    match (a `keyNPCs` entry named "Vorath" or "Inquisitor" matches an
+    active NPC named "Inquisitor Vorath Bloodstone", and vice versa). A
+    `keyNPCs` entry or active NPC name that partially matches more than one
+    NPC on the other side is inherently ambiguous (e.g. two active
     "Inquisitor"s, or a roster with both "Vorath" and "Bloodstone" as
     distinct characters) — those are left unflagged rather than guessed at.
 
-    This is still best-effort, not a guarantee: it only catches name
-    relationships expressible as shared words, not synonyms, translations, or
-    unrelated nicknames. Systems without an `NPC_CONFIGS` entry (e.g. Custom)
-    or without a roster field present are left untouched.
+    Systems without an `NPC_CONFIGS` entry (e.g. Custom) or without a roster
+    field present are left untouched.
     """
-    if not active_npc_names:
+    if not active_npcs:
         return mission_json
     npc_cfg = NPC_CONFIGS.get(game_type)
     if npc_cfg is None:
@@ -518,7 +525,20 @@ def _flag_active_key_npcs(mission_json: str, game_type, active_npc_names: set[st
     if not isinstance(roster, list):
         return mission_json
 
-    active_tokens = {name: _name_tokens(name) for name in active_npc_names}
+    # Group by matched_key_npc first so two active NPCs claiming the same
+    # roster entry (e.g. the same character generated twice under different
+    # sheet names) are dropped as ambiguous rather than letting one silently
+    # overwrite the other.
+    trusted_groups: dict[str, list[str]] = {}
+    for name, matched in active_npcs:
+        if matched:
+            trusted_groups.setdefault(matched.strip().lower(), []).append(name)
+    trusted_matches = {
+        matched: names[0] for matched, names in trusted_groups.items() if len(names) == 1
+    }
+    fallback_tokens = {
+        name: _name_tokens(name) for name, matched in active_npcs if not matched
+    }
 
     entry_matches: dict[int, str] = {}
     for idx, entry in enumerate(roster):
@@ -527,12 +547,12 @@ def _flag_active_key_npcs(mission_json: str, game_type, active_npc_names: set[st
         entry_name = str(entry.get("name", "")).strip().lower()
         if not entry_name:
             continue
-        if entry_name in active_npc_names:
-            entry_matches[idx] = entry_name
+        if entry_name in trusted_matches:
+            entry_matches[idx] = trusted_matches[entry_name]
             continue
         entry_tok = _name_tokens(entry_name)
         candidates = [
-            name for name, tok in active_tokens.items() if _names_could_be_same(entry_tok, tok)
+            name for name, tok in fallback_tokens.items() if _names_could_be_same(entry_tok, tok)
         ]
         if len(candidates) == 1:
             entry_matches[idx] = candidates[0]
@@ -592,10 +612,12 @@ class SummaryChat:
         self._background = mission.background
         self._detailed_background = mission.detailed_background
         sheets = crud_instance.get_character_sheets(mission_id=mission_id)
-        active_npc_names = {s.name.strip().lower() for s in sheets if s.is_npc and s.is_active}
-        self._mission = _flag_active_key_npcs(
-            mission.description, mission.game_type, active_npc_names
-        )
+        active_npcs = [
+            (s.name.strip().lower(), s.matched_key_npc)
+            for s in sheets
+            if s.is_npc and s.is_active
+        ]
+        self._mission = _flag_active_key_npcs(mission.description, mission.game_type, active_npcs)
         self._character_summary = to_party_summary(
             mission.game_type.value,
             [

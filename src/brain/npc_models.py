@@ -23,6 +23,9 @@ class NpcProfile(BaseModel):
 
     character_description: str
     value: str  # equipment budget in system-native terms, e.g. "5000 nuyen", "30 silver"
+    # Exact `name` of the roster entry (e.g. `keyNPCs`) this NPC matches, if
+    # any — None for a scene-only NPC with no adventure-roster counterpart.
+    matched_key_npc: str | None = None
 
 
 # ───────────────────────── Shadowrun ─────────────────────────

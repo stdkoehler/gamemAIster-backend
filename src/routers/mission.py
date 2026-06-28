@@ -215,7 +215,7 @@ def create_npc(
     log.info("create-npc | mission_id=%d | name=%s", payload.mission_id, payload.name)
 
     try:
-        content = gamemaster.generate_npc(name=payload.name, mission_id=payload.mission_id)
+        result = gamemaster.generate_npc(name=payload.name, mission_id=payload.mission_id)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
@@ -223,9 +223,10 @@ def create_npc(
         character_sheet_id=None,
         mission_id=payload.mission_id,
         name=payload.name,
-        game_type=content["gameType"],
-        content=content,
+        game_type=result.content["gameType"],
+        content=result.content,
         is_protagonist=False,
         is_npc=True,
+        matched_key_npc=result.matched_key_npc,
     )
     return crud_instance.upsert_character_sheet(sheet=sheet)

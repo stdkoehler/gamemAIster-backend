@@ -55,6 +55,7 @@ class CharacterSheetSchema(BaseModel):
     is_protagonist: bool = False
     is_npc: bool = False
     is_active: bool = True
+    matched_key_npc: str | None = None
 
 
 class UpsertCharacterSheet(BaseModel):
@@ -66,6 +67,7 @@ class UpsertCharacterSheet(BaseModel):
     is_protagonist: bool = False
     is_npc: bool = False
     is_active: bool = True
+    matched_key_npc: str | None = None
 
 
 class DeleteCharacterSheet(BaseModel):

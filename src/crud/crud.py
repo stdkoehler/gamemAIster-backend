@@ -447,6 +447,7 @@ class CRUD:
                     is_protagonist=row.is_protagonist,
                     is_npc=row.is_npc,
                     is_active=row.is_active,
+                    matched_key_npc=row.matched_key_npc,
                 )
                 for row in rows
             ]
@@ -478,6 +479,7 @@ class CRUD:
                 row.is_protagonist = sheet.is_protagonist
                 row.is_npc = sheet.is_npc
                 row.is_active = sheet.is_active
+                row.matched_key_npc = sheet.matched_key_npc
             else:
                 row = CharacterSheet(
                     mission_id=sheet.mission_id,
@@ -487,6 +489,7 @@ class CRUD:
                     is_protagonist=sheet.is_protagonist,
                     is_npc=sheet.is_npc,
                     is_active=sheet.is_active,
+                    matched_key_npc=sheet.matched_key_npc,
                 )
                 session.add(row)
                 session.flush()
@@ -501,6 +504,7 @@ class CRUD:
                 is_protagonist=row.is_protagonist,
                 is_npc=row.is_npc,
                 is_active=row.is_active,
+                matched_key_npc=row.matched_key_npc,
             )
 
     def delete_character_sheet(self, character_sheet_id: int, mission_id: int) -> None:

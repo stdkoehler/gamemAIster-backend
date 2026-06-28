@@ -146,6 +146,37 @@ def _extract_npc_roster(mission_id: int, roster_key: str) -> str:
     return json.dumps(roster, ensure_ascii=False, indent=2)
 
 
+def _validate_matched_key_npc(roster_text: str, matched_name: str | None) -> str | None:
+    """Confirms the Profiler's `matched_key_npc` actually names an entry in
+    the roster it was given, returning that entry's exact-cased `name` (not
+    necessarily byte-identical to what the model echoed back). Returns None
+    if there's no match, the model didn't claim one, or the roster text
+    isn't valid JSON — a hallucinated/garbled match is treated the same as
+    no match rather than trusted as-is."""
+    if not matched_name:
+        return None
+    try:
+        roster = json.loads(roster_text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(roster, list):
+        return None
+    matched_lower = matched_name.strip().lower()
+    for entry in roster:
+        if isinstance(entry, dict) and str(entry.get("name", "")).strip().lower() == matched_lower:
+            return str(entry["name"]).strip()
+    return None
+
+
+@dataclass
+class NpcGenerationResult:
+    content: dict
+    # Name of the `keyNPCs` roster entry this NPC was matched to, if any —
+    # for chat.py to flag the corresponding mission-JSON entry as superseded
+    # without needing to re-derive the match from names at chat time.
+    matched_key_npc: str | None = None
+
+
 def _load_prompt(path: Path, max_examples: int | None = None) -> str:
     text = path.read_text(encoding="utf-8")
     if max_examples is None:
@@ -442,7 +473,7 @@ class Gamemaster:
         }
         return api_schema_mission.Mission.model_validate(mission)
 
-    def generate_npc(self, name: str, mission_id: int) -> dict:
+    def generate_npc(self, name: str, mission_id: int) -> NpcGenerationResult:
         """
         Generate an NPC content dict for `mission_id`, chaining three
         structured-output LLM calls (same parse_with_retry pattern as
@@ -551,5 +582,11 @@ class Gamemaster:
 
         npc_id = int(time.time() * 1000)
         content = merge_npc(game_type, npc_id, name, profile, stats, equipment)
-        _log.info("GenerateNpc complete | game_type=%s | name=%s", game_type, name)
-        return content
+        matched_key_npc = _validate_matched_key_npc(roster_text, profile.matched_key_npc)
+        _log.info(
+            "GenerateNpc complete | game_type=%s | name=%s | matched_key_npc=%s",
+            game_type,
+            name,
+            matched_key_npc,
+        )
+        return NpcGenerationResult(content=content, matched_key_npc=matched_key_npc)
