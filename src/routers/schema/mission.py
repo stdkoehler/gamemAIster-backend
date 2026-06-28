@@ -54,6 +54,7 @@ class CharacterSheetSchema(BaseModel):
     content: dict
     is_protagonist: bool = False
     is_npc: bool = False
+    is_active: bool = True
 
 
 class UpsertCharacterSheet(BaseModel):
@@ -64,11 +65,18 @@ class UpsertCharacterSheet(BaseModel):
     content: dict
     is_protagonist: bool = False
     is_npc: bool = False
+    is_active: bool = True
 
 
 class DeleteCharacterSheet(BaseModel):
     character_sheet_id: int
     mission_id: int
+
+
+class SetNpcActivePayload(BaseModel):
+    character_sheet_id: int
+    mission_id: int
+    is_active: bool
 
 
 class CreateNpcPayload(BaseModel):

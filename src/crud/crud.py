@@ -446,6 +446,7 @@ class CRUD:
                     content=json.loads(row.content),
                     is_protagonist=row.is_protagonist,
                     is_npc=row.is_npc,
+                    is_active=row.is_active,
                 )
                 for row in rows
             ]
@@ -476,6 +477,7 @@ class CRUD:
                 row.content = json.dumps(sheet.content)
                 row.is_protagonist = sheet.is_protagonist
                 row.is_npc = sheet.is_npc
+                row.is_active = sheet.is_active
             else:
                 row = CharacterSheet(
                     mission_id=sheet.mission_id,
@@ -484,6 +486,7 @@ class CRUD:
                     content=json.dumps(sheet.content),
                     is_protagonist=sheet.is_protagonist,
                     is_npc=sheet.is_npc,
+                    is_active=sheet.is_active,
                 )
                 session.add(row)
                 session.flush()
@@ -497,6 +500,7 @@ class CRUD:
                 content=json.loads(row.content),
                 is_protagonist=row.is_protagonist,
                 is_npc=row.is_npc,
+                is_active=row.is_active,
             )
 
     def delete_character_sheet(self, character_sheet_id: int, mission_id: int) -> None:
@@ -506,6 +510,24 @@ class CRUD:
                 CharacterSheet.mission_id == mission_id,
             )
             session.execute(stmt)
+
+    def set_character_sheet_active(
+        self, character_sheet_id: int, mission_id: int, is_active: bool
+    ) -> None:
+        with self._sessionmaker() as session:
+            stmt = (
+                update(CharacterSheet)
+                .where(
+                    CharacterSheet.character_sheet_id == character_sheet_id,
+                    CharacterSheet.mission_id == mission_id,
+                )
+                .values(is_active=is_active)
+            )
+            result = session.execute(stmt)
+            if result.rowcount == 0:
+                raise ValueError(
+                    f"CharacterSheet {character_sheet_id} not found for mission {mission_id}"
+                )
             session.commit()
 
 

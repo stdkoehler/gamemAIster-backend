@@ -31,7 +31,7 @@ def _track(t: dict) -> str:
 
 def _describe(c: dict) -> str:
     desc = c.get("description", "")
-    return desc[:140] + "…" if len(desc) > 140 else desc
+    return desc[:1000] + "…" if len(desc) > 1000 else desc
 
 
 def _nonzero(d: dict) -> dict:

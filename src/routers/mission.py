@@ -17,6 +17,7 @@ from src.routers.schema.mission import (
     UpsertCharacterSheet,
     DeleteCharacterSheet,
     CreateNpcPayload,
+    SetNpcActivePayload,
 )
 
 log = configure_logger("mission")
@@ -173,6 +174,28 @@ def delete_character_sheet(
         character_sheet_id=payload.character_sheet_id,
         mission_id=payload.mission_id,
     )
+
+
+@router.post("/set-npc-active")
+def set_npc_active(
+    payload: SetNpcActivePayload,
+    user: str = Depends(verify_user),
+) -> None:
+    """Mark an NPC as active/inactive in the current scene, without rewriting its content."""
+    try:
+        crud_instance.verify_mission_user(mission_id=payload.mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
+    try:
+        crud_instance.set_character_sheet_active(
+            character_sheet_id=payload.character_sheet_id,
+            mission_id=payload.mission_id,
+            is_active=payload.is_active,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
 @router.post("/create-npc")

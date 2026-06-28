@@ -516,7 +516,7 @@ class SummaryChat:
         )
         self._npc_summary = to_npc_summary(
             mission.game_type.value,
-            [{"content": s.content} for s in sheets if s.is_npc],
+            [{"content": s.content} for s in sheets if s.is_npc and s.is_active],
         )
         self._summary_provider_prompt = summary_provider_prompt
         self._memory = SummaryMemory(

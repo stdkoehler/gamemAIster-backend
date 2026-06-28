@@ -97,6 +97,7 @@ class CharacterSheet(Base):
     content: Mapped[str] = mapped_column(Text)  # JSON blob
     is_protagonist: Mapped[bool] = mapped_column(Boolean, default=False)
     is_npc: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
 class ConversationSummaryMemory(Base):
