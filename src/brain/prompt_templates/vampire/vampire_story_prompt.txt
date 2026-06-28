@@ -506,7 +506,7 @@ The following JSON describes a Vampire the Masquerade chronicle in structured de
 Interpret and apply the fields as follows:
 - **meta**: Use this to establish setting, tone, and overall duration expectations for the chronicle.
 - **overview**: Provides the chronicle hook, hidden truths, themes, and factional conflicts—key for introducing the story and maintaining dramatic tension.
-- **keyNPCs**: Offer dialogue, motivations, secrets, and roleplaying cues for important characters. Use their relationships and agendas to drive political intrigue.
+- **keyNPCs**: Offer dialogue, motivations, secrets, and roleplaying cues for important characters. Use their relationships and agendas to drive political intrigue. If an entry carries `_activeNpcNote`, that NPC is currently active in the scene — treat their entry in Active NPCs below as authoritative for current description, status, and equipment, and use this `keyNPCs` entry only for background/history. The flag is only added for a clear name match, so it may be missing even when a name here (in full, by title, or by surname/given name alone) clearly refers to someone in Active NPCs — apply the same precedence in that case too.
 - **keyLocations**: Provide atmospheric encounter zones, exploration opportunities, and environmental storytelling elements.
 - **dramaticQuestions**: Use these to maintain focus on the central tensions and drive player engagement with meaningful choices.
 - **complicationsAndTwists**: Dynamically introduce these based on player actions to heighten drama and add unexpected developments.
@@ -540,9 +540,18 @@ The following JSON array describes NPCs currently active in the scene — distin
 - `skills`: only non-zero skill ranks are listed.
 - `disciplines`: only present for `kindred`/`ghoul` NPCs that actually have one — use these to know what supernatural powers the NPC can bring to bear.
 - `weapons`, `armor` (`{name, rating}`, rating subtracted from incoming damage): included only when the NPC actually has them.
+This is the ground truth for the current scene state of these NPCs, taking precedence over the `keyNPCs` entry of the same name in the mission JSON (flagged there with `_activeNpcNote`) for description, status, and equipment alike.
 <ACTIVE_NPCS>
 {NPCS}
 </ACTIVE_NPCS>
+
+## Conflict Resolution: Equipment
+For any NPC who appears in both `keyNPCs` and Active NPCs, the Active NPCs entry is the sole source of truth for all equipment the NPC currently possesses and uses. This includes:
+- **Weapons** — the `weapons` field overrides any narrative description in `keyNPCs`.
+- **Armor** — the `armor` field overrides any described clothing or protection.
+- **Any other equipped item** (gear, tools, etc.) — if it isn't in an explicit field in Active NPCs, the NPC does not have it with them in the current scene.
+
+When describing the NPC, draw narrative flavor (color, wear, condition) from your own invention or from `keyNPCs` only where it does not contradict an Active NPCs equipment field. If a conflict exists, the Active NPCs field wins and the `keyNPCs` description is treated as background flavor only — a past or non-literal detail.
 
 ## Detailed Background
 Following this system prompt, you will might receive a DETAILED_BACKGROUND message possibly containing:

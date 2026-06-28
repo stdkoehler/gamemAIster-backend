@@ -21,6 +21,7 @@ from src.llmclient.llm_client import (
 )
 from src.crud.crud import crud_instance
 from src.brain.character_formatters import to_npc_summary, to_party_summary
+from src.brain.system_registry import NPC_CONFIGS
 
 from src.brain.data_types import Interaction, EntityResponse, Scene
 from src.brain.json_tools import extract_json_schema
@@ -473,6 +474,92 @@ class SummaryMemory:
         )
 
 
+def _name_tokens(name: str) -> frozenset[str]:
+    return frozenset(re.sub(r"[^\w\s]", "", name.lower()).split())
+
+
+def _names_could_be_same(a: frozenset[str], b: frozenset[str]) -> bool:
+    """True if one name's tokens are a subset of the other's, e.g. "Vorath"
+    or "Inquisitor" against "Inquisitor Vorath Bloodstone"."""
+    return bool(a) and bool(b) and (a <= b or b <= a)
+
+
+def _flag_active_key_npcs(mission_json: str, game_type, active_npc_names: set[str]) -> str:
+    """Annotates `keyNPCs` entries (or the system's equivalent roster field)
+    whose name matches a currently-active NPC, so the model isn't handed two
+    silently conflicting descriptions of the same character — the adventure's
+    static roster entry, and the live, scene-accurate Active NPCs entry.
+
+    Matching tries an exact case-insensitive name first, then falls back to a
+    token-subset match (a `keyNPCs` entry named "Vorath" or "Inquisitor"
+    matches an active NPC named "Inquisitor Vorath Bloodstone", and vice
+    versa). A `keyNPCs` entry or active NPC name that partially matches more
+    than one NPC on the other side is inherently ambiguous (e.g. two active
+    "Inquisitor"s, or a roster with both "Vorath" and "Bloodstone" as
+    distinct characters) — those are left unflagged rather than guessed at.
+
+    This is still best-effort, not a guarantee: it only catches name
+    relationships expressible as shared words, not synonyms, translations, or
+    unrelated nicknames. Systems without an `NPC_CONFIGS` entry (e.g. Custom)
+    or without a roster field present are left untouched.
+    """
+    if not active_npc_names:
+        return mission_json
+    npc_cfg = NPC_CONFIGS.get(game_type)
+    if npc_cfg is None:
+        return mission_json
+    try:
+        parsed = json.loads(mission_json)
+    except json.JSONDecodeError:
+        return mission_json
+    if not isinstance(parsed, dict):
+        return mission_json
+    roster = parsed.get(npc_cfg.npc_roster_key)
+    if not isinstance(roster, list):
+        return mission_json
+
+    active_tokens = {name: _name_tokens(name) for name in active_npc_names}
+
+    entry_matches: dict[int, str] = {}
+    for idx, entry in enumerate(roster):
+        if not isinstance(entry, dict):
+            continue
+        entry_name = str(entry.get("name", "")).strip().lower()
+        if not entry_name:
+            continue
+        if entry_name in active_npc_names:
+            entry_matches[idx] = entry_name
+            continue
+        entry_tok = _name_tokens(entry_name)
+        candidates = [
+            name for name, tok in active_tokens.items() if _names_could_be_same(entry_tok, tok)
+        ]
+        if len(candidates) == 1:
+            entry_matches[idx] = candidates[0]
+        # 0 or >1 candidates: ambiguous or no match, leave unflagged.
+
+    # An active NPC resolving to more than one keyNPCs entry is itself
+    # ambiguous (e.g. the roster lists both "Vorath" and "Bloodstone" as
+    # distinct characters) — drop those rather than guess which is right.
+    name_use_count: dict[str, int] = {}
+    for name in entry_matches.values():
+        name_use_count[name] = name_use_count.get(name, 0) + 1
+    entry_matches = {idx: name for idx, name in entry_matches.items() if name_use_count[name] == 1}
+
+    if not entry_matches:
+        return mission_json
+
+    for idx in entry_matches:
+        roster[idx]["_activeNpcNote"] = (
+            "This NPC is currently active in the scene. Treat the "
+            "matching entry in Active NPCs as authoritative for their "
+            "current description, status, and equipment — this entry is "
+            "background/history only."
+        )
+
+    return json.dumps(parsed, ensure_ascii=False, indent=2)
+
+
 class SummaryChat:
     """
     A class representing a chat conversation with summarization capabilities.
@@ -502,10 +589,13 @@ class SummaryChat:
         mission = crud_instance.get_mission_description(mission_id=mission_id)
         if mission is None:
             raise ValueError("No mission could be loaded from database.")
-        self._mission = mission.description
         self._background = mission.background
         self._detailed_background = mission.detailed_background
         sheets = crud_instance.get_character_sheets(mission_id=mission_id)
+        active_npc_names = {s.name.strip().lower() for s in sheets if s.is_npc and s.is_active}
+        self._mission = _flag_active_key_npcs(
+            mission.description, mission.game_type, active_npc_names
+        )
         self._character_summary = to_party_summary(
             mission.game_type.value,
             [
