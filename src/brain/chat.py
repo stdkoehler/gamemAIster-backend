@@ -20,7 +20,7 @@ from src.llmclient.llm_client import (
     Message,
 )
 from src.crud.crud import crud_instance
-from src.brain.character_summary import to_summary
+from src.brain.character_formatters import to_npc_summary, to_party_summary
 
 from src.brain.data_types import Interaction, EntityResponse, Scene
 from src.brain.json_tools import extract_json_schema
@@ -506,9 +506,17 @@ class SummaryChat:
         self._background = mission.background
         self._detailed_background = mission.detailed_background
         sheets = crud_instance.get_character_sheets(mission_id=mission_id)
-        self._character_summary = to_summary(
+        self._character_summary = to_party_summary(
             mission.game_type.value,
-            [{"content": s.content, "is_protagonist": s.is_protagonist} for s in sheets],
+            [
+                {"content": s.content, "is_protagonist": s.is_protagonist}
+                for s in sheets
+                if not s.is_npc
+            ],
+        )
+        self._npc_summary = to_npc_summary(
+            mission.game_type.value,
+            [{"content": s.content} for s in sheets if s.is_npc],
         )
         self._summary_provider_prompt = summary_provider_prompt
         self._memory = SummaryMemory(
@@ -540,10 +548,11 @@ class SummaryChat:
         """
 
         system_prompt = self._story_prompt.format(
-            MISSION=self._mission, BACKGROUND=self._background
+            MISSION=self._mission,
+            BACKGROUND=self._background,
+            PARTY=self._character_summary,
+            NPCS=self._npc_summary,
         )
-        if self._character_summary:
-            system_prompt += f"\n\nThese are the player characters' states with ★ being protagonist:\n{self._character_summary}"
         messages: list[Message] = [
             Message(
                 role=MessageRole.SYSTEM,

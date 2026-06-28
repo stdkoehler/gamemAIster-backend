@@ -345,6 +345,24 @@ This is the detailed background of the party and the adventure we're playing now
 {BACKGROUND}
 </BACKGROUND>
 
+## Party
+The following JSON array describes the player party's current state. It is intentionally lean — skills, spells, and gear are already known to the players themselves, so only core combat stats are included.
+- `abilities`: the six core ability scores (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma).
+- `hitPoints`: current/max track. `armorClass`: current AC.
+- `protagonist`: marks whose perspective the narration should center on.
+<PARTY>
+{PARTY}
+</PARTY>
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the adventure's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in the adventure, or a scene-only NPC with no adventure entry at all (e.g. a Knight of Solamnia patrol or a refugee) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
+- `skills`: only non-zero/proficient skill modifiers are listed.
+- `spellcasting`: included only for NPCs that actually cast spells — gives their casting ability, save DC, and known spells.
+- `weapons`, `armorName`, `gear`: included only when the NPC actually has them.
+<ACTIVE_NPCS>
+{NPCS}
+</ACTIVE_NPCS>
+
 ## Detailed Background
 Following this system prompt, you will might receive a DETAILED_BACKGROUND message possibly containing:
 - Complete adventure history and session summaries

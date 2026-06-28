@@ -327,6 +327,24 @@ This is the detailed background of the investigators and the scenario we're play
 {BACKGROUND}
 </BACKGROUND>
 
+## Party
+The following JSON array describes the investigators' current state. It is intentionally lean — skills, gear, and spells are already known to the players themselves, so only characteristics and resource tracks are included. Note the era is established in the mission's `meta.timePeriod` above and is not repeated per investigator.
+- `characteristics`: the eight core characteristics (STR, CON, DEX, INT, POW, EDU).
+- `hitPoints`, `sanity`, `magicPoints`: current/max tracks. `luck`: current luck score.
+- `protagonist`: marks whose perspective the narration should center on.
+<PARTY>
+{PARTY}
+</PARTY>
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the scenario's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in the scenario, or a scene-only NPC with no scenario entry at all (e.g. a cultist or a passerby) generated as the scene demands. Unlike investigators, NPC entries carry full detail since you are the one playing them:
+- `skills`: only non-zero skill ranks are listed.
+- `damageBonus`, `moveRate`: combat-relevant derived stats, included only when meaningful.
+- `weapons`, `gear`: included only when the NPC actually has them.
+<ACTIVE_NPCS>
+{NPCS}
+</ACTIVE_NPCS>
+
 ## Detailed Background
 Following this system prompt, you might receive a DETAILED_BACKGROUND message possibly containing:
 - Complete scenario history and session summaries

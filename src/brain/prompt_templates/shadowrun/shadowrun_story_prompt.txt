@@ -361,6 +361,23 @@ This is the background of the shadowrunners:
 {BACKGROUND}
 </BACKGROUND>
 
+## Party
+The following JSON array describes the player party's current state. It is intentionally lean — skills, gear, and qualities are already known to the players themselves and surface through their own actions, so only attributes and damage tracks are included.
+- `attributes`: core attribute ratings (Body, Agility, Reaction, Strength, Willpower, Logic, Intuition, Charisma, Edge, Essence), plus `Magic`/`Resonance` only if the character is awakened or a technomancer.
+- `damage`: current/max physical and stun damage boxes.
+- `protagonist`: marks whose perspective the narration should center on.
+<PARTY>
+{PARTY}
+</PARTY>
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the mission's own `npcs` roster above. An entry here can be a live instance of an NPC already named in the mission, or a scene-only NPC with no mission entry at all (e.g. a corp security guard or street thug) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
+- `skills`: only non-zero skill ranks are listed.
+- `initiative`, `armor`, `weapons`, `cyberware`, `gear`: included only when the NPC actually has them.
+<ACTIVE_NPCS>
+{NPCS}
+</ACTIVE_NPCS>
+
 ## Detailed Background
 Following this system prompt, you might receive a DETAILED_BACKGROUND message possibly containing:
 - Complete mission history and session summaries

@@ -254,6 +254,23 @@ This is the background of the character:
 {BACKGROUND}
 </BACKGROUND>
 
+## Party
+The following JSON array describes the player party's current state. It is intentionally lean — skills, talents, and gear are already known to the players themselves, so only identity and attributes are included.
+- `kinAbility`, `calling`: short identity hooks defining the character's place in Slavic society.
+- `attributes`: each shown as `current/max` (Strength, Agility, Wits, Empathy) reflecting any accumulated damage.
+- `protagonist`: marks whose perspective the narration should center on.
+<PARTY>
+{PARTY}
+</PARTY>
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the experience's own NPC mentions above. An entry here can be a live instance of an NPC already named in the background, or a scene-only NPC with no prior mention at all (e.g. a village elder or a wandering bandit) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
+- `skills`: only non-zero skill ranks are listed.
+- `talents`, `weapons`, `armor`, `gear`: included only when the NPC actually has them.
+<ACTIVE_NPCS>
+{NPCS}
+</ACTIVE_NPCS>
+
 ## Detailed Background
 Following this system prompt, you might receive a DETAILED_BACKGROUND message possibly containing:
 - Complete session history and event summaries

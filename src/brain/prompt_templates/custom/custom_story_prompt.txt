@@ -215,5 +215,14 @@ The medieval world is harsh—and players should feel the weight of their social
 This is the background of the character:
 {BACKGROUND}
 
+## Party
+The following JSON array describes the player party's current state, identified by name only — this custom system has no fixed character sheet schema, so deeper stats aren't available here. Treat player capabilities as conveyed through their own actions and dialogue.
+- `protagonist`: marks whose perspective the narration should center on.
+{PARTY}
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from any NPCs already mentioned in the background or mission above. An entry here can be a live instance of an NPC already named there, or a scene-only NPC generated as the scene demands, identified by name only for the same reason as the party.
+{NPCS}
+
 Below is the living experience you will facilitate for the player. Follow the structure, adapting to the narrative flow as needed. Remember, ask no skill checks if no action is declared by the player or the action is routine. Also don't forget, that historical accuracy and cultural authenticity are paramount.
 {MISSION}

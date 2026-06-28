@@ -333,6 +333,25 @@ This is the background of the crew:
 {BACKGROUND}
 </BACKGROUND>
 
+## Party
+The following JSON array describes the player party's current state. It is intentionally lean — skills, advantages, and gear are already known to the players themselves, so only traits, wounds, and a few roleplay hooks are included.
+- `traits`: the five core traits (Brawn, Finesse, Resolve, Wits, Panache).
+- `wounds`: current/max track. `heroPoints`: current Hero Point total.
+- `arcana`: the character's defining virtue/hubris — included only when set — use it as a roleplay hook.
+- `protagonist`: marks whose perspective the narration should center on.
+<PARTY>
+{PARTY}
+</PARTY>
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the campaign's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in the campaign, or a scene-only NPC with no campaign entry at all (e.g. a dockside thug or a ship's crew member) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
+- `skills`: only non-zero skill ranks are listed.
+- `duelingStyle`: included only when the NPC is a trained duelist.
+- `weapons`, `gear`: included only when the NPC actually has them.
+<ACTIVE_NPCS>
+{NPCS}
+</ACTIVE_NPCS>
+
 ## Detailed Background
 Following this system prompt, you might receive a DETAILED_BACKGROUND message possibly containing:
 - Complete campaign history and session summaries

@@ -524,6 +524,26 @@ This is the detailed background of the coterie and the chronicle we're playing n
 {BACKGROUND}
 </BACKGROUND>
 
+## Party
+The following JSON array describes the player party's current state. It is intentionally lean — skills, disciplines, and gear are already known to the players themselves, so only identity and the dynamic state you need to narrate around are included.
+- `nature`: one of `mortal`, `ghoul`, `thin-blood`, `kindred`. `clan`, `generation`, and `predatorType` are only present when `nature` is not `mortal` — a mortal genuinely has none of these, it isn't an omission.
+- `attributes`: the seven physical/social/mental attributes.
+- `health`, `willpower`: current/max tracks.
+- `hunger`: only present for `thin-blood`/`kindred`. `humanity`, `bloodPotency`: only present for `kindred` — these matter for how close the character is to frenzy or losing themselves to the Beast.
+- `protagonist`: marks whose perspective the narration should center on.
+<PARTY>
+{PARTY}
+</PARTY>
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the chronicle's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in the chronicle, or a scene-only NPC with no chronicle entry at all (e.g. a Camarilla enforcer or a frightened mortal bystander) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
+- `skills`: only non-zero skill ranks are listed.
+- `disciplines`: only present for `kindred`/`ghoul` NPCs that actually have one — use these to know what supernatural powers the NPC can bring to bear.
+- `weapons`: included only when the NPC actually has one.
+<ACTIVE_NPCS>
+{NPCS}
+</ACTIVE_NPCS>
+
 ## Detailed Background
 Following this system prompt, you will might receive a DETAILED_BACKGROUND message possibly containing:
 - Complete chronicle history and session summaries
