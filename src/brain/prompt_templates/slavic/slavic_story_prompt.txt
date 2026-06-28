@@ -62,9 +62,9 @@ When players attempt actions with significant consequences for their life or com
 
 Examples:
 
-* `[Dexterity + Crafting (TN 13)]` to forge a crucial tool before winter sets in
-* `[Intelligence + Lore (TN 15)]` to recall proper ritual procedures for seasonal ceremonies
-* `[Communication + Persuasion (TN 11)]` to negotiate marriage terms with neighboring clan
+* `[Strength + Crafting (TN 13)]` to forge a crucial tool before winter sets in
+* `[Wits + Lore (TN 15)]` to recall proper ritual procedures for seasonal ceremonies
+* `[Empathy + Manipulation (TN 11)]` to negotiate marriage terms with neighboring clan
 
 Target Numbers (TN):
 
@@ -266,7 +266,8 @@ The following JSON array describes the player party's current state. It is inten
 ## Active NPCs
 The following JSON array describes NPCs currently active in the scene — distinct from the experience's own NPC mentions above. An entry here can be a live instance of an NPC already named in the background, or a scene-only NPC with no prior mention at all (e.g. a village elder or a wandering bandit) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
 - `skills`: only non-zero skill ranks are listed.
-- `talents`, `weapons`, `armor`, `gear`: included only when the NPC actually has them.
+- `talents`: included only when the NPC actually has them.
+- `weapons` (each `{name, grip, damage, range, features}` — Forbidden Lands stats, `damage` applies directly to the target's Strength), `armor` (`{name, rating: {current, max}}` — rating drops as it absorbs hits and is repaired back up to max), `gear`: included only when the NPC actually has them.
 <ACTIVE_NPCS>
 {NPCS}
 </ACTIVE_NPCS>

@@ -271,6 +271,9 @@
             "$ref": "#/definitions/CocWeapon"
           }
         },
+        "armor": {
+          "$ref": "#/definitions/ArmorItem"
+        },
         "gear": {
           "type": "array",
           "items": {
@@ -354,6 +357,22 @@
         "name",
         "skill",
         "damage"
+      ],
+      "additionalProperties": false
+    },
+    "ArmorItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "rating"
       ],
       "additionalProperties": false
     }

@@ -12,6 +12,10 @@ Rules:
   "ammo": int (optional), "malfunction": int (optional, 100 = reliable)}.
 - Most Call of Cthulhu NPCs are unarmed or carry at most one mundane weapon;
   only well-armed NPCs (police, criminals, soldiers) should carry firearms.
+- `armor_name` and `armor_rating` describe a single piece of armor the NPC
+  wears (e.g. "Heavy Leather Jacket" / 1, "Kevlar Vest" / 8, "Military Body
+  Armor" / 12). Omit both if the NPC wears no armor — most investigators and
+  civilians go unarmored; reserve this for soldiers, police, or guards.
 - `gear` is a short list of everyday items appropriate to the occupation
   (e.g. "Notebook", "Flashlight", "Medical Bag"). Empty lists are fine.
 
@@ -25,13 +29,15 @@ commentary, no markdown outside the fenced block):
   "weapons": [
     {"name": str, "skill": str, "damage": str, "range": str, "attacksPerRound": int, "ammo": int, "malfunction": int}
   ],
+  "armor_name": str | None,
+  "armor_rating": int,
   "gear": list[str]
 }
 ```
 
 Adhere strictly to this structure: `weapons` is a list of objects (optional
-fields may be omitted), `gear` is a list of strings (both lists may be
-empty).
+fields may be omitted), `armor_name` may be `null` (then `armor_rating`
+should be 0), `gear` is a list of strings (both lists may be empty).
 
 
 Important: Sum up the total equipment cost and compare against the given budget.

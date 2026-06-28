@@ -164,6 +164,8 @@ class VampireFormatter(SystemFormatter):
             entry["disciplines"] = c["disciplines"]
         if c.get("weapons"):
             entry["weapons"] = c["weapons"]
+        if c.get("armor"):
+            entry["armor"] = c["armor"]
         return entry
 
 
@@ -200,6 +202,8 @@ class CthulhuFormatter(SystemFormatter):
             entry["moveRate"] = d["moveRate"]
         if c.get("weapons"):
             entry["weapons"] = c["weapons"]
+        if c.get("armor"):
+            entry["armor"] = c["armor"]
         if c.get("gear"):
             entry["gear"] = c["gear"]
         return entry

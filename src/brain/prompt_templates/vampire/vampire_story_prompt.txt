@@ -539,7 +539,7 @@ The following JSON array describes the player party's current state. It is inten
 The following JSON array describes NPCs currently active in the scene — distinct from the chronicle's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in the chronicle, or a scene-only NPC with no chronicle entry at all (e.g. a Camarilla enforcer or a frightened mortal bystander) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
 - `skills`: only non-zero skill ranks are listed.
 - `disciplines`: only present for `kindred`/`ghoul` NPCs that actually have one — use these to know what supernatural powers the NPC can bring to bear.
-- `weapons`: included only when the NPC actually has one.
+- `weapons`, `armor` (`{name, rating}`, rating subtracted from incoming damage): included only when the NPC actually has them.
 <ACTIVE_NPCS>
 {NPCS}
 </ACTIVE_NPCS>

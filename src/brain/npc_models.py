@@ -159,6 +159,8 @@ class VampireNpcStats(BaseModel):
 
 class VampireNpcEquipment(BaseModel):
     weapons: list[dict] = Field(default_factory=list)  # V5Weapon-shaped
+    armor_name: str | None = None
+    armor_rating: int | None = None
 
 
 def _merge_vampire(
@@ -170,7 +172,7 @@ def _merge_vampire(
 ) -> dict:
     full_attributes = {**_VTM_BLANK_ATTRIBUTES, **stats.attributes}
     full_skills = {**_VTM_BLANK_SKILLS, **stats.skills}
-    return {
+    result = {
         "gameType": GameType.VAMPIRE_THE_MASQUERADE.value,
         "id": npc_id,
         "name": name,
@@ -189,6 +191,9 @@ def _merge_vampire(
         "health": {"current": stats.health_max, "max": stats.health_max},
         "willpower": {"current": stats.willpower_max, "max": stats.willpower_max},
     }
+    if equipment.armor_name:
+        result["armor"] = {"name": equipment.armor_name, "rating": equipment.armor_rating or 0}
+    return result
 
 
 # ───────────────────────── Call of Cthulhu ─────────────────────────
@@ -219,6 +224,8 @@ class CthulhuNpcStats(BaseModel):
 
 class CthulhuNpcEquipment(BaseModel):
     weapons: list[dict] = Field(default_factory=list)  # CocWeapon-shaped
+    armor_name: str | None = None
+    armor_rating: int | None = None
     gear: list[str] = Field(default_factory=list)
 
 
@@ -233,7 +240,7 @@ def _merge_cthulhu(
     half = {k: v // 2 for k, v in full_chars.items()}
     fifth = {k: v // 5 for k, v in full_chars.items()}
     magic_points = full_chars["POW"] // 5
-    return {
+    result = {
         "gameType": GameType.CALL_OF_CTHULHU.value,
         "id": npc_id,
         "name": name,
@@ -261,6 +268,9 @@ def _merge_cthulhu(
         "weapons": equipment.weapons,
         "gear": equipment.gear,
     }
+    if equipment.armor_name:
+        result["armor"] = {"name": equipment.armor_name, "rating": equipment.armor_rating or 0}
+    return result
 
 
 # ───────────────────────── Seventh Sea ─────────────────────────
@@ -361,7 +371,8 @@ class ExpanseNpcStats(BaseModel):
 
 class ExpanseNpcEquipment(BaseModel):
     weapons: list[dict] = Field(default_factory=list)  # AgeWeapon-shaped
-    armor: str | None = None
+    armor_name: str | None = None
+    armor_rating: int | None = None
     gear: list[str] = Field(default_factory=list)
 
 
@@ -373,7 +384,12 @@ def _merge_expanse(
     equipment: ExpanseNpcEquipment,
 ) -> dict:
     full_abilities = {**_EXPANSE_BLANK_ABILITIES, **stats.abilities}
-    return {
+    armor = (
+        {"name": equipment.armor_name, "rating": equipment.armor_rating or 0}
+        if equipment.armor_name
+        else None
+    )
+    result = {
         "gameType": GameType.EXPANSE.value,
         "id": npc_id,
         "name": name,
@@ -388,9 +404,11 @@ def _merge_expanse(
         "health": {"current": stats.health_max, "max": stats.health_max},
         "fortune": 3,
         "weapons": equipment.weapons,
-        "armor": equipment.armor,
         "gear": equipment.gear,
     }
+    if armor:
+        result["armor"] = armor
+    return result
 
 
 # ───────────────────────── Slavic ─────────────────────────
@@ -400,19 +418,26 @@ _SLAVIC_BLANK_ATTRIBUTES = {"Strength": 3, "Agility": 3, "Wits": 3, "Empathy": 3
 _SLAVIC_BLANK_SKILLS = {
     k: 0
     for k in (
+        # Strength
+        "Might",
         "Endurance",
-        "Fight",
-        "Sneak",
+        "Melee",
+        "Crafting",
+        # Agility
+        "Stealth",
+        "Sleight of Hand",
         "Move",
         "Marksmanship",
-        "Scout",
+        # Wits
+        "Scouting",
         "Lore",
         "Survival",
-        "Craft",
         "Insight",
+        # Empathy
         "Manipulation",
-        "Healing",
         "Performance",
+        "Healing",
+        "Animal Handling",
     )
 }
 
@@ -428,7 +453,7 @@ class SlavicNpcStats(BaseModel):
 
 
 class SlavicNpcEquipment(BaseModel):
-    weapons: list[str] = Field(default_factory=list)
+    weapons: list[dict] = Field(default_factory=list)  # SlavicWeapon-shaped
     armor_name: str | None = None
     armor_rating: int | None = None
     gear: list[str] = Field(default_factory=list)
@@ -444,7 +469,10 @@ def _merge_slavic(
     full_attributes = {**_SLAVIC_BLANK_ATTRIBUTES, **stats.attributes}
     full_skills = {**_SLAVIC_BLANK_SKILLS, **stats.skills}
     armor = (
-        {"name": equipment.armor_name, "rating": equipment.armor_rating or 0}
+        {
+            "name": equipment.armor_name,
+            "rating": {"current": equipment.armor_rating or 0, "max": equipment.armor_rating or 0},
+        }
         if equipment.armor_name
         else None
     )
