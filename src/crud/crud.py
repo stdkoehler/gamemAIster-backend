@@ -290,6 +290,41 @@ class CRUD:
             except IntegrityError:
                 session.rollback()
 
+    def get_digest(self, mission_id: int) -> tuple[str, int]:
+        """Returns (digest, digest_ledger_tokens) — the bounded "story so far"
+        derived from the ledger, and the ledger's token count at the time it
+        was last refreshed. Empty/0 if no digest has been computed yet (the
+        ledger hasn't crossed digest_budget_tokens)."""
+        with self._sessionmaker() as session:
+            stmt = select(SummaryMemory).where(SummaryMemory.mission_id == mission_id)
+            existing_summary = session.execute(stmt).scalar_one_or_none()
+            if existing_summary:
+                return existing_summary.digest, existing_summary.digest_ledger_tokens
+            return "", 0
+
+    def update_digest(
+        self, mission_id: int, digest: str, digest_ledger_tokens: int
+    ) -> None:
+        with self._sessionmaker() as session:
+            stmt = select(SummaryMemory).where(SummaryMemory.mission_id == mission_id)
+            existing_summary = session.execute(stmt).scalar_one_or_none()
+            if not existing_summary:
+                # update_summary always runs first in the same cycle, so this
+                # shouldn't happen in practice.
+                _log.warning(
+                    "update_digest called with no existing SummaryMemory row | mission_id=%s",
+                    mission_id,
+                )
+                return
+
+            existing_summary.digest = digest
+            existing_summary.digest_ledger_tokens = digest_ledger_tokens
+
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+
     def get_entities(self, mission_id: int) -> list[Entity]:
         with self._sessionmaker() as session:
             stmt = (

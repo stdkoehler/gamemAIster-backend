@@ -22,10 +22,9 @@ def test_get_entities(crud_instance):
 
 def test_update_entities(crud_instance):
     crud_instance._cleanse_unpersisted()
-    mission_id = 27
-    crud_instance.insert_mission(
+    inserted = crud_instance.insert_mission(
         mission=Mission(
-            mission_id=mission_id,
+            mission_id=27,
             user_id="test_user",
             name="Test Mission",
             description="This is a test mission.",
@@ -36,6 +35,10 @@ def test_update_entities(crud_instance):
             oracle=False,
         )
     )
+    # insert_mission ignores the input mission_id and autoincrements instead,
+    # mutating the object in place with the real id — use that, not the
+    # literal 27 above.
+    mission_id = inserted.mission_id
 
     entity_response = EntityResponse(
         entities=[
@@ -92,10 +95,9 @@ def test_update_entities(crud_instance):
 
 def test_update_entities_with_deletion(crud_instance):
     crud_instance._cleanse_unpersisted()
-    mission_id = 27
-    crud_instance.insert_mission(
+    inserted = crud_instance.insert_mission(
         mission=Mission(
-            mission_id=mission_id,
+            mission_id=27,
             user_id="test_user",
             name="Deletion Test Mission",
             description="This mission tests entity deletion.",
@@ -106,6 +108,7 @@ def test_update_entities_with_deletion(crud_instance):
             oracle=False,
         )
     )
+    mission_id = inserted.mission_id
 
     entity_response = EntityResponse(
         entities=[
@@ -146,10 +149,9 @@ def test_update_entities_with_deletion(crud_instance):
 
 def test_update_scenes(crud_instance):
     crud_instance._cleanse_unpersisted()
-    mission_id = 27
-    crud_instance.insert_mission(
+    inserted = crud_instance.insert_mission(
         mission=Mission(
-            mission_id=mission_id,
+            mission_id=27,
             user_id="test_user",
             name="Scene Test Mission",
             description="This mission tests scene CRUD.",
@@ -160,6 +162,7 @@ def test_update_scenes(crud_instance):
             oracle=False,
         )
     )
+    mission_id = inserted.mission_id
 
     # Insert initial scenes
     scenes = [

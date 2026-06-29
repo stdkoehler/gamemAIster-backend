@@ -43,12 +43,27 @@ T = TypeVar("T")
 # ---------------------------------------------------------------------------
 
 
-class _Summary(BaseModel):
-    summary: str
+class _Recap(BaseModel):
+    recap: str
+
+
+class _Digest(BaseModel):
+    digest: str
 
 
 class _SceneList(BaseModel):
     scenes: list[Scene]
+
+
+def _last_paragraph(text: str) -> str:
+    """The literal tail of the ledger — used as a cheap, bounded recency
+    anchor (no LLM call) alongside the digest when grounding the next
+    summarize() call. See docs/conversation_memory.html."""
+    text = text.strip()
+    if not text:
+        return ""
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    return paragraphs[-1] if paragraphs else text
 
 
 @dataclass(frozen=True)
@@ -63,6 +78,8 @@ class _SummaryState:
     n_summarized: int
     entities: list
     scenes: list
+    digest: str
+    digest_ledger_tokens: int
 
 
 class SummaryMemory:
@@ -80,6 +97,7 @@ class SummaryMemory:
         self,
         llm_client: LLMClientBase,
         summary_prompt: str,
+        digest_prompt: str,
         entity_prompt: str,
         scene_prompt: str,
         game_name: str,
@@ -87,9 +105,11 @@ class SummaryMemory:
         mission_id: int,
         npc_roster: list[dict] | None = None,
         min_summary_tokens: int = 2048,
+        digest_budget_tokens: int = 4096,
     ):
         self._llm_client = llm_client
         self._summary_prompt = summary_prompt
+        self._digest_prompt = digest_prompt
         self._entity_prompt = entity_prompt
         self._scene_prompt = scene_prompt
         self._game_name = game_name
@@ -97,14 +117,18 @@ class SummaryMemory:
         self._mission_id = mission_id
         self._npc_roster_json = json.dumps(npc_roster or [])
         self._min_summary_tokens = min_summary_tokens
+        self._digest_budget_tokens = digest_budget_tokens
 
         self._summarize_lock = threading.Lock()
         summary, n_summarized = crud_instance.get_summary(self._mission_id)
+        digest, digest_ledger_tokens = crud_instance.get_digest(self._mission_id)
         self._state = _SummaryState(
             summary=summary,
             n_summarized=n_summarized,
             entities=crud_instance.get_entities(self._mission_id),
             scenes=crud_instance.get_scenes(self._mission_id),
+            digest=digest,
+            digest_ledger_tokens=digest_ledger_tokens,
         )
         self._history = crud_instance.get_interactions(self._mission_id)
 
@@ -114,12 +138,25 @@ class SummaryMemory:
     @property
     def summary(self) -> str:
         """
-        Returns the summary of the chat conversation.
+        Returns the full, append-only ledger of the chat conversation.
 
         Returns:
-            str: The summary of the chat conversation.
+            str: The ledger.
         """
         return self._state.summary
+
+    @property
+    def injected_summary(self) -> str:
+        """
+        Returns what should actually be injected into the story prompt: the
+        bounded digest once one exists, falling back to the raw ledger while
+        it's still small enough to inject directly. See
+        docs/conversation_memory.html for the full design.
+
+        Returns:
+            str: The digest, or the raw ledger if no digest has been computed yet.
+        """
+        return self._state.digest if self._state.digest else self._state.summary
 
     # ------------------------------------------------------------------
     # Shared LLM call + parse + log pattern
@@ -256,29 +293,76 @@ class SummaryMemory:
 
     def summarize(self, text_interaction: str) -> str:
         """
-        Summarize the current summary plus the new text_interactions
+        Produces a recap of just `text_interaction` — this chunk only, not the
+        whole campaign. Grounded by the current digest (broad, possibly
+        slightly stale) and the literal last paragraph of the ledger (precise,
+        always fresh), but the model never sees or rewrites the full ledger
+        itself. The caller is responsible for appending the returned recap
+        onto the ledger — that append is plain string concatenation, not
+        something the model does, so preservation of earlier text is a
+        structural guarantee rather than an instruction the model has to
+        honor. See docs/conversation_memory.html.
         """
 
-        summary = self.summary if len(self.summary) > 0 else ""
-
-        summary_input = 'Summarize the following text:\n{{"previous_summary": {prev}, "current_events": {current}}}'
+        summary_input = (
+            'Summarize the following text:\n{{"story_so_far": {digest},'
+            '"most_recent_events": {recent},"current_events": {current}}}'
+        )
         messages = [
             Message(
                 role=MessageRole.SYSTEM,
-                content=MessageContent(text=self._summary_prompt),
+                content=MessageContent(
+                    text=self._summary_prompt.replace("__RPG__", self._game_name)
+                ),
             ),
             Message(
                 role=MessageRole.USER,
                 content=MessageContent(
-                    text=summary_input.format(prev=summary, current=text_interaction)
+                    text=summary_input.format(
+                        digest=self._state.digest,
+                        recent=_last_paragraph(self._state.summary),
+                        current=text_interaction,
+                    )
                 ),
             ),
         ]
 
         return self._call_structured(
             messages=messages,
-            parse=lambda s: _Summary.model_validate_json(s).summary,
+            parse=lambda s: _Recap.model_validate_json(s).recap,
             log_type=LogType.SUMMARY,
+        )
+
+    def _refresh_digest(self, ledger: str) -> str:
+        """
+        Condenses the *entire* ledger into a short, bounded "story so far"
+        blurb — this is what actually gets injected into the story prompt and
+        grounds future summarize() calls, once the raw ledger has grown past
+        digest_budget_tokens. Infrequent (only called from _try_summarize when
+        the ledger crosses the budget again), unlike summarize() which runs
+        every cycle. See docs/conversation_memory.html.
+        """
+        digest_input = (
+            'Condense the following story log into a short "story so far" digest:\n'
+            '{{"ledger": {ledger}}}'
+        )
+        messages = [
+            Message(
+                role=MessageRole.SYSTEM,
+                content=MessageContent(
+                    text=self._digest_prompt.replace("__RPG__", self._game_name)
+                ),
+            ),
+            Message(
+                role=MessageRole.USER,
+                content=MessageContent(text=digest_input.format(ledger=ledger)),
+            ),
+        ]
+
+        return self._call_structured(
+            messages=messages,
+            parse=lambda s: _Digest.model_validate_json(s).digest,
+            log_type=LogType.DIGEST,
         )
 
     # ------------------------------------------------------------------
@@ -331,22 +415,44 @@ class SummaryMemory:
                     f_summary = executor.submit(self.summarize, text)
                 entity_response = f_entities.result()
                 scene_response = f_scenes.result()
-                new_summary = f_summary.result()
+                recap = f_summary.result()
                 new_n_summarized = self._state.n_summarized + len(interaction_candidates)
 
+                # Deterministic append — code, not the model, owns preserving
+                # earlier ledger text. See summarize()'s docstring.
+                new_ledger = (
+                    f"{self._state.summary}\n\n{recap}".strip()
+                    if self._state.summary
+                    else recap
+                )
+
+                new_digest = self._state.digest
+                new_digest_ledger_tokens = self._state.digest_ledger_tokens
+                ledger_tokens = self._llm_client.count_tokens(new_ledger)
+                if ledger_tokens - self._state.digest_ledger_tokens >= self._digest_budget_tokens:
+                    _log.info("Digest | refreshing | ledger_tokens=%d", ledger_tokens)
+                    new_digest = self._refresh_digest(new_ledger)
+                    new_digest_ledger_tokens = ledger_tokens
+
                 crud_instance.update_summary(
-                    self._mission_id, new_summary, new_n_summarized
+                    self._mission_id, new_ledger, new_n_summarized
                 )
                 crud_instance.update_entities(self._mission_id, entity_response)
                 crud_instance.update_scenes(self._mission_id, scene_response)
+                if new_digest != self._state.digest:
+                    crud_instance.update_digest(
+                        self._mission_id, new_digest, new_digest_ledger_tokens
+                    )
 
                 # Single reference swap — readers see either the old or the new
                 # state in full, never a partially-updated mix.
                 self._state = _SummaryState(
-                    summary=new_summary,
+                    summary=new_ledger,
                     n_summarized=new_n_summarized,
                     entities=crud_instance.get_entities(self._mission_id),
                     scenes=crud_instance.get_scenes(self._mission_id),
+                    digest=new_digest,
+                    digest_ledger_tokens=new_digest_ledger_tokens,
                 )
             else:
                 _log.info("Summary | skip | %d interactions | %d tokens < %d threshold", n, current_tokens, self._min_summary_tokens)
@@ -610,6 +716,7 @@ class SummaryChat:
         llm_client_chat: LLMClientBase,
         story_prompt: str,
         summary_prompt: str,
+        digest_prompt: str,
         entity_prompt: str,
         scene_prompt: str,
         summary_provider_prompt: str,
@@ -617,6 +724,7 @@ class SummaryChat:
         mission_id: int,
         last_k: int = 2,
         min_summary_tokens: int = 2048,
+        digest_budget_tokens: int = 4096,
     ):
         self._llm_client_chat = llm_client_chat
         self._story_prompt = story_prompt
@@ -648,11 +756,13 @@ class SummaryChat:
         self._memory = SummaryMemory(
             llm_client=llm_client_reasoning,
             summary_prompt=summary_prompt,
+            digest_prompt=digest_prompt,
             entity_prompt=entity_prompt,
             scene_prompt=scene_prompt,
             game_name=game_name,
             last_k=last_k,
             min_summary_tokens=min_summary_tokens,
+            digest_budget_tokens=digest_budget_tokens,
             mission_id=mission_id,
             npc_roster=_get_npc_roster(mission.description, mission.game_type),
         )
@@ -706,7 +816,7 @@ class SummaryChat:
                     role=MessageRole.USER,
                     content=MessageContent(
                         text=self._summary_provider_prompt.format(
-                            SUMMARY=self._memory.summary,
+                            SUMMARY=self._memory.injected_summary,
                             SCENES=self._memory.get_scenes_json(),
                             ENTITIES=self._memory.get_entities_json(),
                         ),

@@ -340,6 +340,9 @@ class Gamemaster:
         with open(prompt_dir / "text_summary_prompt.txt", "r", encoding="utf-8") as f:
             self._summary_prompt = f.read()
 
+        with open(prompt_dir / "text_digest_prompt.txt", "r", encoding="utf-8") as f:
+            self._digest_prompt = f.read()
+
         with open(prompt_dir / "text_entity_prompt.txt", "r", encoding="utf-8") as f:
             self._entity_prompt = f.read()
 
@@ -376,8 +379,10 @@ class Gamemaster:
             llm_client_reasoning=self._llm_client_reasoning,
             last_k=logic_config.last_k,  # type: ignore
             min_summary_tokens=logic_config.min_summary_tokens,  # type: ignore
+            digest_budget_tokens=logic_config.digest_budget_tokens,  # type: ignore
             story_prompt=self._story_prompt,
             summary_prompt=self._summary_prompt,
+            digest_prompt=self._digest_prompt,
             entity_prompt=self._entity_prompt,
             scene_prompt=self._scene_prompt,
             summary_provider_prompt=self._summary_provider_prompt,

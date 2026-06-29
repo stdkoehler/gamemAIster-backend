@@ -17,6 +17,7 @@ class LogType(StrEnum):
     SUMMARY = "summary"
     ENTITY = "entity"
     SCENE = "scene"
+    DIGEST = "digest"
 
 
 class LLMCallLog(Base):

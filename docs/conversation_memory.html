@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>gamemAIster — Conversation Memory &amp; Compression</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1d212a;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #9aa3b2;
+    --accent: #5b9dff;
+    --entity: #5b9dff;
+    --scene: #4cc38a;
+    --summary: #f2a93b;
+    --warn: #ff6b6b;
+    --done: #4cc38a;
+    --todo: #f2a93b;
+    --code-bg: #11141a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 24px 100px; }
+  h1 { font-size: 1.9rem; margin: 0 0 6px; }
+  .subtitle { color: var(--muted); margin: 0 0 36px; font-size: 1.05rem; }
+  h2 {
+    font-size: 1.3rem;
+    margin: 56px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1.05rem; margin: 28px 0 10px; }
+  p { color: #cfd3da; }
+  code, .code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.88em;
+    color: #d7e3ff;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    border: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .callout.note { border-left: 4px solid var(--accent); }
+  .callout.warn { border-left: 4px solid var(--warn); }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+  .badge.done { background: rgba(76,195,138,0.15); color: var(--done); border: 1px solid rgba(76,195,138,0.4); }
+  .badge.todo { background: rgba(242,169,59,0.15); color: var(--todo); border: 1px solid rgba(242,169,59,0.4); }
+
+  .implemented-box {
+    background: linear-gradient(180deg, rgba(76,195,138,0.07), rgba(76,195,138,0.02));
+    border: 1px solid rgba(76,195,138,0.4);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 18px 0;
+  }
+  .implemented-box h3 { margin-top: 0; }
+
+  /* --- three-lens cards --- */
+  .lenses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+  .lens {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    border-top: 3px solid var(--accent);
+  }
+  .lens.entity { border-top-color: var(--entity); }
+  .lens.scene { border-top-color: var(--scene); }
+  .lens.summary { border-top-color: var(--summary); }
+  .lens h4 { margin: 0 0 6px; font-size: 1.0rem; }
+  .lens .tag { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; display: block; }
+  .lens ul { margin: 8px 0 0; padding-left: 18px; font-size: 0.88rem; color: #cfd3da; }
+  .lens li { margin-bottom: 4px; }
+  .lens .files { margin-top: 12px; font-size: 0.78rem; color: var(--muted); }
+
+  @media (max-width: 820px) {
+    .lenses { grid-template-columns: 1fr; }
+  }
+
+  /* --- pipeline diagram --- */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  .pstep {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+  }
+  .pstep b { display: block; margin-bottom: 4px; font-size: 0.9rem; }
+  .parrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 1.4rem;
+    padding: 0 8px;
+    min-width: 24px;
+  }
+  .fanout {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1.3;
+    min-width: 190px;
+  }
+  .fanout .pstep { border-left: 3px solid var(--accent); text-align: left; }
+  .fanout .pstep.entity { border-left-color: var(--entity); }
+  .fanout .pstep.scene { border-left-color: var(--scene); }
+  .fanout .pstep.summary { border-left-color: var(--summary); }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  td code { white-space: nowrap; }
+
+  /* --- growth chart + flow diagram --- */
+  .chart-wrap { margin: 20px 0 8px; }
+  .chart-wrap svg, .flow-svg-wrap svg { width: 100%; height: auto; display: block; }
+  .chart-legend {
+    display: flex; gap: 22px; flex-wrap: wrap;
+    font-size: 0.8rem; color: var(--muted); margin-top: 4px;
+  }
+  .chart-legend .swatch { display: inline-block; width: 16px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .flow-svg-wrap { margin: 18px 0 6px; overflow-x: auto; }
+  .diagram-caption { font-size: 0.8rem; color: var(--muted); margin: 4px 0 0; }
+
+  /* --- worked example --- */
+  .cycle-heading {
+    font-weight: 700; color: var(--text); margin: 24px 0 10px; font-size: 0.95rem;
+  }
+  .example-step {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .example-step .estep-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 9px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .example-step .estep-body { font-size: 0.88rem; color: #cfd3da; }
+  .example-step.tag-ledger { border-left: 3px solid var(--summary); }
+  .example-step.tag-ledger .estep-tag { background: rgba(242,169,59,0.15); color: var(--summary); border: 1px solid rgba(242,169,59,0.4); }
+  .example-step.tag-input { border-left: 3px solid var(--accent); }
+  .example-step.tag-input .estep-tag { background: rgba(91,157,255,0.12); color: var(--accent); border: 1px solid rgba(91,157,255,0.35); }
+  .example-step.tag-llm .estep-tag { background: rgba(255,255,255,0.06); color: #cfd3da; border: 1px solid var(--border); }
+  .example-divider { text-align: center; color: var(--muted); font-size: 0.8rem; margin: 16px 0; letter-spacing: 0.04em; }
+
+  .future-box {
+    background: linear-gradient(180deg, rgba(242,169,59,0.07), rgba(242,169,59,0.02));
+    border: 1px dashed rgba(242,169,59,0.5);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 18px 0;
+  }
+  .future-box h3 { margin-top: 0; color: var(--todo); }
+
+  .stepnum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0f1115;
+    font-weight: 700;
+    font-size: 0.78rem;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .steplist { list-style: none; padding: 0; margin: 14px 0; }
+  .steplist li { display: flex; align-items: flex-start; margin-bottom: 10px; font-size: 0.92rem; color: #cfd3da; }
+
+  footer { margin-top: 70px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Conversation Memory &amp; Compression</h1>
+  <p class="subtitle">How gamemAIster keeps a long-running TTRPG session inside a finite LLM context window without losing the campaign's history.</p>
+
+  <div class="callout note">
+    <strong>Read this if:</strong> you're onboarding, or you haven't touched <code>src/brain/chat.py</code> in a year and need
+    to remember why there are three separate compression mechanisms instead of one.
+    <br><br>
+    <strong>Accuracy note:</strong> file/line references below reflect the code as of writing. They drift — treat them as a map to start
+    your search, not as guaranteed line numbers.
+  </div>
+
+  <h2>1. Why this exists</h2>
+  <p>
+    A TTRPG campaign can run for dozens of sessions. The story LLM (<code>SummaryChat</code>) can only ever see a bounded
+    context window per turn, and the GM model behind it can be a small/local model with a genuinely tight budget — so the
+    raw chat transcript cannot just be replayed in full forever. Something has to compress "everything that happened" into
+    something small enough to keep injecting every turn, without the GM forgetting who the NPCs are, where the party is,
+    or what they promised three sessions ago.
+  </p>
+  <p>
+    The system splits that compression into <strong>three independent lenses</strong>, each answering a different question
+    about the same raw play text, rather than one mechanism trying to do everything at once.
+  </p>
+
+  <h2>2. The three lenses <span class="badge done">Implemented</span></h2>
+
+  <div class="lenses">
+    <div class="lens entity">
+      <h4>Entities</h4>
+      <span class="tag">"Who/what exists?" — atemporal knowledge base</span>
+      <ul>
+        <li>One row per named person/place/item/faction/etc., with a running <code>summary</code></li>
+        <li>Deduplicates and fuses entities the model realizes are the same thing</li>
+        <li>Cross-references the mission's NPC roster so a character isn't re-invented under a different name</li>
+      </ul>
+      <div class="files">
+        <code>extract_entities()</code> in <code>chat.py</code><br>
+        <code>text_entity_prompt.txt</code><br>
+        model: <code>Entity</code> / <code>EntityResponse</code> in <code>data_types.py</code>
+      </div>
+    </div>
+    <div class="lens scene">
+      <h4>Scenes</h4>
+      <span class="tag">"What happened, in order?" — structured chronological log</span>
+      <ul>
+        <li>Splits play into discrete scenes (location/time/focus changes)</li>
+        <li>Each scene: title, location, characters present, exhaustive summary, completed flag</li>
+        <li>Most "blow-by-blow" detail lives here, not in the narrative summary</li>
+      </ul>
+      <div class="files">
+        <code>scene_summary()</code> in <code>chat.py</code><br>
+        <code>text_scene_prompt_examples.txt</code><br>
+        model: <code>Scene</code> in <code>data_types.py</code>
+      </div>
+    </div>
+    <div class="lens summary">
+      <h4>Summary</h4>
+      <span class="tag">"What's the story so far?" — running narrative prose</span>
+      <ul>
+        <li>One growing block of prose, append-only by design</li>
+        <li>Never rewrites/removes earlier text — only adds to it</li>
+        <li>The piece most at risk of unbounded growth (see §5)</li>
+      </ul>
+      <div class="files">
+        <code>summarize()</code> in <code>chat.py</code><br>
+        <code>text_summary_prompt.txt</code>
+      </div>
+    </div>
+  </div>
+
+  <h2>3. The pipeline</h2>
+  <p>
+    All three lenses are computed from the <em>same</em> raw text and run independently — none of them sees the others'
+    output.
+  </p>
+
+  <div class="pipeline">
+    <div class="pstep">
+      <b>Trigger</b>
+      Token-count threshold on un-summarized interactions (<code>min_summary_tokens</code>, default 2048)<br>
+      <code>SummaryMemory._try_summarize()</code>
+    </div>
+    <div class="parrow">→</div>
+    <div class="pstep">
+      <b>Format</b>
+      Strip OOC/<code>&lt;think&gt;</code>/"what do you do" cruft, join into <code>"Player: …\nGamemaster: …"</code> blocks
+    </div>
+    <div class="parrow">→</div>
+    <div class="fanout">
+      <div class="pstep entity"><b>extract_entities()</b>same text + known entities + NPC roster</div>
+      <div class="pstep scene"><b>scene_summary()</b>same text + previous scenes + NPC roster</div>
+      <div class="pstep summary"><b>summarize()</b>same text + previous summary</div>
+    </div>
+    <div class="parrow">→</div>
+    <div class="pstep">
+      <b>Persist</b>
+      <code>crud_instance.update_entities/update_scenes/update_summary</code> — single atomic <code>_SummaryState</code> swap so readers never see a half-updated mix
+    </div>
+  </div>
+
+  <p>
+    All three calls run in parallel via a <code>ThreadPoolExecutor</code> — they're independent, so there's no reason to
+    serialize them.
+  </p>
+
+  <h3>Getting it back into the story prompt</h3>
+  <p>
+    On the next turn, <code>SummaryChat._build_messages()</code> injects the current summary/scenes/entities via
+    <code>summary_provider.txt</code> (the <code>{SUMMARY}</code>/<code>{SCENES}</code>/<code>{ENTITIES}</code>
+    placeholders), positioned <em>before</em> the still-unsummarized tail of raw interaction history — those most-recent
+    turns are always sent verbatim, never compressed.
+  </p>
+
+  <h2>4. Staying consistent with the mission's NPC roster <span class="badge done">Implemented</span></h2>
+  <p>
+    Missions ship with a <code>keyNPCs</code> roster (name/role/affiliation/secrets) written before play starts. Without
+    help, the entity/scene compressors only see raw narration — if the GM calls someone "the High Priestess" for a few
+    turns before ever saying "Devana", they have no way to know it's the same person as roster entry <code>Devana</code>,
+    and can fork a duplicate identity.
+  </p>
+  <ul>
+    <li>
+      <code>known_npc_roster</code> (name/role/affiliation only, no secrets) is passed into both
+      <code>extract_entities()</code> and <code>scene_summary()</code> every cycle, with prompt instructions to use the
+      roster's exact name instead of inventing one.
+    </li>
+    <li>
+      <code>Entity.matched_key_npc</code> is a real, name-independent link the model sets when it recognizes a roster
+      match. <code>crud.update_entities()</code> resolves incoming entities against existing rows by this field
+      <em>first</em>, name second — so even if the model still uses an inconsistent display name one cycle, storage
+      merges onto the same row instead of forking a duplicate.
+    </li>
+    <li>
+      The live story prompt has an analogous, separate mechanism — <code>_flag_active_key_npcs()</code> annotates the
+      mission JSON's roster entries with <code>_activeNpcOverride</code> when an active NPC sheet is matched, so the
+      model isn't handed two silently conflicting descriptions of the same character.
+    </li>
+  </ul>
+
+  <div class="implemented-box">
+    <h2 style="margin-top:0; border:none; padding-bottom:0;">5. Bounding summary growth: the ledger/digest split <span class="badge done">Implemented</span></h2>
+    <p>
+      The narrative summary used to be a single, append-only block of prose — <code>text_summary_prompt.txt</code>
+      preserved established content and only ever added to it, by design, so nothing got silently lost in a rewrite.
+      The tradeoff: nothing ever shrank it either. Over a long campaign, that one block — re-injected into the story
+      prompt every single turn — would grow forever, which is exactly the failure mode small/local models with tight
+      context windows can't absorb. The current design splits it into two pieces to fix that without giving up the
+      append-only guarantee:
+    </p>
+    <ol class="steplist">
+      <li><span class="stepnum">1</span>
+        <div>
+          <strong>A full, append-only <code>ledger</code></strong> in storage (the <code>SummaryMemory.summary</code>
+          column, unchanged) — the permanent, lossless record. This is still the source of truth forever; nothing
+          about it shrank or got rewritten.
+        </div>
+      </li>
+      <li><span class="stepnum">2</span>
+        <div>
+          <strong>The per-cycle append is deterministic, not model-trusted.</strong> The model is never handed the
+          growing ledger and told "don't touch this part" — that was risky for weak models, which can truncate/drift/
+          duplicate text they're told to leave alone. <code>SummaryMemory.summarize()</code> only ever recaps the new
+          <code>current_events</code> chunk (grounded by the latest digest + the last paragraph of the ledger, for
+          coherence — see step 4); <code>_try_summarize()</code> then does
+          <code>ledger = ledger + recap</code> as plain string concatenation, in code, not the model. Zero information
+          loss is a structural guarantee, not an instruction the model has to honor.
+        </div>
+      </li>
+      <li><span class="stepnum">3</span>
+        <div>
+          <strong>The raw ledger stops being injected once it crosses a size budget.</strong>
+          <code>SummaryMemory._refresh_digest()</code> is a separate, infrequent pass: once the ledger's token count
+          grows past <code>digest_budget_tokens</code> since the last refresh, it condenses the <em>whole ledger</em>
+          into a short, bounded "story so far" blurb (<code>text_digest_prompt.txt</code>). That digest — not the raw
+          ledger — is what <code>SummaryChat._build_messages()</code> injects via
+          <code>SummaryMemory.injected_summary</code> from then on, and it gets refreshed again each time the ledger
+          grows past the next threshold. The injected size stays roughly constant forever; the ledger underneath keeps
+          growing, untouched, in storage.
+        </div>
+      </li>
+      <li><span class="stepnum">4</span>
+        <div>
+          <strong>The digest also grounds the next cycle's recap</strong> — combined with the literal last paragraph
+          of the ledger (<code>_last_paragraph()</code>, no LLM call). The digest gives broad arc continuity (threads
+          from many sessions back); the last paragraph gives precise recency (what was appended right before this
+          chunk). Both stay bounded regardless of campaign length, and the prompt labels them distinctly
+          (<code>story_so_far</code> vs. <code>most_recent_events</code>) rather than as one blob — a weak model is
+          more likely to conflate them otherwise.
+        </div>
+      </li>
+      <li><span class="stepnum">5</span>
+        <div>
+          <strong>(Optional, complementary, not implemented) Scene-tiered recap for injection.</strong> Scenes are
+          already a structured chronological backbone. Inject full detail only for the last few scenes; for older
+          completed scenes, substitute a short, separately-generated 1-2 sentence recap (a narrow, easy task — much
+          safer for weak models than asking for holistic "what's still relevant" judgment over the whole campaign).
+          Full per-scene detail would stay in the DB untouched, same as the ledger. Worth revisiting if the digest
+          alone ever proves insufficient.
+        </div>
+      </li>
+    </ol>
+    <h3>What the growth actually looks like</h3>
+    <p>
+      The <code>ledger</code> (full history, stored) and the <code>digest</code> (what's actually injected) diverge
+      over the campaign's lifetime — the ledger climbs forever, the digest gets recomputed from scratch each time it
+      crosses the budget and snaps back down to roughly the same small size:
+    </p>
+    <div class="chart-wrap">
+      <svg viewBox="0 0 760 220" role="img" aria-label="Line chart: the stored ledger grows linearly forever; the injected digest stays roughly flat, recomputing to a small size each time the ledger crosses the injection budget threshold.">
+        <line x1="50" y1="20" x2="50" y2="190" stroke="var(--border)" stroke-width="1.5"/>
+        <line x1="50" y1="190" x2="730" y2="190" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="50" y="14" fill="var(--muted)" font-size="11">size</text>
+        <text x="715" y="207" fill="var(--muted)" font-size="11" text-anchor="end">time / cycles →</text>
+
+        <line x1="50" y1="120" x2="720" y2="120" stroke="var(--warn)" stroke-width="1.2" stroke-dasharray="6 5" opacity="0.55"/>
+        <text x="56" y="113" fill="var(--warn)" font-size="10.5" opacity="0.85">injection budget</text>
+
+        <!-- ledger: grows forever, never re-injected once large -->
+        <polyline points="50,180 720,30" fill="none" stroke="var(--summary)" stroke-width="2.5"/>
+
+        <!-- digest: tracks ledger while small, then snaps down at each refresh and stays flat -->
+        <polyline points="50,180 310,122" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <line x1="310" y1="122" x2="310" y2="172" stroke="var(--accent)" stroke-width="2.5"/>
+        <polyline points="310,172 470,172" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <line x1="470" y1="172" x2="470" y2="166" stroke="var(--accent)" stroke-width="2.5"/>
+        <polyline points="470,166 630,166" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <line x1="630" y1="166" x2="630" y2="160" stroke="var(--accent)" stroke-width="2.5"/>
+        <polyline points="630,160 720,160" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+
+        <line x1="310" y1="190" x2="310" y2="195" stroke="var(--muted)" stroke-width="1"/>
+        <line x1="470" y1="190" x2="470" y2="195" stroke="var(--muted)" stroke-width="1"/>
+        <line x1="630" y1="190" x2="630" y2="195" stroke="var(--muted)" stroke-width="1"/>
+        <text x="310" y="206" fill="var(--muted)" font-size="9" text-anchor="middle">digest refresh</text>
+        <text x="470" y="206" fill="var(--muted)" font-size="9" text-anchor="middle">refresh</text>
+        <text x="630" y="206" fill="var(--muted)" font-size="9" text-anchor="middle">refresh</text>
+      </svg>
+      <div class="chart-legend">
+        <span><span class="swatch" style="background:var(--summary)"></span>ledger — stored, unbounded, never re-injected once large</span>
+        <span><span class="swatch" style="background:var(--accent)"></span>digest — what's actually injected, bounded forever</span>
+        <span><span class="swatch" style="background:var(--warn); opacity:0.6;"></span>injection budget threshold</span>
+      </div>
+    </div>
+
+    <h3>One full cycle, end to end</h3>
+    <p>This is the loop from step 2-4 above, once a digest already exists (the steady state for any sufficiently long campaign):</p>
+    <div class="flow-svg-wrap">
+      <svg viewBox="0 0 930 580" role="img" aria-label="Flow diagram of one compression cycle: current_events, last paragraph of the ledger, and the digest feed into summarize(), which produces a recap; code deterministically appends the recap to the ledger; if the ledger crosses the injection budget, a digest pass condenses it, and the new digest both loops back to ground the next cycle and gets injected into the story prompt.">
+        <defs>
+          <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+          </marker>
+          <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+          </marker>
+          <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--summary)"/>
+          </marker>
+        </defs>
+
+        <!-- top row inputs -->
+        <rect x="30" y="20" width="260" height="70" rx="8" fill="var(--panel)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="160" y="48" fill="var(--text)" font-size="13" text-anchor="middle" font-weight="700">current_events</text>
+        <text x="160" y="67" fill="var(--muted)" font-size="10.5" text-anchor="middle">this cycle's new raw chunk</text>
+
+        <rect x="330" y="20" width="260" height="70" rx="8" fill="var(--panel)" stroke="var(--summary)" stroke-width="1.5"/>
+        <text x="460" y="48" fill="var(--text)" font-size="13" text-anchor="middle" font-weight="700">last paragraph of ledger</text>
+        <text x="460" y="67" fill="var(--muted)" font-size="10.5" text-anchor="middle">literal recency anchor</text>
+
+        <rect x="630" y="20" width="260" height="70" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="760" y="48" fill="var(--text)" font-size="13" text-anchor="middle" font-weight="700">digest</text>
+        <text x="760" y="67" fill="var(--muted)" font-size="10.5" text-anchor="middle">bounded "story so far"</text>
+
+        <line x1="160" y1="90" x2="160" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+        <line x1="460" y1="90" x2="460" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+        <line x1="760" y1="90" x2="760" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+
+        <!-- summarize() -->
+        <rect x="110" y="150" width="700" height="60" rx="8" fill="var(--panel-2)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="460" y="177" fill="var(--text)" font-size="13.5" text-anchor="middle" font-weight="700">summarize() — LLM call</text>
+        <text x="460" y="195" fill="var(--muted)" font-size="10.5" text-anchor="middle">sees only the three inputs above</text>
+
+        <line x1="460" y1="210" x2="460" y2="240" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+
+        <!-- recap -->
+        <rect x="330" y="240" width="260" height="50" rx="8" fill="var(--panel)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="460" y="262" fill="var(--text)" font-size="13" text-anchor="middle" font-weight="700">recap</text>
+        <text x="460" y="278" fill="var(--muted)" font-size="10" text-anchor="middle">short text covering just this chunk</text>
+
+        <line x1="460" y1="290" x2="460" y2="320" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+
+        <!-- deterministic append -->
+        <rect x="260" y="320" width="400" height="50" rx="8" fill="var(--panel)" stroke="var(--summary)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="460" y="342" fill="var(--text)" font-size="13" text-anchor="middle" font-weight="700">ledger = ledger + recap</text>
+        <text x="460" y="358" fill="var(--muted)" font-size="10" text-anchor="middle">deterministic — no LLM call</text>
+
+        <line x1="460" y1="370" x2="460" y2="400" stroke="var(--summary)" stroke-width="1.5" marker-end="url(#arrowAmber)"/>
+
+        <!-- ledger store -->
+        <rect x="300" y="400" width="320" height="60" rx="8" fill="var(--code-bg)" stroke="var(--summary)" stroke-width="2"/>
+        <text x="460" y="425" fill="var(--text)" font-size="14" text-anchor="middle" font-weight="700">LEDGER</text>
+        <text x="460" y="443" fill="var(--muted)" font-size="10.5" text-anchor="middle">full history, stored — grows forever</text>
+
+        <line x1="620" y1="430" x2="678" y2="430" stroke="var(--summary)" stroke-width="1.5" marker-end="url(#arrowAmber)"/>
+        <text x="650" y="418" fill="var(--muted)" font-size="9.5" text-anchor="middle">if over budget</text>
+
+        <!-- digest pass -->
+        <rect x="680" y="400" width="200" height="60" rx="8" fill="var(--panel-2)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="780" y="420" fill="var(--text)" font-size="12.5" text-anchor="middle" font-weight="700">digest pass</text>
+        <text x="780" y="435" fill="var(--muted)" font-size="9.5" text-anchor="middle">LLM call, infrequent</text>
+        <text x="780" y="448" fill="var(--muted)" font-size="9.5" text-anchor="middle">(only when over budget)</text>
+
+        <!-- loop back to digest input -->
+        <path d="M880,430 L906,430 L906,55 L891,55" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrowAccent)"/>
+        <text x="912" y="245" fill="var(--accent)" font-size="10" transform="rotate(90 912 245)" text-anchor="middle">grounds next cycle</text>
+
+        <!-- down to injected box -->
+        <line x1="780" y1="460" x2="780" y2="510" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowAccent)"/>
+
+        <rect x="560" y="510" width="340" height="55" rx="8" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="730" y="533" fill="var(--text)" font-size="12.5" text-anchor="middle" font-weight="700">→ injected into the story prompt</text>
+        <text x="730" y="550" fill="var(--muted)" font-size="10" text-anchor="middle">bounded size, refreshed periodically</text>
+      </svg>
+      <p class="diagram-caption">
+        Solid border = LLM call · dashed border = deterministic code step. Amber traces the ledger thread (grows
+        forever, stored only). Blue traces the digest thread (bounded, the only thing re-injected).
+      </p>
+    </div>
+
+    <h3>A worked example</h3>
+    <p>Same pipeline, with invented Shadowrun play text standing in for real session content.</p>
+
+    <div class="cycle-heading">Cycle 1 — early campaign, ledger still empty</div>
+    <div class="example-step tag-ledger">
+      <span class="estep-tag">ledger (before)</span>
+      <div class="estep-body">(empty — this is the first cycle)</div>
+    </div>
+    <div class="example-step tag-llm">
+      <span class="estep-tag">current_events (new chunk)</span>
+      <div class="estep-body">"The team meets Mr. Johnson at a Denny's in Redmond. He offers 20,000¥ to retrieve a data chip from Ares Tower's 14th-floor server room. The team accepts and starts planning a loading-dock entry."</div>
+    </div>
+    <div class="example-step tag-llm">
+      <span class="estep-tag">recap — produced by summarize()</span>
+      <div class="estep-body">"Mr. Johnson hired the team for 20,000¥ to steal a data chip from Ares Tower's 14th-floor server room; the team is planning a loading-dock entry."</div>
+    </div>
+    <div class="example-step tag-ledger">
+      <span class="estep-tag">ledger (after) — code appends the recap</span>
+      <div class="estep-body">"Mr. Johnson hired the team for 20,000¥ to steal a data chip from Ares Tower's 14th-floor server room; the team is planning a loading-dock entry."</div>
+    </div>
+
+    <div class="example-divider">⋯ several sessions later ⋯</div>
+
+    <div class="cycle-heading">Cycle 9 — the ledger crosses the injection budget</div>
+    <div class="example-step tag-ledger">
+      <span class="estep-tag">ledger (before) — abbreviated; the real text is much longer</span>
+      <div class="estep-body">"Mr. Johnson hired the team… [the Ares Tower heist, a firefight with corp security, extracting Dr. Chen from the server room]… Chen revealed she'd sabotaged the chip's data before handover… [the team confronts her; she claims a rival corp coerced her]… the team is now laying low in a Touristville safehouse while deciding whether to trust her."</div>
+    </div>
+    <div class="example-step tag-input">
+      <span class="estep-tag">digest pass triggered — LLM call, sees the whole ledger above</span>
+      <div class="estep-body">Ledger token count just crossed the injection budget, so a one-off digest pass condenses the entire ledger into:</div>
+    </div>
+    <div class="example-step tag-input">
+      <span class="estep-tag">digest (new)</span>
+      <div class="estep-body">"The runners completed Mr. Johnson's data-chip job at Ares Tower, extracting Dr. Chen in the process. Chen has since revealed hidden loyalties to a rival corp, and the team is currently laying low from Ares retaliation while deciding whether to trust her."</div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--muted); margin-top:-4px;">
+      This digest — not the raw ledger above — is what gets injected into the story prompt from now on, and what
+      grounds the next cycle's <code>summarize()</code> call.
+    </p>
+
+    <div class="cycle-heading">Cycle 10 — grounded by the digest, not the raw ledger</div>
+    <div class="example-step tag-input">
+      <span class="estep-tag">digest (from cycle 9)</span>
+      <div class="estep-body">"The runners completed Mr. Johnson's data-chip job at Ares Tower, extracting Dr. Chen in the process. Chen has since revealed hidden loyalties to a rival corp, and the team is currently laying low from Ares retaliation while deciding whether to trust her."</div>
+    </div>
+    <div class="example-step tag-ledger">
+      <span class="estep-tag">last paragraph of ledger — literal recency anchor</span>
+      <div class="estep-body">"…the team relocated to a safehouse in Touristville and debated turning Chen over to her former employer for a reward."</div>
+    </div>
+    <div class="example-step tag-llm">
+      <span class="estep-tag">current_events (new chunk)</span>
+      <div class="estep-body">"A fixer named Cryptic contacts the team with a lead on a Renraku research lab that might be looking for people with Chen's exact skill set."</div>
+    </div>
+    <div class="example-step tag-llm">
+      <span class="estep-tag">recap — produced by summarize()</span>
+      <div class="estep-body">"Cryptic approached the team about a potential Renraku research-lab job that might intersect with Chen's background."</div>
+    </div>
+    <div class="example-step tag-ledger">
+      <span class="estep-tag">ledger (after) — appended onto the full cycle-9 ledger, not the digest</span>
+      <div class="estep-body">[…entire cycle-9 ledger text…] "Cryptic approached the team about a potential Renraku research-lab job that might intersect with Chen's background."</div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--muted);">
+      The digest stays small and roughly constant in size forever. The ledger underneath keeps growing exactly as it
+      does today, in full — it's just no longer what gets repeated into every single turn's prompt.
+    </p>
+
+    <p style="margin-bottom:0;">
+      Net effect: the compression LLM never processes more than one bounded chunk at a time, the story LLM never
+      receives an unbounded blob, and nothing is ever destroyed — only what's <em>injected</em> is capped; full
+      fidelity always remains in storage.
+    </p>
+  </div>
+
+  <h2>6. Quick file map</h2>
+  <table>
+    <tr><th>Concern</th><th>Where</th></tr>
+    <tr><td>Trigger / orchestration</td><td><code>SummaryMemory._try_summarize()</code> — <code>src/brain/chat.py</code></td></tr>
+    <tr><td>Entity extraction</td><td><code>SummaryMemory.extract_entities()</code> + <code>text_entity_prompt.txt</code></td></tr>
+    <tr><td>Scene summarization</td><td><code>SummaryMemory.scene_summary()</code> + <code>text_scene_prompt_examples.txt</code></td></tr>
+    <tr><td>Narrative recap (per-chunk, not the whole ledger)</td><td><code>SummaryMemory.summarize()</code> + <code>text_summary_prompt.txt</code></td></tr>
+    <tr><td>Ledger append (deterministic, no LLM)</td><td><code>SummaryMemory._try_summarize()</code> — <code>ledger = ledger + recap</code></td></tr>
+    <tr><td>Digest refresh (bounded "story so far")</td><td><code>SummaryMemory._refresh_digest()</code> + <code>text_digest_prompt.txt</code></td></tr>
+    <tr><td>Last-paragraph grounding (no LLM)</td><td><code>_last_paragraph()</code> — <code>src/brain/chat.py</code></td></tr>
+    <tr><td>What gets injected (digest or raw ledger)</td><td><code>SummaryMemory.injected_summary</code></td></tr>
+    <tr><td>Reinjection into story prompt</td><td><code>SummaryChat._build_messages()</code> + <code>summary_provider.txt</code></td></tr>
+    <tr><td>NPC roster cross-reference</td><td><code>_get_npc_roster()</code>, <code>known_npc_roster</code> input field</td></tr>
+    <tr><td>Active-NPC override for live story prompt</td><td><code>_flag_active_key_npcs()</code> — <code>src/brain/chat.py</code></td></tr>
+    <tr><td>Data models</td><td><code>Entity</code>, <code>UpdatedEntity</code>, <code>EntityResponse</code>, <code>Scene</code>, <code>Interaction</code> — <code>src/brain/data_types.py</code></td></tr>
+    <tr><td>Persistence (ORM)</td><td><code>EntityMemory</code>, <code>SceneMemory</code>, <code>SummaryMemory</code> (table — now also holds <code>digest</code>/<code>digest_ledger_tokens</code>) — <code>src/crud/sqlmodel.py</code></td></tr>
+    <tr><td>Persistence (CRUD logic)</td><td><code>get/update_entities</code>, <code>get/update_scenes</code>, <code>get/update_summary</code>, <code>get/update_digest</code> — <code>src/crud/crud.py</code></td></tr>
+    <tr><td>Digest budget config</td><td><code>LLMLogicConfig.digest_budget_tokens</code> — <code>src/llmclient/llm_parameters.py</code> / <code>llm_config_registry.py</code></td></tr>
+    <tr><td>Prompt loading / wiring</td><td><code>Gamemaster</code> setup — <code>src/brain/gamemaster.py</code></td></tr>
+  </table>
+
+  <footer>
+    gamemAIster-backend — internal documentation. Per <code>CLAUDE.md</code>, update this file in the same change
+    whenever you touch <code>SummaryMemory</code>/<code>SummaryChat</code>, the compression prompt templates, the
+    <code>Entity</code>/<code>Scene</code>/<code>Interaction</code> models, or their persistence — so it stays
+    accurate for whoever returns to this code next.
+  </footer>
+
+</div>
+</body>
+</html>

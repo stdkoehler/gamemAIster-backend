@@ -164,6 +164,15 @@ class LLMLogicConfig:
     min_summary_tokens: int | Unset = UNSET
     """Minimum number of tokens required for a summary to be generated."""
 
+    digest_budget_tokens: int | Unset = UNSET
+    """
+    Once the stored summary ledger grows past this many tokens, it's no longer
+    injected into the story prompt directly — a digest pass condenses the
+    whole ledger into a small "story so far" blurb instead, refreshed again
+    each time the ledger grows by another budget's worth. Keeps the injected
+    context bounded regardless of campaign length. See docs/conversation_memory.html.
+    """
+
     keep_thinking_turns: ThinkingFeebackPolicy | Unset = UNSET
     """
     Number of conversation turns for which we feed thinking content back to the model.
@@ -190,6 +199,7 @@ class LLMLogicConfig:
         return cls(
             last_k=5,
             min_summary_tokens=2048,
+            digest_budget_tokens=4096,
             keep_thinking_turns=ThinkingFeebackPolicy.never(),
         )
 
