@@ -41,6 +41,11 @@ class Entity(BaseModel):
     name: str
     type: str
     summary: str
+    # Exact `name` of the mission's keyNPCs (or equivalent) roster entry this
+    # entity was matched to, if any. A real link independent of `name` —
+    # lets storage merge an entity onto the same roster NPC even if the LLM
+    # used an inconsistent display name (title vs. given name) across calls.
+    matched_key_npc: str | None = None
 
 
 class Scene(BaseModel):

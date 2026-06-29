@@ -67,6 +67,7 @@ class EntityMemory(Base):
     name: Mapped[str] = mapped_column(Text, primary_key=True)
     type: Mapped[str] = mapped_column(Text)
     summary: Mapped[str] = mapped_column(Text)
+    matched_key_npc: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class SceneMemory(Base):

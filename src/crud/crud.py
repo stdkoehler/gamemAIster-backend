@@ -303,6 +303,7 @@ class CRUD:
                     name=memory.name,
                     type=memory.type,
                     summary=memory.summary,
+                    matched_key_npc=memory.matched_key_npc,
                 )
                 for memory in result
             ]
@@ -319,23 +320,58 @@ class CRUD:
                         )
                     ).scalars()
                 }
+                # Secondary index on the roster link: a name-independent identity
+                # for entities matched to a keyNPCs (or equivalent) roster entry.
+                # Lets us resolve an LLM-named entity to the right DB row even if
+                # the model used an inconsistent display name this call (e.g.
+                # "the High Priestess" vs. the previously-stored "Devana") —
+                # exact-name matching alone can't catch that, since storage is
+                # keyed on name.
+                existing_by_match: dict[str, EntityMemory] = {
+                    e.matched_key_npc.strip().lower(): e
+                    for e in existing.values()
+                    if e.matched_key_npc
+                }
+
+                def resolve(name: str, matched_key_npc: str | None) -> EntityMemory | None:
+                    if matched_key_npc:
+                        match = existing_by_match.get(matched_key_npc.strip().lower())
+                        if match:
+                            return match
+                    return existing.get(name)
+
+                def reindex(db_entity: EntityMemory, new_name: str | None, new_match: str | None) -> None:
+                    """Keep both lookup dicts in sync after a name/match change."""
+                    if db_entity.matched_key_npc:
+                        existing_by_match.pop(db_entity.matched_key_npc.strip().lower(), None)
+                    if new_name is not None and new_name != db_entity.name:
+                        existing.pop(db_entity.name, None)
+                        existing[new_name] = db_entity
+                        db_entity.name = new_name
+                    if new_match is not None:
+                        db_entity.matched_key_npc = new_match
+                    if db_entity.matched_key_npc:
+                        existing_by_match[db_entity.matched_key_npc.strip().lower()] = db_entity
 
                 # 1. HANDLE DELETIONS FIRST (Standard and Overwrites)
                 for updated_entity in entity_response.updated_entities:
-                    db_entity = existing.get(updated_entity.name)
+                    db_entity = resolve(updated_entity.name, updated_entity.matched_key_npc)
                     if not db_entity:
                         continue
 
                     # Case A: Explicit deletion request
                     if updated_entity.updated_name == "DELETE":
                         session.delete(db_entity)
-                        existing.pop(updated_entity.name, None)
+                        existing.pop(db_entity.name, None)
+                        if db_entity.matched_key_npc:
+                            existing_by_match.pop(db_entity.matched_key_npc.strip().lower(), None)
 
                     # Case B: Rename Collision (Delete the target to make room)
-                    elif updated_entity.updated_name != updated_entity.name:
+                    elif updated_entity.updated_name != db_entity.name:
                         collision_entity = existing.get(updated_entity.updated_name)
-                        if collision_entity:
+                        if collision_entity and collision_entity is not db_entity:
                             session.delete(collision_entity)
+                            existing.pop(updated_entity.updated_name, None)
                             # We don't pop from existing yet, we'll overwrite it in step 2
 
                 # IMPORTANT: Flush deletions to the DB so the names are "freed up"
@@ -346,30 +382,30 @@ class CRUD:
                     if updated_entity.updated_name == "DELETE":
                         continue
 
-                    db_entity = existing.get(updated_entity.name)
+                    db_entity = resolve(updated_entity.name, updated_entity.matched_key_npc)
                     if db_entity:
-                        if updated_entity.updated_name != updated_entity.name:
-                            # Update dictionary and object name
-                            existing.pop(updated_entity.name, None)
-                            existing[updated_entity.updated_name] = db_entity
-                            db_entity.name = updated_entity.updated_name
-
+                        reindex(db_entity, updated_entity.updated_name, updated_entity.matched_key_npc)
                         db_entity.summary = updated_entity.summary
 
                 # 3. PROCESS NEW ENTITIES
                 for entity in entity_response.entities:
-                    db_entity = existing.get(entity.name)
+                    db_entity = resolve(entity.name, entity.matched_key_npc)
                     if db_entity:
                         db_entity.summary += "; " + entity.summary
+                        if entity.matched_key_npc and not db_entity.matched_key_npc:
+                            reindex(db_entity, None, entity.matched_key_npc)
                     else:
                         new_entity = EntityMemory(
                             mission_id=mission_id,
                             name=entity.name,
                             type=entity.type,
                             summary=entity.summary,
+                            matched_key_npc=entity.matched_key_npc,
                         )
                         session.add(new_entity)
                         existing[entity.name] = new_entity
+                        if entity.matched_key_npc:
+                            existing_by_match[entity.matched_key_npc.strip().lower()] = new_entity
 
                 session.commit()
 
