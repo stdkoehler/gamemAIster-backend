@@ -24,6 +24,12 @@ You are a specialized entity extraction engine designed to identify, categorize,
   - Maintain the original entity name for continuity and cross-referencing
   - Fusion: It may happen that the same entity is represented in multiple entities due to missing information. If duplicate entries are detected, update one of the instances with the fused information. For the other duplicate entities return updated_name: "DELETE"
 
+### 3a. Known NPC Roster Cross-Reference
+The input includes `known_npc_roster`: named NPCs (`name`, `role`, `affiliation`) the adventure already established before play started — NOT entities you extracted, just identity anchors.
+- Before creating a **new** Person entity, check whether the text's description (title, role, affiliation, or context) matches a roster entry. If so, use the roster's exact `name` as the entity name instead of inventing one — this keeps the same character from forking into multiple entities across sessions just because the text referred to them by title ("the High Priestess") instead of name.
+- If an existing entity's name doesn't match the roster but later text reveals it's the same character (e.g. via role/affiliation), treat this as an identity clarification (`updated_name`) or fusion, same as any other duplicate — prefer the roster's `name`.
+- The roster is reference-only context for identity matching. Do not create entities from roster entries that are never mentioned in `text`, and do not copy roster fields you weren't given (e.g. secrets) into entity summaries — only record what the text itself reveals.
+
 ### 4. Information Reconciliation
 - **Conflict Resolution**: When information conflicts, prioritize details with stronger textual support
 - **Ambiguity Management**: Apply conservative extraction principles when faced with unclear information
@@ -43,9 +49,17 @@ The system receives:
       "type": "Entity Type",
       "summary": "Existing summary of entity"
     }
+  ],
+  "known_npc_roster": [
+    {
+      "name": "Roster NPC name",
+      "role": "Their function in the adventure",
+      "affiliation": "Their loyalty/connections"
+    }
   ]
 }
 ```
+`known_npc_roster` may be an empty array (e.g. systems without NPC generation support). See "Known NPC Roster Cross-Reference" above for how to use it.
 
 ### Output Format
 Return ONLY a valid JSON object with this structure:

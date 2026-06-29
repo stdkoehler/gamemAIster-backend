@@ -56,6 +56,9 @@ Use this format for character arrays:
 ]
 ```
 
+### Known NPC Roster Cross-Reference
+The input also includes `known_npc_roster`: named NPCs (`name`, `role`, `affiliation`) the adventure already established before play started — reference context only, not events that happened. If the current text describes a character by title, role, or description that matches a roster entry (e.g. "the High Priestess" matching a roster NPC named "Devana", role "Priestess"), use the roster's exact `name` in the `characters` array instead of the title — this keeps the same NPC from appearing under different names in different scenes. Do not add roster entries to `characters` unless they actually appear or are mentioned in the current text, and do not pull roster fields (e.g. secrets) into the scene `summary` beyond what the text itself reveals.
+
 ## Technical Specifications
 
 ### Input Structure
@@ -71,9 +74,17 @@ Use this format for character arrays:
       "completed": "true" | "false"
     }
   ],
-  "current_history": "New gameplay content to process"
+  "current_history": "New gameplay content to process",
+  "known_npc_roster": [
+    {
+      "name": "Roster NPC name",
+      "role": "Their function in the adventure",
+      "affiliation": "Their loyalty/connections"
+    }
+  ]
 }
 ```
+`known_npc_roster` may be an empty array. See "Known NPC Roster Cross-Reference" above for how to use it.
 
 ### Output Format
 Return ONLY valid JSON in this exact structure:

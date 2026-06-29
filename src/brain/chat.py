@@ -85,6 +85,7 @@ class SummaryMemory:
         game_name: str,
         last_k: int,
         mission_id: int,
+        npc_roster: list[dict] | None = None,
         min_summary_tokens: int = 2048,
     ):
         self._llm_client = llm_client
@@ -94,6 +95,7 @@ class SummaryMemory:
         self._game_name = game_name
         self._last_k = last_k
         self._mission_id = mission_id
+        self._npc_roster_json = json.dumps(npc_roster or [])
         self._min_summary_tokens = min_summary_tokens
 
         self._summarize_lock = threading.Lock()
@@ -188,7 +190,7 @@ class SummaryMemory:
         last_scene_id = max([scene.id for scene in scenes], default=0)
         scenes_json = json.dumps([scene.model_dump() for scene in scenes])
 
-        scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text}}}\n\n**Output:**\n```'
+        scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text},"known_npc_roster": {roster}}}\n\n**Output:**\n```'
         messages = [
             Message(
                 role=MessageRole.SYSTEM,
@@ -199,7 +201,11 @@ class SummaryMemory:
             Message(
                 role=MessageRole.USER,
                 content=MessageContent(
-                    text=scene_input.format(scenes=scenes_json, text=text_interaction)
+                    text=scene_input.format(
+                        scenes=scenes_json,
+                        text=text_interaction,
+                        roster=self._npc_roster_json,
+                    )
                 ),
             ),
         ]
@@ -222,7 +228,7 @@ class SummaryMemory:
             ]
         )
 
-        entity_input = 'Extract entities from the following text and update the given entities:\n{{"text": {text},"entities": {entities}}}'
+        entity_input = 'Extract entities from the following text and update the given entities:\n{{"text": {text},"entities": {entities},"known_npc_roster": {roster}}}'
         messages = [
             Message(
                 role=MessageRole.SYSTEM,
@@ -234,7 +240,9 @@ class SummaryMemory:
                 role=MessageRole.USER,
                 content=MessageContent(
                     text=entity_input.format(
-                        text=text_interaction, entities=entities_json
+                        text=text_interaction,
+                        entities=entities_json,
+                        roster=self._npc_roster_json,
                     )
                 ),
             ),
@@ -474,6 +482,45 @@ class SummaryMemory:
         )
 
 
+def _get_npc_roster(mission_json: str, game_type) -> list[dict]:
+    """Extracts the adventure's named NPC roster (`keyNPCs`, or the system's
+    equivalent field) as lightweight identity anchors — name/role/affiliation
+    only, no secrets — so the entity and scene compressors can recognize that
+    a name or title mentioned in play refers to an NPC the adventure already
+    established, instead of inventing a duplicate, disconnected identity for
+    them. Mirrors the lookup `_flag_active_key_npcs` does for the story
+    prompt, but for the compression pipeline rather than the live turn.
+
+    Systems without an `NPC_CONFIGS` entry (e.g. Custom) or without a roster
+    field present return an empty list.
+    """
+    npc_cfg = NPC_CONFIGS.get(game_type)
+    if npc_cfg is None:
+        return []
+    try:
+        parsed = json.loads(mission_json)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(parsed, dict):
+        return []
+    roster = parsed.get(npc_cfg.npc_roster_key)
+    if not isinstance(roster, list):
+        return []
+
+    anchors = []
+    for entry in roster:
+        if not isinstance(entry, dict) or not entry.get("name"):
+            continue
+        anchors.append(
+            {
+                "name": entry["name"],
+                "role": entry.get("role", ""),
+                "affiliation": entry.get("affiliation", ""),
+            }
+        )
+    return anchors
+
+
 def _flag_active_key_npcs(
     mission_json: str, game_type, active_npcs: list[tuple[str, str]]
 ) -> str:
@@ -607,6 +654,7 @@ class SummaryChat:
             last_k=last_k,
             min_summary_tokens=min_summary_tokens,
             mission_id=mission_id,
+            npc_roster=_get_npc_roster(mission.description, mission.game_type),
         )
 
     @staticmethod
