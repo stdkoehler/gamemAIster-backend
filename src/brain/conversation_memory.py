@@ -10,18 +10,17 @@ import json
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Callable, TypeVar
+from typing import Any, TypeVar
 
-from pydantic import BaseModel, ValidationError, model_validator
+from pydantic import BaseModel, model_validator
 from pydantic_ai import Agent
 
-from src.llmclient.llm_parameters import LLMConfig, LLMLogicConfig
+from src.llmclient.llm_parameters import LLMLogicConfig
 from src.llmclient.llm_config_registry import LLMTask
 from src.llmclient.llm_client import LLMClientBase, MessageRole, MessageContent, Message
 from src.crud.crud import crud_instance
 
 from src.brain.data_types import Interaction, EntityResponse, Scene
-from src.brain.json_tools import extract_json_schema
 
 from src.utils.sqllogger import SQLLogger, LogType
 from src.utils.logger import configure_logger
@@ -29,7 +28,7 @@ from src.utils.logger import configure_logger
 _log = configure_logger("conversation_memory")
 logger = SQLLogger()
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 
 
 # ---------------------------------------------------------------------------
@@ -40,9 +39,25 @@ T = TypeVar("T")
 class _Recap(BaseModel):
     recap: str
 
+    @model_validator(mode="after")
+    def _validate_non_empty(self) -> "_Recap":
+        if not self.recap.strip():
+            raise ValueError(
+                "recap must not be empty — summarize current_events, don't return a blank string."
+            )
+        return self
+
 
 class _Digest(BaseModel):
     digest: str
+
+    @model_validator(mode="after")
+    def _validate_non_empty(self) -> "_Digest":
+        if not self.digest.strip():
+            raise ValueError(
+                "digest must not be empty — condense the ledger into a non-blank summary."
+            )
+        return self
 
 
 class _SceneListOutput(BaseModel):
@@ -149,7 +164,8 @@ class SummaryMemory:
         self._game_name = game_name
         self._last_k = logic_config.last_k
         self._mission_id = mission_id
-        self._npc_roster_json = json.dumps(npc_roster or [])
+        self._npc_roster = npc_roster or []
+        self._npc_roster_json = json.dumps(self._npc_roster)
         self._min_summary_tokens = logic_config.min_summary_tokens
         self._digest_budget_tokens = logic_config.digest_budget_tokens
 
@@ -193,58 +209,42 @@ class SummaryMemory:
         return self._state.digest if self._state.digest else self._state.summary
 
     # ------------------------------------------------------------------
-    # Shared LLM call + parse + log pattern
+    # Shared pydantic_ai run + log pattern
     # ------------------------------------------------------------------
 
-    def _call_structured(
+    def _run_agent(
         self,
-        messages: list[Message],
-        parse: Callable[[str], T],
+        agent: Agent[Any, T],
+        system_prompt: str,
+        user_prompt: str,
         log_type: LogType,
-        strip_think: bool = False,
     ) -> T:
         """
-        Call the LLM, extract JSON from the response, validate it with `parse`,
-        and log the outcome. Raises ValueError on any parse failure.
-        `strip_think` removes <think>…</think> blocks before JSON extraction —
-        needed when a model embeds visible thinking before the JSON output.
-
-        Use this for fire-and-forget background tasks (summarization) where
-        logging parse failures matters more than retry resilience.
-        For synchronous blocking calls that should retry on failure, use
-        parse_with_retry from structured_output instead.
+        Runs a pre-built pydantic_ai Agent and logs the outcome the same way
+        for all four compression calls. Building the Agent — its output_type
+        and any extra output validators — stays at each call site, since
+        both differ per call; this only covers the mechanical run/log/error
+        part that doesn't.
         """
-        log_prompt = "\n\n".join(msg.content.text for msg in messages)
-        response = self._llm_client.chat_completion(
-            messages=messages,
-            reasoning=True,
-            config_override=LLMConfig(max_tokens=8192),
-            task=LLMTask.SUMMARY,
-        )
-        text = (
-            re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL)
-            if strip_think
-            else response
-        )
-
         try:
-            json_str = extract_json_schema(text)
-        except ValueError as exc:
-            logger.log_llm_call(log_type, llm_input=log_prompt, llm_output=response, processed_output="JSON Parsing Error")
-            raise ValueError(
-                f"LLM response does not contain valid JSON:\n{text}"
-            ) from exc
+            result = agent.run_sync(user_prompt)
+        except Exception as exc:
+            logger.log_llm_call(
+                log_type,
+                llm_input=f"{system_prompt}\n\n{user_prompt}",
+                llm_output=str(exc),
+                processed_output="pydantic_ai error",
+            )
+            raise ValueError(f"pydantic_ai call failed ({log_type}): {exc}") from exc
 
-        try:
-            result = parse(json_str)
-        except (json.decoder.JSONDecodeError, ValidationError, KeyError) as exc:
-            logger.log_llm_call(log_type, llm_input=log_prompt, llm_output=response, extracted_json=json_str, processed_output="Validation Error")
-            raise ValueError(
-                "LLM response is not valid JSON or doesn't validate as pydantic model"
-            ) from exc
-
-        logger.log_llm_call(log_type, llm_input=log_prompt, llm_output=response, extracted_json=json_str, processed_output=json_str)
-        return result  # type: ignore[return-value]
+        logger.log_llm_call(
+            log_type,
+            llm_input=f"{system_prompt}\n\n{user_prompt}",
+            llm_output=result.all_messages_json().decode("utf-8"),
+            extracted_json=result.output.model_dump_json(),
+            processed_output=result.output.model_dump_json(),
+        )
+        return result.output
 
     # ------------------------------------------------------------------
     # Structured extraction methods
@@ -254,17 +254,13 @@ class SummaryMemory:
         """
         Returns the scene summary of the chat conversation.
 
-        Pilot: uses pydantic_ai instead of _call_structured, specifically to
-        get its validator-driven retry loop for the Single Open Scene
-        Invariant (see text_scene_prompt_examples.txt and
-        _SceneListOutput._validate_single_open_scene) — if the model returns
-        more than one incomplete scene, pydantic_ai automatically re-prompts
-        with that exact reason attached, instead of us either trusting the
-        prompt alone or silently patching the result in code. See
-        docs/conversation_memory.html.
-
-        Returns:
-            str: The scene summary of the chat conversation.
+        Uses pydantic_ai specifically to get its validator-driven retry loop
+        for the Single Open Scene Invariant (see text_scene_prompt_examples.txt
+        and _SceneListOutput._validate_single_open_scene) — if the model
+        returns more than one incomplete scene, pydantic_ai automatically
+        re-prompts with that exact reason attached, instead of us either
+        trusting the prompt alone or silently patching the result in code.
+        See docs/conversation_memory.html.
         """
         scenes = crud_instance.get_scenes(self._mission_id)
         last_scene_id = max([scene.id for scene in scenes], default=0)
@@ -281,63 +277,48 @@ class SummaryMemory:
         model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
         agent = Agent(model, output_type=_SceneListOutput, system_prompt=system_prompt)
 
-        try:
-            result = agent.run_sync(user_prompt)
-        except Exception as exc:
-            logger.log_llm_call(
-                LogType.SCENE,
-                llm_input=f"{system_prompt}\n\n{user_prompt}",
-                llm_output=str(exc),
-                processed_output="pydantic_ai error",
-            )
-            raise ValueError(f"pydantic_ai scene_summary call failed: {exc}") from exc
-
-        scene_list = result.output.scenes
-        logger.log_llm_call(
-            LogType.SCENE,
-            llm_input=f"{system_prompt}\n\n{user_prompt}",
-            llm_output=result.all_messages_json().decode("utf-8"),
-            extracted_json=json.dumps([s.model_dump() for s in scene_list]),
-            processed_output=json.dumps([s.model_dump() for s in scene_list]),
-        )
+        output = self._run_agent(agent, system_prompt, user_prompt, LogType.SCENE)
 
         # only update last scene and newly created scenes
-        return [scene for scene in scene_list if scene.id >= last_scene_id]
+        return [scene for scene in output.scenes if scene.id >= last_scene_id]
 
     def extract_entities(self, text_interaction: str) -> EntityResponse:
+        """
+        Extracts/updates entities from `text_interaction`.
 
-        entities_json = json.dumps(
-            [
-                entity.model_dump()
-                for entity in crud_instance.get_entities(self._mission_id)
-            ]
-        )
+        EntityResponse._validate_references() enforces the reference-integrity
+        invariants (matched_key_npc must be a real roster entry,
+        updated_entities[].name must be a previously known entity) — it's a
+        model_validator on EntityResponse itself, not an
+        @agent.output_validator here, since the rule belongs with the model
+        it's validating. It needs roster/known-name context the model's own
+        fields don't carry, so that context is passed in via
+        validation_context below, which pydantic_ai threads through to
+        pydantic's ValidationInfo.context. See docs/conversation_memory.html.
+        """
+        known_entities = crud_instance.get_entities(self._mission_id)
+        entities_json = json.dumps([entity.model_dump() for entity in known_entities])
 
         entity_input = 'Extract entities from the following text and update the given entities:\n{{"text": {text},"entities": {entities},"known_npc_roster": {roster}}}'
-        messages = [
-            Message(
-                role=MessageRole.SYSTEM,
-                content=MessageContent(
-                    text=self._entity_prompt.replace("__RPG__", self._game_name)
-                ),
-            ),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=entity_input.format(
-                        text=text_interaction,
-                        entities=entities_json,
-                        roster=self._npc_roster_json,
-                    )
-                ),
-            ),
-        ]
-
-        return self._call_structured(
-            messages=messages,
-            parse=EntityResponse.model_validate_json,
-            log_type=LogType.ENTITY,
+        system_prompt = self._entity_prompt.replace("__RPG__", self._game_name)
+        user_prompt = entity_input.format(
+            text=text_interaction,
+            entities=entities_json,
+            roster=self._npc_roster_json,
         )
+
+        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
+        agent = Agent(
+            model,
+            output_type=EntityResponse,
+            system_prompt=system_prompt,
+            validation_context={
+                "known_entity_names": {e.name.strip().lower() for e in known_entities},
+                "roster_names": {r["name"].strip().lower() for r in self._npc_roster},
+            },
+        )
+
+        return self._run_agent(agent, system_prompt, user_prompt, LogType.ENTITY)
 
     def summarize(self, text_interaction: str) -> str:
         """
@@ -351,35 +332,21 @@ class SummaryMemory:
         structural guarantee rather than an instruction the model has to
         honor. See docs/conversation_memory.html.
         """
-
         summary_input = (
             'Summarize the following text:\n{{"story_so_far": {digest},'
             '"most_recent_events": {recent},"current_events": {current}}}'
         )
-        messages = [
-            Message(
-                role=MessageRole.SYSTEM,
-                content=MessageContent(
-                    text=self._summary_prompt.replace("__RPG__", self._game_name)
-                ),
-            ),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=summary_input.format(
-                        digest=self._state.digest,
-                        recent=_last_paragraph(self._state.summary),
-                        current=text_interaction,
-                    )
-                ),
-            ),
-        ]
-
-        return self._call_structured(
-            messages=messages,
-            parse=lambda s: _Recap.model_validate_json(s).recap,
-            log_type=LogType.SUMMARY,
+        system_prompt = self._summary_prompt.replace("__RPG__", self._game_name)
+        user_prompt = summary_input.format(
+            digest=self._state.digest,
+            recent=_last_paragraph(self._state.summary),
+            current=text_interaction,
         )
+
+        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
+        agent = Agent(model, output_type=_Recap, system_prompt=system_prompt)
+
+        return self._run_agent(agent, system_prompt, user_prompt, LogType.SUMMARY).recap
 
     def _refresh_digest(self, ledger: str) -> str:
         """
@@ -394,24 +361,13 @@ class SummaryMemory:
             'Condense the following story log into a short "story so far" digest:\n'
             '{{"ledger": {ledger}}}'
         )
-        messages = [
-            Message(
-                role=MessageRole.SYSTEM,
-                content=MessageContent(
-                    text=self._digest_prompt.replace("__RPG__", self._game_name)
-                ),
-            ),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(text=digest_input.format(ledger=ledger)),
-            ),
-        ]
+        system_prompt = self._digest_prompt.replace("__RPG__", self._game_name)
+        user_prompt = digest_input.format(ledger=ledger)
 
-        return self._call_structured(
-            messages=messages,
-            parse=lambda s: _Digest.model_validate_json(s).digest,
-            log_type=LogType.DIGEST,
-        )
+        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
+        agent = Agent(model, output_type=_Digest, system_prompt=system_prompt)
+
+        return self._run_agent(agent, system_prompt, user_prompt, LogType.DIGEST).digest
 
     # ------------------------------------------------------------------
     # History management

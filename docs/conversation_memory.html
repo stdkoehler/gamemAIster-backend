@@ -257,6 +257,19 @@
 
   <h2>2. The three lenses <span class="badge done">Implemented</span></h2>
 
+  <div class="callout note">
+    All four compression LLM calls (entities, scenes, summary recap, digest refresh) are built on
+    <code>pydantic_ai.Agent</code> rather than a hand-rolled call-and-parse helper — what started as a single-call
+    pilot on <code>scene_summary()</code> (see §6's earlier framing in commit history) is now how every structured
+    call in this subsystem works. <code>SummaryMemory._run_agent()</code> is the one shared run/log/error-wrapping
+    helper; building the <code>Agent</code> — its output type and any extra validators — stays at each call site,
+    since both differ per call. <code>LLMClientBase.to_pydantic_ai_model()</code> (<code>src/llmclient/llm_client.py</code>)
+    maps any of our LLM clients to the equivalent pydantic_ai <code>Model</code>, overridden per subclass — every
+    concrete client (<code>LLMClientLocal</code>, <code>LLMClientDeepSeek</code>, the Anthropic-compatible clients,
+    <code>LLMClientOpenRouter</code>) has one. The old <code>_call_structured()</code> helper (manual JSON extraction,
+    no retries) is gone entirely.
+  </div>
+
   <div class="lenses">
     <div class="lens entity">
       <h4>Entities</h4>
@@ -265,35 +278,50 @@
         <li>One row per named person/place/item/faction/etc., with a running <code>summary</code></li>
         <li>Deduplicates and fuses entities the model realizes are the same thing</li>
         <li>Cross-references the mission's NPC roster so a character isn't re-invented under a different name</li>
+        <li><strong>Reference-integrity validator</strong>: a <code>@model_validator(mode="after")</code> directly
+        on <code>EntityResponse</code> (<code>data_types.py</code>) rejects two things the prompt alone can't
+        enforce — a <code>matched_key_npc</code> that doesn't name a real <code>known_npc_roster</code> entry (the
+        roster-merge logic in <code>crud.update_entities()</code> trusts this field completely, no fuzzy fallback,
+        so a hallucinated value would silently corrupt the cross-reference), and an <code>updated_entities[].name</code>
+        that doesn't match any previously known entity (today that update is just silently dropped — the row it was
+        supposed to touch doesn't exist, and nothing told the model). The rule lives on the model it validates, same
+        as the scene/recap/digest validators below — but it needs context the model's own fields don't carry (the
+        roster, the previously known entity names), so <code>extract_entities()</code> passes that in via
+        <code>validation_context</code> on the <code>Agent</code>, which pydantic_ai threads through to pydantic's
+        <code>ValidationInfo.context</code>. A plain <code>ValueError</code> is enough to trigger a retry, same as
+        every other validator here.</li>
       </ul>
       <div class="files">
-        <code>extract_entities()</code> in <code>conversation_memory.py</code><br>
+        <code>extract_entities()</code> in <code>conversation_memory.py</code>; validator on
+        <code>EntityResponse</code> in <code>data_types.py</code><br>
         <code>text_entity_prompt.txt</code><br>
-        model: <code>Entity</code> / <code>EntityResponse</code> in <code>data_types.py</code>
+        model: <code>Entity</code> / <code>EntityResponse</code> in <code>data_types.py</code> (used directly as
+        the pydantic_ai <code>output_type</code> — its field names already match the prompt's literal output format,
+        so no wrapper type was needed here)
       </div>
     </div>
     <div class="lens scene">
-      <h4>Scenes <span class="badge todo">Pilot: pydantic_ai</span></h4>
+      <h4>Scenes</h4>
       <span class="tag">"What happened, in order?" — structured chronological log</span>
       <ul>
         <li>Splits play into discrete scenes (location/time/focus changes)</li>
         <li>Each scene: title, location, characters present, exhaustive summary, completed flag</li>
         <li>Most "blow-by-blow" detail lives here, not in the narrative summary</li>
         <li><strong>Single Open Scene Invariant</strong>: at most one scene may be incomplete at a time (see the
-        prompt's "Final Scene Rule" — previously buggy, see commit history). As of this pilot, the invariant is
-        also enforced in code: a <code>@model_validator(mode="after")</code> directly on the pydantic_ai output
-        type raises if the model returns more than one open scene, and pydantic_ai automatically retries with that
-        exact reason fed back to the model — no separate <code>@agent.output_validator</code> needed; pydantic_ai
-        already retries on any validation failure surfaced while parsing the structured output.</li>
+        prompt's "Final Scene Rule" — previously buggy, see commit history). Enforced in code too: a
+        <code>@model_validator(mode="after")</code> directly on the pydantic_ai output type raises if the model
+        returns more than one open scene, and pydantic_ai automatically retries with that exact reason fed back to
+        the model — no separate <code>@agent.output_validator</code> needed; pydantic_ai already retries on any
+        validation failure surfaced while parsing the structured output.</li>
       </ul>
       <div class="files">
-        <code>scene_summary()</code> in <code>conversation_memory.py</code> — now built on
-        <code>pydantic_ai.Agent</code> instead of <code>_call_structured()</code>; its output type
-        <code>_SceneListOutput</code> carries the invariant validator directly<br>
-        <code>LLMClientBase.to_pydantic_ai_model()</code> + <code>._to_pydantic_ai_settings()</code> —
-        <code>src/llmclient/llm_client.py</code> — maps a client to the equivalent pydantic_ai <code>Model</code>,
-        overridden per subclass (pilot scope: <code>LLMClientLocal</code>, <code>LLMClientDeepSeek</code>,
-        Anthropic-compatible clients only — base implementation raises <code>NotImplementedError</code> otherwise)<br>
+        <code>scene_summary()</code> in <code>conversation_memory.py</code> — output type
+        <code>_SceneListOutput</code> wraps <code>list[Scene]</code> in a <code>scenes</code> field (not a bare
+        <code>list[Scene]</code>) specifically because, for models without native tool-calling, pydantic_ai's
+        prompted-output fallback schema note would otherwise say <code>{"response": [...]}</code> while our own
+        prompt explicitly says <code>{"scenes": [...]}</code> — two competing instructions in one prompt; matching
+        the wrapper key to what the prompt already asks for removes the conflict instead of fighting it (found via a
+        real failure against a live local model, see commit history)<br>
         <code>text_scene_prompt_examples.txt</code><br>
         model: <code>Scene</code> in <code>data_types.py</code>
       </div>
@@ -305,10 +333,14 @@
         <li>One growing block of prose, append-only by design</li>
         <li>Never rewrites/removes earlier text — only adds to it</li>
         <li>The piece most at risk of unbounded growth (see §5)</li>
+        <li>Both <code>summarize()</code>'s recap and <code>_refresh_digest()</code>'s digest carry a trivial
+        <code>@model_validator(mode="after")</code> rejecting a blank/whitespace-only result — cheap insurance
+        against a stray empty paragraph silently landing in the ledger.</li>
       </ul>
       <div class="files">
-        <code>summarize()</code> in <code>conversation_memory.py</code><br>
-        <code>text_summary_prompt.txt</code>
+        <code>summarize()</code> + <code>_refresh_digest()</code> in <code>conversation_memory.py</code> — output
+        types <code>_Recap</code> / <code>_Digest</code><br>
+        <code>text_summary_prompt.txt</code> / <code>text_digest_prompt.txt</code>
       </div>
     </div>
   </div>
@@ -855,9 +887,11 @@
   <table>
     <tr><th>Concern</th><th>Where</th></tr>
     <tr><td>Compression prompts bundle</td><td><code>CompressionPrompts</code> — <code>src/brain/conversation_memory.py</code></td></tr>
+    <tr><td>Shared pydantic_ai run/log helper</td><td><code>SummaryMemory._run_agent()</code> — <code>src/brain/conversation_memory.py</code></td></tr>
+    <tr><td>Client → pydantic_ai Model mapping</td><td><code>LLMClientBase.to_pydantic_ai_model()</code> + <code>._to_pydantic_ai_settings()</code> — <code>src/llmclient/llm_client.py</code>, overridden per concrete client</td></tr>
     <tr><td>Trigger / orchestration</td><td><code>SummaryMemory._try_summarize()</code> — <code>src/brain/conversation_memory.py</code></td></tr>
-    <tr><td>Entity extraction</td><td><code>SummaryMemory.extract_entities()</code> + <code>text_entity_prompt.txt</code></td></tr>
-    <tr><td>Scene summarization (pydantic_ai pilot)</td><td><code>SummaryMemory.scene_summary()</code> + <code>text_scene_prompt_examples.txt</code> + <code>LLMClientBase.to_pydantic_ai_model()</code> in <code>src/llmclient/llm_client.py</code></td></tr>
+    <tr><td>Entity extraction + reference-integrity validator</td><td><code>SummaryMemory.extract_entities()</code> + <code>text_entity_prompt.txt</code></td></tr>
+    <tr><td>Scene summarization + Single Open Scene validator</td><td><code>SummaryMemory.scene_summary()</code> + <code>text_scene_prompt_examples.txt</code></td></tr>
     <tr><td>Narrative recap (per-chunk, not the whole ledger)</td><td><code>SummaryMemory.summarize()</code> + <code>text_summary_prompt.txt</code></td></tr>
     <tr><td>Ledger append (deterministic, no LLM)</td><td><code>SummaryMemory._try_summarize()</code> — <code>ledger = ledger + recap</code></td></tr>
     <tr><td>Digest refresh (bounded "story so far")</td><td><code>SummaryMemory._refresh_digest()</code> + <code>text_digest_prompt.txt</code></td></tr>
