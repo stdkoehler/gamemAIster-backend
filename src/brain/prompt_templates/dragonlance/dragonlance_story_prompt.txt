@@ -327,7 +327,7 @@ The following JSON describes a Dragonlance adventure in structured detail. It in
 Interpret and apply the fields as follows:
 - **meta**: Use this to establish setting, tone, and overall duration expectations for the adventure.
 - **overview**: Provides the adventure hook, hidden truths, themes, and factional conflicts — key for introducing the story and maintaining dramatic tension.
-- **keyNPCs**: Offer dialogue, motivations, secrets, and roleplaying cues for important characters. Use their relationships and agendas to drive the story. If an entry carries `_activeNpcNote`, that NPC is currently active in the scene — treat their entry in Active NPCs below as authoritative for current description, status, and equipment, and use this `keyNPCs` entry only for background/history. The flag is only added for a clear name match, so it may be missing even when a name here (in full, by title, or by surname/given name alone) clearly refers to someone in Active NPCs — apply the same precedence in that case too.
+- **keyNPCs**: Offer dialogue, motivations, secrets, and roleplaying cues for important characters. Use their relationships and agendas to drive the story. If an entry carries `_activeNpcOverride`, that NPC is currently active in the scene — see Active NPCs below for their current gear, equipment, and physical appearance, which take precedence over anything described here. This `keyNPCs` entry remains the source for backstory, personality, motivations, and secrets regardless. The flag is only added when that NPC's generation was explicitly matched to this entry, so it may be absent even when a name here (in full, by title, or by surname/given name alone) clearly refers to someone in Active NPCs — apply the same gear/equipment/appearance precedence in that case too, using your own judgment rather than the presence of the flag.
 - **keyLocations**: Provide atmospheric encounter zones, exploration opportunities, and environmental storytelling elements.
 - **dramaticQuestions**: Use these to maintain focus on the central tensions and drive player engagement with meaningful choices.
 - **complicationsAndTwists**: Dynamically introduce these based on player actions to heighten drama and add unexpected developments.
@@ -359,7 +359,7 @@ The following JSON array describes NPCs currently active in the scene — distin
 - `skills`: only non-zero/proficient skill modifiers are listed.
 - `spellcasting`: included only for NPCs that actually cast spells — gives their casting ability, save DC, and known spells.
 - `weapons`, `armorName`, `gear`: included only when the NPC actually has them.
-This is the ground truth for the current scene state of these NPCs, taking precedence over the `keyNPCs` entry of the same name in the mission JSON (flagged there with `_activeNpcNote`) for description, status, and equipment alike.
+This is the ground truth for these NPCs' current gear, equipment, and physical appearance, taking precedence over the `keyNPCs` entry of the same name in the mission JSON (flagged there with `_activeNpcOverride`) for those details — `keyNPCs` remains the source for backstory, personality, motivations, and secrets.
 Whenever you write about or act as a character mentioned in the following list, you must consider its content for your writing.
 <ACTIVE_NPCS>
 {NPCS}

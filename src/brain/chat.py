@@ -474,38 +474,34 @@ class SummaryMemory:
         )
 
 
-def _name_tokens(name: str) -> frozenset[str]:
-    return frozenset(re.sub(r"[^\w\s]", "", name.lower()).split())
-
-
-def _names_could_be_same(a: frozenset[str], b: frozenset[str]) -> bool:
-    """True if one name's tokens are a subset of the other's, e.g. "Vorath"
-    or "Inquisitor" against "Inquisitor Vorath Bloodstone"."""
-    return bool(a) and bool(b) and (a <= b or b <= a)
-
-
 def _flag_active_key_npcs(
-    mission_json: str, game_type, active_npcs: list[tuple[str, str | None]]
+    mission_json: str, game_type, active_npcs: list[tuple[str, str]]
 ) -> str:
     """Annotates `keyNPCs` entries (or the system's equivalent roster field)
     that correspond to a currently-active NPC, so the model isn't handed two
     silently conflicting descriptions of the same character — the adventure's
     static roster entry, and the live, scene-accurate Active NPCs entry.
 
-    `active_npcs` is a list of `(name, matched_key_npc)` pairs, one per
-    active NPC. `matched_key_npc` is the roster entry name the NPC Profiler
-    matched at generation time (see `Gamemaster.generate_npc` /
+    `active_npcs` is a list of `(name, matched_key_npc)` pairs for active
+    NPCs that have a recorded match — the roster entry name the NPC
+    Profiler matched at generation time (see `Gamemaster.generate_npc` /
     `_validate_matched_key_npc`), already confirmed against this same
-    roster — so it's used as a direct, trusted lookup with no fuzziness.
+    roster. This is a direct, trusted lookup with no fuzziness: there is no
+    name-based heuristic here, deliberately — a "Temple Guard" sharing a word
+    with an unrelated "Temple Priest" roster entry is exactly the kind of
+    false positive that kind of matching invites. An active NPC with no
+    recorded match (manually-created sheets, or ones generated before this
+    field existed) is simply not flagged; the story prompt instructs the
+    model to recognize a name correspondence itself in that case.
 
-    Active NPCs with no recorded match (manually-created sheets, or ones
-    generated before this field existed) fall back to a token-subset name
-    match (a `keyNPCs` entry named "Vorath" or "Inquisitor" matches an
-    active NPC named "Inquisitor Vorath Bloodstone", and vice versa). A
-    `keyNPCs` entry or active NPC name that partially matches more than one
-    NPC on the other side is inherently ambiguous (e.g. two active
-    "Inquisitor"s, or a roster with both "Vorath" and "Bloodstone" as
-    distinct characters) — those are left unflagged rather than guessed at.
+    Two active NPCs recording the same `matched_key_npc` (e.g. the same
+    character generated twice under different sheet names) makes that
+    match ambiguous too — dropped rather than guessed at.
+
+    The flag is scoped to gear/equipment/appearance only, not personality —
+    the Active NPC's `description` is a thin profiler-generated blurb, while
+    `keyNPCs` carries the richer motivations/secrets/relationships that
+    should keep driving roleplay regardless of this flag.
 
     Systems without an `NPC_CONFIGS` entry (e.g. Custom) or without a roster
     field present are left untouched.
@@ -525,56 +521,27 @@ def _flag_active_key_npcs(
     if not isinstance(roster, list):
         return mission_json
 
-    # Group by matched_key_npc first so two active NPCs claiming the same
-    # roster entry (e.g. the same character generated twice under different
-    # sheet names) are dropped as ambiguous rather than letting one silently
-    # overwrite the other.
-    trusted_groups: dict[str, list[str]] = {}
+    matched_groups: dict[str, list[str]] = {}
     for name, matched in active_npcs:
-        if matched:
-            trusted_groups.setdefault(matched.strip().lower(), []).append(name)
-    trusted_matches = {
-        matched: names[0] for matched, names in trusted_groups.items() if len(names) == 1
-    }
-    fallback_tokens = {
-        name: _name_tokens(name) for name, matched in active_npcs if not matched
-    }
+        matched_groups.setdefault(matched.strip().lower(), []).append(name)
+    unique_matches = {key: names[0] for key, names in matched_groups.items() if len(names) == 1}
+    if not unique_matches:
+        return mission_json
 
-    entry_matches: dict[int, str] = {}
-    for idx, entry in enumerate(roster):
+    changed = False
+    for entry in roster:
         if not isinstance(entry, dict):
             continue
         entry_name = str(entry.get("name", "")).strip().lower()
-        if not entry_name:
+        if not entry_name or entry_name not in unique_matches:
             continue
-        if entry_name in trusted_matches:
-            entry_matches[idx] = trusted_matches[entry_name]
-            continue
-        entry_tok = _name_tokens(entry_name)
-        candidates = [
-            name for name, tok in fallback_tokens.items() if _names_could_be_same(entry_tok, tok)
-        ]
-        if len(candidates) == 1:
-            entry_matches[idx] = candidates[0]
-        # 0 or >1 candidates: ambiguous or no match, leave unflagged.
-
-    # An active NPC resolving to more than one keyNPCs entry is itself
-    # ambiguous (e.g. the roster lists both "Vorath" and "Bloodstone" as
-    # distinct characters) — drop those rather than guess which is right.
-    name_use_count: dict[str, int] = {}
-    for name in entry_matches.values():
-        name_use_count[name] = name_use_count.get(name, 0) + 1
-    entry_matches = {idx: name for idx, name in entry_matches.items() if name_use_count[name] == 1}
-
-    if not entry_matches:
-        return mission_json
-
-    for idx in entry_matches:
-        roster[idx]["_activeNpcNote"] = (
-            "This NPC is currently active in the scene. Treat the "
-            "matching entry in Active NPCs as authoritative for their "
-            "current description, status, and equipment — this entry is "
-            "background/history only."
+        changed = True
+        active_name = unique_matches[entry_name]
+        entry["_activeNpcOverride"] = (
+            f'This NPC is currently active in the scene as "{active_name}" in Active NPCs '
+            "below. Active NPCs is authoritative there for current gear, equipment, and "
+            "physical appearance. This keyNPCs entry remains the source for backstory, "
+            "personality, motivations, and secrets."
         )
 
     return json.dumps(parsed, ensure_ascii=False, indent=2)
@@ -613,9 +580,9 @@ class SummaryChat:
         self._detailed_background = mission.detailed_background
         sheets = crud_instance.get_character_sheets(mission_id=mission_id)
         active_npcs = [
-            (s.name.strip().lower(), s.matched_key_npc)
+            (s.name, s.matched_key_npc)
             for s in sheets
-            if s.is_npc and s.is_active
+            if s.is_npc and s.is_active and s.matched_key_npc
         ]
         self._mission = _flag_active_key_npcs(mission.description, mission.game_type, active_npcs)
         self._character_summary = to_party_summary(
