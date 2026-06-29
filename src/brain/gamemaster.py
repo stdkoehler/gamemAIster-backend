@@ -13,6 +13,7 @@ from pathlib import Path
 
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
+from src.brain.conversation_memory import CompressionPrompts
 from src.brain.npc_models import NpcProfile
 from src.brain.npc_equipment.catalog import get_npc_equipment_categories, npc_equipment_candidates
 from src.brain.system_registry import GAME_CONFIGS, NPC_CONFIGS, merge_npc
@@ -338,18 +339,25 @@ class Gamemaster:
         self._mission_prompt_non_oracle = _load_prompt(prompt_dir / cfg.mission_prompt_non_oracle)
 
         with open(prompt_dir / "text_summary_prompt.txt", "r", encoding="utf-8") as f:
-            self._summary_prompt = f.read()
+            summary_prompt = f.read()
 
         with open(prompt_dir / "text_digest_prompt.txt", "r", encoding="utf-8") as f:
-            self._digest_prompt = f.read()
+            digest_prompt = f.read()
 
         with open(prompt_dir / "text_entity_prompt.txt", "r", encoding="utf-8") as f:
-            self._entity_prompt = f.read()
+            entity_prompt = f.read()
 
         with open(
             prompt_dir / "text_scene_prompt_examples.txt", "r", encoding="utf-8"
         ) as f:
-            self._scene_prompt = f.read()
+            scene_prompt = f.read()
+
+        self._compression_prompts = CompressionPrompts(
+            summary=summary_prompt,
+            digest=digest_prompt,
+            entity=entity_prompt,
+            scene=scene_prompt,
+        )
 
         # currently we provide the complete history to the LLM
         # moving to RAG style summary could be better for longer sessions
@@ -377,14 +385,9 @@ class Gamemaster:
         chat = SummaryChat(
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
-            last_k=logic_config.last_k,  # type: ignore
-            min_summary_tokens=logic_config.min_summary_tokens,  # type: ignore
-            digest_budget_tokens=logic_config.digest_budget_tokens,  # type: ignore
+            logic_config=logic_config,
             story_prompt=self._story_prompt,
-            summary_prompt=self._summary_prompt,
-            digest_prompt=self._digest_prompt,
-            entity_prompt=self._entity_prompt,
-            scene_prompt=self._scene_prompt,
+            prompts=self._compression_prompts,
             summary_provider_prompt=self._summary_provider_prompt,
             game_name=self._game_name,
             mission_id=prompt.mission_id,

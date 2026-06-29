@@ -235,7 +235,7 @@
   <p class="subtitle">How gamemAIster keeps a long-running TTRPG session inside a finite LLM context window without losing the campaign's history.</p>
 
   <div class="callout note">
-    <strong>Read this if:</strong> you're onboarding, or you haven't touched <code>src/brain/chat.py</code> in a year and need
+    <strong>Read this if:</strong> you're onboarding, or you haven't touched <code>src/brain/conversation_memory.py</code> in a year and need
     to remember why there are three separate compression mechanisms instead of one.
     <br><br>
     <strong>Accuracy note:</strong> file/line references below reflect the code as of writing. They drift — treat them as a map to start
@@ -267,7 +267,7 @@
         <li>Cross-references the mission's NPC roster so a character isn't re-invented under a different name</li>
       </ul>
       <div class="files">
-        <code>extract_entities()</code> in <code>chat.py</code><br>
+        <code>extract_entities()</code> in <code>conversation_memory.py</code><br>
         <code>text_entity_prompt.txt</code><br>
         model: <code>Entity</code> / <code>EntityResponse</code> in <code>data_types.py</code>
       </div>
@@ -281,7 +281,7 @@
         <li>Most "blow-by-blow" detail lives here, not in the narrative summary</li>
       </ul>
       <div class="files">
-        <code>scene_summary()</code> in <code>chat.py</code><br>
+        <code>scene_summary()</code> in <code>conversation_memory.py</code><br>
         <code>text_scene_prompt_examples.txt</code><br>
         model: <code>Scene</code> in <code>data_types.py</code>
       </div>
@@ -295,7 +295,7 @@
         <li>The piece most at risk of unbounded growth (see §5)</li>
       </ul>
       <div class="files">
-        <code>summarize()</code> in <code>chat.py</code><br>
+        <code>summarize()</code> in <code>conversation_memory.py</code><br>
         <code>text_summary_prompt.txt</code>
       </div>
     </div>
@@ -364,7 +364,7 @@
       merges onto the same row instead of forking a duplicate.
     </li>
     <li>
-      The live story prompt has an analogous, separate mechanism — <code>_flag_active_key_npcs()</code> annotates the
+      The live story prompt has an analogous, separate mechanism — <code>flag_active_key_npcs()</code> annotates the
       mission JSON's roster entries with <code>_activeNpcOverride</code> when an active NPC sheet is matched, so the
       model isn't handed two silently conflicting descriptions of the same character.
     </li>
@@ -634,19 +634,26 @@
   </div>
 
   <h2>6. Quick file map</h2>
+  <p>
+    The subsystem is split across three files by concern: <code>conversation_memory.py</code> (the compression
+    engine), <code>npc_context.py</code> (roster cross-referencing), <code>chat.py</code> (turn orchestration only —
+    <code>SummaryChat</code>). <code>chat.py</code> imports from the other two; neither of those imports back from it.
+  </p>
   <table>
     <tr><th>Concern</th><th>Where</th></tr>
-    <tr><td>Trigger / orchestration</td><td><code>SummaryMemory._try_summarize()</code> — <code>src/brain/chat.py</code></td></tr>
+    <tr><td>Compression prompts bundle</td><td><code>CompressionPrompts</code> — <code>src/brain/conversation_memory.py</code></td></tr>
+    <tr><td>Trigger / orchestration</td><td><code>SummaryMemory._try_summarize()</code> — <code>src/brain/conversation_memory.py</code></td></tr>
     <tr><td>Entity extraction</td><td><code>SummaryMemory.extract_entities()</code> + <code>text_entity_prompt.txt</code></td></tr>
     <tr><td>Scene summarization</td><td><code>SummaryMemory.scene_summary()</code> + <code>text_scene_prompt_examples.txt</code></td></tr>
     <tr><td>Narrative recap (per-chunk, not the whole ledger)</td><td><code>SummaryMemory.summarize()</code> + <code>text_summary_prompt.txt</code></td></tr>
     <tr><td>Ledger append (deterministic, no LLM)</td><td><code>SummaryMemory._try_summarize()</code> — <code>ledger = ledger + recap</code></td></tr>
     <tr><td>Digest refresh (bounded "story so far")</td><td><code>SummaryMemory._refresh_digest()</code> + <code>text_digest_prompt.txt</code></td></tr>
-    <tr><td>Last-paragraph grounding (no LLM)</td><td><code>_last_paragraph()</code> — <code>src/brain/chat.py</code></td></tr>
+    <tr><td>Last-paragraph grounding (no LLM)</td><td><code>_last_paragraph()</code> — <code>src/brain/conversation_memory.py</code></td></tr>
     <tr><td>What gets injected (digest or raw ledger)</td><td><code>SummaryMemory.injected_summary</code></td></tr>
+    <tr><td>Turn orchestration (system prompt, streaming)</td><td><code>SummaryChat</code> — <code>src/brain/chat.py</code></td></tr>
     <tr><td>Reinjection into story prompt</td><td><code>SummaryChat._build_messages()</code> + <code>summary_provider.txt</code></td></tr>
-    <tr><td>NPC roster cross-reference</td><td><code>_get_npc_roster()</code>, <code>known_npc_roster</code> input field</td></tr>
-    <tr><td>Active-NPC override for live story prompt</td><td><code>_flag_active_key_npcs()</code> — <code>src/brain/chat.py</code></td></tr>
+    <tr><td>NPC roster cross-reference</td><td><code>get_npc_roster()</code> — <code>src/brain/npc_context.py</code>, <code>known_npc_roster</code> input field</td></tr>
+    <tr><td>Active-NPC override for live story prompt</td><td><code>flag_active_key_npcs()</code> — <code>src/brain/npc_context.py</code></td></tr>
     <tr><td>Data models</td><td><code>Entity</code>, <code>UpdatedEntity</code>, <code>EntityResponse</code>, <code>Scene</code>, <code>Interaction</code> — <code>src/brain/data_types.py</code></td></tr>
     <tr><td>Persistence (ORM)</td><td><code>EntityMemory</code>, <code>SceneMemory</code>, <code>SummaryMemory</code> (table — now also holds <code>digest</code>/<code>digest_ledger_tokens</code>) — <code>src/crud/sqlmodel.py</code></td></tr>
     <tr><td>Persistence (CRUD logic)</td><td><code>get/update_entities</code>, <code>get/update_scenes</code>, <code>get/update_summary</code>, <code>get/update_digest</code> — <code>src/crud/crud.py</code></td></tr>

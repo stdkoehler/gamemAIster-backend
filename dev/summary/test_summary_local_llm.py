@@ -9,14 +9,15 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from src.brain.chat import SummaryMemory
+from src.brain.conversation_memory import SummaryMemory, CompressionPrompts
 from src.llmclient.llm_client import LLMClientDeepSeek, LLMClientLocal
+from src.llmclient.llm_parameters import LLMLogicConfig
 from src.crud import crud
 
 # crud_instance in crud is hardcoded to use memory.db, so we patch it to use unittest.db
 new_instance = crud.CRUD(dbase="sqlite:///unittest.db")
 with patch(
-    "src.brain.chat.crud_instance",
+    "src.brain.conversation_memory.crud_instance",
     new=new_instance,
 ):
 
@@ -34,6 +35,12 @@ with patch(
     ) as f:
         summary_template = f.read()
     with open(
+        src_path / "brain/prompt_templates/text_digest_prompt.txt",
+        "r",
+        encoding="utf-8",
+    ) as f:
+        digest_template = f.read()
+    with open(
         src_path / "brain/prompt_templates/text_entity_prompt.txt",
         "r",
         encoding="utf-8",
@@ -49,16 +56,18 @@ with patch(
     # Instantiate SummaryMemory with dummy LLM and test db
     memory = SummaryMemory(
         llm_client=llm_client_local,
-        summary_template=summary_template,
-        entity_template=entity_template,
-        scene_template=scene_template,
+        prompts=CompressionPrompts(
+            summary=summary_template,
+            digest=digest_template,
+            entity=entity_template,
+            scene=scene_template,
+        ),
         game_name="expanse",
-        last_k=5,
         mission_id=26,
-        min_summary_tokens=2048,
+        logic_config=LLMLogicConfig(last_k=5, min_summary_tokens=2048),
     )
 
-    interaction_candidates = memory._history[memory._n_summarized : -memory._last_k]
+    interaction_candidates = memory._history[memory.n_summarized : -memory._last_k]
     text = "\n".join(
         [
             interaction.format_interaction_summary()
