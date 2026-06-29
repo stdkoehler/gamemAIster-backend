@@ -1,5 +1,7 @@
 """LLM Client"""
 
+from __future__ import annotations
+
 import json
 import re
 
@@ -43,7 +45,15 @@ from src.llmclient.llm_parameters import (
     LLMConfig,
     LLMLogicConfig,
     ThinkingFeebackPolicy,
+    UNSET,
 )
+
+from pydantic_ai.models import Model
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.models.anthropic import AnthropicModel
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.providers.anthropic import AnthropicProvider
+from pydantic_ai.settings import ModelSettings
 
 
 class MessageRole(StrEnum):
@@ -241,6 +251,50 @@ class LLMClientBase(ABC):
 
     def stop_generation(self) -> None:
         """Stop the current generation. Override in clients that support mid-stream cancellation."""
+
+    # ------------------------------------------------------------------
+    # pydantic_ai bridge (pilot — see docs/conversation_memory.html)
+    # ------------------------------------------------------------------
+
+    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+        """
+        Builds the pydantic_ai Model equivalent to this client, for callers
+        that want pydantic_ai's validator-driven retry loop instead of our
+        own _call_structured/parse_with_retry. Reuses this client's own
+        connection details and the same ConfigRegistry-resolved settings
+        every other call for `task` already goes through.
+
+        Overridden by every concrete client (LLMClientLocal, LLMClientDeepSeek,
+        the Anthropic-compatible clients, LLMClientOpenRouter). Defined here
+        rather than each override reaching into another instance's private
+        attributes from outside the class. The base implementation only
+        matters for any future client that hasn't added an override yet.
+        """
+        raise NotImplementedError(
+            f"No pydantic_ai bridge yet for {type(self).__name__}."
+        )
+
+    @staticmethod
+    def _to_pydantic_ai_settings(config: LLMConfig) -> ModelSettings:
+        """Maps the subset of our LLMConfig that OpenAI/Anthropic-style APIs
+        actually accept. Local-model-only sampler knobs (min_p, repetition
+        penalty, mirostat, smoothing_factor, ...) have no equivalent here and
+        are dropped — they wouldn't have been sent to these providers by our
+        own clients either."""
+        settings: ModelSettings = {}
+        if config.max_tokens is not UNSET:
+            settings["max_tokens"] = config.max_tokens
+        if config.temperature is not UNSET:
+            settings["temperature"] = config.temperature
+        if config.top_p is not UNSET:
+            settings["top_p"] = config.top_p
+        if config.presence_penalty is not UNSET:
+            settings["presence_penalty"] = config.presence_penalty
+        if config.frequency_penalty is not UNSET:
+            settings["frequency_penalty"] = config.frequency_penalty
+        if config.stop is not UNSET:
+            settings["stop_sequences"] = config.stop
+        return settings
 
     # ------------------------------------------------------------------
     # Shared helpers
@@ -589,6 +643,13 @@ class LLMClientLocal(LLMClientBase):
         """
         requests.post(self._stop_generation_url, timeout=60)
 
+    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+        return OpenAIChatModel(
+            self.model_identifier,
+            provider=OpenAIProvider(base_url=f"{self._base_url}/v1", api_key="not-needed"),
+            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
+        )
+
 
 # --- DeepSeek Client (OpenAI-Compatible SDK) ---
 
@@ -811,6 +872,15 @@ class LLMClientDeepSeek(LLMClientBase):
         )  # DeepSeek uses similar tokenization
         return len(encoding.encode(text))
 
+    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+        return OpenAIChatModel(
+            self._model,
+            provider=OpenAIProvider(
+                base_url="https://api.deepseek.com", api_key=self._client.api_key
+            ),
+            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
+        )
+
 
 # --- Claude & MiniMax Client (Anthropic SDK) ---
 
@@ -1021,6 +1091,15 @@ class LLMClientAnthropicBase(LLMClientBase):
         """
         return len(tiktoken.get_encoding("cl100k_base").encode(text))
 
+    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+        return AnthropicModel(
+            self._model,
+            provider=AnthropicProvider(
+                api_key=self._client.api_key, base_url=self._base_url
+            ),
+            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
+        )
+
 
 class LLMClientClaude(LLMClientAnthropicBase):
     """
@@ -1089,12 +1168,21 @@ class LLMClientOpenRouter(LLMClientBase):
         self._model = model
         self._base_url = "https://openrouter.ai/api/v1"
         self._chat_url = f"{self._base_url}/chat/completions"
+        self._api_key = api_key
 
         # Build headers
         self._headers = {
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
+
+    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+        # OpenRouter is itself an OpenAI-compatible aggregator API.
+        return OpenAIChatModel(
+            self._model,
+            provider=OpenAIProvider(base_url=self._base_url, api_key=self._api_key),
+            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
+        )
 
     def _convert_messages(
         self, messages: list[Message]

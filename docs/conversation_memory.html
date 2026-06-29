@@ -273,15 +273,27 @@
       </div>
     </div>
     <div class="lens scene">
-      <h4>Scenes</h4>
+      <h4>Scenes <span class="badge todo">Pilot: pydantic_ai</span></h4>
       <span class="tag">"What happened, in order?" — structured chronological log</span>
       <ul>
         <li>Splits play into discrete scenes (location/time/focus changes)</li>
         <li>Each scene: title, location, characters present, exhaustive summary, completed flag</li>
         <li>Most "blow-by-blow" detail lives here, not in the narrative summary</li>
+        <li><strong>Single Open Scene Invariant</strong>: at most one scene may be incomplete at a time (see the
+        prompt's "Final Scene Rule" — previously buggy, see commit history). As of this pilot, the invariant is
+        also enforced in code: a <code>@model_validator(mode="after")</code> directly on the pydantic_ai output
+        type raises if the model returns more than one open scene, and pydantic_ai automatically retries with that
+        exact reason fed back to the model — no separate <code>@agent.output_validator</code> needed; pydantic_ai
+        already retries on any validation failure surfaced while parsing the structured output.</li>
       </ul>
       <div class="files">
-        <code>scene_summary()</code> in <code>conversation_memory.py</code><br>
+        <code>scene_summary()</code> in <code>conversation_memory.py</code> — now built on
+        <code>pydantic_ai.Agent</code> instead of <code>_call_structured()</code>; its output type
+        <code>_SceneListOutput</code> carries the invariant validator directly<br>
+        <code>LLMClientBase.to_pydantic_ai_model()</code> + <code>._to_pydantic_ai_settings()</code> —
+        <code>src/llmclient/llm_client.py</code> — maps a client to the equivalent pydantic_ai <code>Model</code>,
+        overridden per subclass (pilot scope: <code>LLMClientLocal</code>, <code>LLMClientDeepSeek</code>,
+        Anthropic-compatible clients only — base implementation raises <code>NotImplementedError</code> otherwise)<br>
         <code>text_scene_prompt_examples.txt</code><br>
         model: <code>Scene</code> in <code>data_types.py</code>
       </div>
@@ -845,7 +857,7 @@
     <tr><td>Compression prompts bundle</td><td><code>CompressionPrompts</code> — <code>src/brain/conversation_memory.py</code></td></tr>
     <tr><td>Trigger / orchestration</td><td><code>SummaryMemory._try_summarize()</code> — <code>src/brain/conversation_memory.py</code></td></tr>
     <tr><td>Entity extraction</td><td><code>SummaryMemory.extract_entities()</code> + <code>text_entity_prompt.txt</code></td></tr>
-    <tr><td>Scene summarization</td><td><code>SummaryMemory.scene_summary()</code> + <code>text_scene_prompt_examples.txt</code></td></tr>
+    <tr><td>Scene summarization (pydantic_ai pilot)</td><td><code>SummaryMemory.scene_summary()</code> + <code>text_scene_prompt_examples.txt</code> + <code>LLMClientBase.to_pydantic_ai_model()</code> in <code>src/llmclient/llm_client.py</code></td></tr>
     <tr><td>Narrative recap (per-chunk, not the whole ledger)</td><td><code>SummaryMemory.summarize()</code> + <code>text_summary_prompt.txt</code></td></tr>
     <tr><td>Ledger append (deterministic, no LLM)</td><td><code>SummaryMemory._try_summarize()</code> — <code>ledger = ledger + recap</code></td></tr>
     <tr><td>Digest refresh (bounded "story so far")</td><td><code>SummaryMemory._refresh_digest()</code> + <code>text_digest_prompt.txt</code></td></tr>

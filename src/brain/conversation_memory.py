@@ -12,7 +12,8 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Callable, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, model_validator
+from pydantic_ai import Agent
 
 from src.llmclient.llm_parameters import LLMConfig, LLMLogicConfig
 from src.llmclient.llm_config_registry import LLMTask
@@ -44,8 +45,40 @@ class _Digest(BaseModel):
     digest: str
 
 
-class _SceneList(BaseModel):
+class _SceneListOutput(BaseModel):
+    """pydantic_ai output_type for scene_summary(). Deliberately wraps the
+    list in a `scenes` field rather than using a bare `list[Scene]` — for
+    models without native tool-calling support, pydantic_ai falls back to
+    asking for JSON matching the output schema in the prompt, and our own
+    text_scene_prompt_examples.txt already explicitly instructs the model to
+    produce `{"scenes": [...]}`. A bare list[Scene] output_type makes
+    pydantic_ai's own schema note say `{"response": [...]}` instead — two
+    competing instructions in the same prompt — and the model follows our
+    much more detailed one, so the parse fails on a missing "response" key
+    before pydantic_ai's validator (or ours) ever runs. Matching the wrapper
+    key to what the prompt already asks for removes the conflict instead of
+    fighting it. See docs/conversation_memory.html."""
+
     scenes: list[Scene]
+
+    @model_validator(mode="after")
+    def _validate_single_open_scene(self) -> "_SceneListOutput":
+        """Enforces the Single Open Scene Invariant (text_scene_prompt_examples.txt)
+        in code. A plain ValueError here is enough — pydantic_ai already
+        retries on any validation failure surfaced while parsing the
+        structured output, the exact same way it retries on a schema
+        mismatch, with this message preserved verbatim and fed back to the
+        model. No separate @agent.output_validator needed."""
+        open_scenes = [s.id for s in self.scenes if not s.completed]
+        if len(open_scenes) > 1:
+            raise ValueError(
+                f"Invalid: {len(open_scenes)} scenes were returned with "
+                f"completed=false (ids {open_scenes}). At most ONE scene "
+                "may be open at a time — close every scene except the "
+                "single most recent one (set completed=true), per the "
+                "Single Open Scene Invariant."
+            )
+        return self
 
 
 def _last_paragraph(text: str) -> str:
@@ -221,6 +254,15 @@ class SummaryMemory:
         """
         Returns the scene summary of the chat conversation.
 
+        Pilot: uses pydantic_ai instead of _call_structured, specifically to
+        get its validator-driven retry loop for the Single Open Scene
+        Invariant (see text_scene_prompt_examples.txt and
+        _SceneListOutput._validate_single_open_scene) — if the model returns
+        more than one incomplete scene, pydantic_ai automatically re-prompts
+        with that exact reason attached, instead of us either trusting the
+        prompt alone or silently patching the result in code. See
+        docs/conversation_memory.html.
+
         Returns:
             str: The scene summary of the chat conversation.
         """
@@ -229,31 +271,36 @@ class SummaryMemory:
         scenes_json = json.dumps([scene.model_dump() for scene in scenes])
 
         scene_input = '**Input:**\n```json\n{{"previous_scenes": {scenes},"current_history": {text},"known_npc_roster": {roster}}}\n\n**Output:**\n```'
-        messages = [
-            Message(
-                role=MessageRole.SYSTEM,
-                content=MessageContent(
-                    text=self._scene_prompt.replace("__RPG__", self._game_name)
-                ),
-            ),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=scene_input.format(
-                        scenes=scenes_json,
-                        text=text_interaction,
-                        roster=self._npc_roster_json,
-                    )
-                ),
-            ),
-        ]
-
-        scene_list = self._call_structured(
-            messages=messages,
-            parse=lambda s: _SceneList.model_validate_json(s).scenes,
-            log_type=LogType.SCENE,
-            strip_think=True,
+        system_prompt = self._scene_prompt.replace("__RPG__", self._game_name)
+        user_prompt = scene_input.format(
+            scenes=scenes_json,
+            text=text_interaction,
+            roster=self._npc_roster_json,
         )
+
+        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
+        agent = Agent(model, output_type=_SceneListOutput, system_prompt=system_prompt)
+
+        try:
+            result = agent.run_sync(user_prompt)
+        except Exception as exc:
+            logger.log_llm_call(
+                LogType.SCENE,
+                llm_input=f"{system_prompt}\n\n{user_prompt}",
+                llm_output=str(exc),
+                processed_output="pydantic_ai error",
+            )
+            raise ValueError(f"pydantic_ai scene_summary call failed: {exc}") from exc
+
+        scene_list = result.output.scenes
+        logger.log_llm_call(
+            LogType.SCENE,
+            llm_input=f"{system_prompt}\n\n{user_prompt}",
+            llm_output=result.all_messages_json().decode("utf-8"),
+            extracted_json=json.dumps([s.model_dump() for s in scene_list]),
+            processed_output=json.dumps([s.model_dump() for s in scene_list]),
+        )
+
         # only update last scene and newly created scenes
         return [scene for scene in scene_list if scene.id >= last_scene_id]
 
