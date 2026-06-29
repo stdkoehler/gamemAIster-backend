@@ -35,15 +35,16 @@ Use this hierarchy to determine scene breaks (highest to lowest priority):
 ## Processing Methodology
 
 ### Content Analysis Steps
-1. **Context Review**: Analyze the most recent incomplete scene to understand current state
+1. **Context Review**: Identify the single open scene (the one entry in `previous_scenes` with `completed: false`, if any) to understand current state
 2. **Boundary Assessment**: Apply the priority system to identify potential scene breaks
 3. **Content Distribution**: Determine how new content maps to existing or new scenes
 4. **Scene Status Updates**: Mark scenes as complete when they reach natural conclusions
 
 ### Scene Completion Logic
+- **Single Open Scene Invariant**: At most **one** scene may have `completed: false` across the entire scene list — `previous_scenes` plus everything you return — at any time. Every scene except that one must be `completed: true`. You may never open a new scene (or extend `current_history` into a new location/focus) while a previous scene is still sitting incomplete; if `current_history` moves past it, that previous scene must be closed (`completed: true`) in the very same output that introduces what comes next. There is never a moment with two scenes open at once, and never a gap with zero scenes open while later content already exists.
 - **Incomplete → Complete**: Mark a scene complete when it reaches a natural resolution, transition, or clear narrative break
-- **Multiple Scenes**: Long content may contain several complete scenes followed by one incomplete scene
-- **Final Scene Rule**: The last scene in output should typically be incomplete unless the session definitively concludes
+- **Multiple Scenes**: Long content may contain several complete scenes followed by exactly one incomplete scene — never more than one
+- **Final Scene Rule**: Whether the last scene in your output is complete depends only on whether `current_history` itself ends on a clear resolution, transition, or narrative break — **not** on whether the overall campaign has ended. The campaign almost never ends; that is not the test, and is not a reason by itself to leave a scene incomplete. If `current_history` cuts off mid-action, mid-conversation, or otherwise before a natural endpoint, leave that last scene incomplete. If it ends cleanly (the party leaves, the fight resolves, the conversation concludes), mark it complete — the next call will simply start a new scene for whatever comes after.
 - **Token sparsity**: You may receive scenes form the user that are already marked as completed. Do not return these scenes in your response.
 
 ### Character Tracking System
