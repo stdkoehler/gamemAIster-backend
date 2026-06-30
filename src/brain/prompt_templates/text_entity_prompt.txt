@@ -63,31 +63,8 @@ The system receives:
 ```
 `known_npc_roster` may be an empty array (e.g. systems without NPC generation support). See "Known NPC Roster Cross-Reference" above for how to use it.
 
-### Output Format
-Return ONLY a valid JSON object with this structure:
-```json
-{
-  "entities": [
-    {
-      "name": "New Entity",
-      "type": "Entity Type",
-      "summary": "Entity summary",
-      "matched_key_npc": "Roster name if this is a roster NPC, otherwise null"
-    }
-  ],
-  "updated_entities": [
-    {
-      "name": "Original Name",
-      "updated_name": "New Name",
-      "type": "Entity Type",
-      "summary": "Updated summary with new information",
-      "matched_key_npc": "Roster name if this is a roster NPC, otherwise null"
-    }
-  ]
-}
-```
-
-updated_entities only has elements when an existing entity needs updating. `matched_key_npc` is required on every entity (use `null` when there is no roster match) — see "Known NPC Roster Cross-Reference" above.
+### Output Requirements
+Your response is parsed directly into `entities` (newly extracted entities) and `updated_entities` (changes to previously known ones) — there is no JSON skeleton to follow here. `updated_entities` only has elements when an existing entity needs updating. `matched_key_npc` is required on every entity (use `null` when there is no roster match) — see "Known NPC Roster Cross-Reference" above.
 
 ## Processing Guidelines
 
@@ -459,9 +436,6 @@ Fusion should be performed based on importance and specificity. In this case, th
 ```
 
 ## Technical Safeguards
-- Ensure all output conforms to valid JSON syntax
-- If there are quotes within the JSON fields, escape them (`"` → `\"`)
-- Return only the specified JSON structure without additional commentary
 - Maintain consistent naming conventions across all entity references
 
 ## Processing Instructions
@@ -469,8 +443,7 @@ Fusion should be performed based on importance and specificity. In this case, th
 1. **Analyze Input**: Review the provided text and existing entities list
 2. **Extract Entities**: Identify all significant entities following the classification system
 3. **Compare and Categorize**: Determine which entities are new vs. updates to existing ones
-4. **Generate Output**: Format the response according to the specified JSON structure
-5. **Validate**: Ensure JSON syntax is correct and all requirements are met
+4. **Generate Output**: Produce the `entities` and `updated_entities` lists per the requirements above, ensuring every entity has a correctly set `matched_key_npc`
 
 Consider that the examples given above are from the Shadowrun TTRPG. The text from which you should extract entities is __RPG__. Consider the specific lore of __RPG__ when extracting entities.
 Begin processing the inputs and output the entities described. You may use <think></think> to structure your approach.

@@ -72,7 +72,7 @@ The input also includes `known_npc_roster`: named NPCs (`name`, `role`, `affilia
       "characters": ["Character", "Character (mentioned)", ...],
       "location": "Primary scene location",
       "summary": "Comprehensive scene summary",
-      "completed": "true" | "false"
+      "completed": true | false
     }
   ],
   "current_history": "New gameplay content to process",
@@ -87,38 +87,14 @@ The input also includes `known_npc_roster`: named NPCs (`name`, `role`, `affilia
 ```
 `known_npc_roster` may be an empty array. See "Known NPC Roster Cross-Reference" above for how to use it.
 
-### Output Format
-Return ONLY valid JSON in this exact structure:
-```json
-{
-  "scenes": [
-    {
-      "id": 1,
-      "title": "Descriptive Scene Title",
-      "characters": ["Character", "Character (mentioned)", ...],
-      "location": "Primary scene location",
-      "summary": "Complete scene summary",
-      "completed": "true"
-    },
-    {
-      "id": 2,
-      "title": "Current Scene Title",
-      "characters": ["Character", "Character (mentioned)", ...],
-      "location": "Primary scene location",
-      "summary": "Current scene summary",
-      "completed": "false"
-    }
-  ]
-}
-```
-
 ### Field Requirements
+Your response is parsed directly into a structured list of scenes — there is no JSON skeleton to follow here, just these per-field requirements:
 - **ID**: Sequential unique identifier.
 - **Title**: Engaging, descriptive title capturing the scene's essence.
 - **Characters**: All characters active or mentioned in the scene.
 - **Location**: Primary location where the scene takes place.
 - **Summary**: EXHAUSTIVE informational content, written in a COMPRESSED narrative form using **indirect speech**.
-- **Completed**: Boolean string indicating scene status.
+- **Completed**: Boolean indicating whether the scene has reached a natural conclusion (see Scene Completion Logic above).
 
 ## Summary Requirements
 
@@ -199,7 +175,7 @@ Before finalizing any summary, verify:
       "characters": ["[Character Names]", "[Character (mentioned)]"],
       "location": "[Primary Location]",
       "summary": "[Complete summary of all events, characters, and actions from current_history]",
-      "completed": "false"
+      "completed": false
     }
   ]
 }
@@ -216,7 +192,7 @@ Before finalizing any summary, verify:
       "characters": ["[Character A]", "[Character B]", "[NPC (mentioned)]"],
       "location": "[Location Name]",
       "summary": "[Previous scene summary with all prior events]",
-      "completed": "false"
+      "completed": false
     }
   ],
   "current_history": "[Additional content that continues the same scene]"
@@ -233,7 +209,7 @@ Before finalizing any summary, verify:
       "characters": ["[All Characters]", "[Including New Ones]"],
       "location": "[Same Location]",
       "summary": "[Previous summary expanded with new events from current_history]",
-      "completed": "false"
+      "completed": false
     }
   ]
 }
@@ -250,7 +226,7 @@ Before finalizing any summary, verify:
       "characters": ["[Character List]"],
       "location": "[Previous Location]",
       "summary": "[Previous scene summary]",
-      "completed": "false"
+      "completed": false
     }
   ],
   "current_history": "[Content that concludes previous scene and begins new scene in different location]"
@@ -267,7 +243,7 @@ Before finalizing any summary, verify:
       "characters": ["[Character List]"],
       "location": "[Previous Location]",
       "summary": "[Updated summary including concluding events from current_history]",
-      "completed": "true"
+      "completed": true
     },
     {
       "id": 2,
@@ -275,7 +251,7 @@ Before finalizing any summary, verify:
       "characters": ["[Characters in New Scene]"],
       "location": "[New Location]",
       "summary": "[Summary of new scene events from current_history]",
-      "completed": "false"
+      "completed": false
     }
   ]
 }
@@ -291,7 +267,6 @@ Before finalizing output, verify:
 - [ ] **EVERY ITEM, ABILITY, OR MECHANIC** used is documented
 - [ ] **NO FLAVOR TEXT** shall be included; only content that is relevant to understanding the story
 - [ ] Scene boundaries follow the priority system logically
-- [ ] JSON syntax is valid with proper escaping
 - [ ] Each scene has exactly one primary location
 - [ ] Character arrays use consistent naming and tagging
 - [ ] Summaries provide standalone comprehensibility with complete relevant information
@@ -307,33 +282,10 @@ Before finalizing output, verify:
 3. **Plan Distribution**: Determine which content belongs to which scenes
 4. **Generate Summaries**: Create exhaustive summaries following all requirements, but make sure they are compressed summaries not complete renarration
 5. **Validate Output**: Use the quality assurance checklist
-6. **Format Response**: Return only the specified JSON structure
+6. **Format Response**: Produce the scenes list per the Field Requirements above
 
 Remember: Summaries must be comprehensive enough that a reader unfamiliar with previous sessions can understand the complete sequence of events, characters involved, and story significance. **EVERY ACTION BY EVERY CHARACTER MUST BE INCLUDED.** **EVERY EVENT MUST BE DOCUMENTED.** **INCLUDE WORLDBUILDING DESCRIPTIONS ONLY WHEN RELEVANT FOR THE STORY; NO FLAVOR TEXT**
 
-## Start Procesing Task:
+## Start Processing Task:
 
-Start processing the provided *input* and create a JSON as *output*
-Remember the schema:
-```json
-{
-  "scenes": [
-    {
-      "id": 1,
-      "title": "Descriptive Scene Title",
-      "characters": ["Character", "Character (mentioned)", ...],
-      "location": "Primary scene location",
-      "summary": "Complete scene summary",
-      "completed": "true"
-    },
-    {
-      "id": 2,
-      "title": "Current Scene Title",
-      "characters": ["Character", "Character (mentioned)", ...],
-      "location": "Primary scene location",
-      "summary": "Current scene summary",
-      "completed": "false"
-    }
-  ]
-}
-```
+Start processing the provided *input* and produce the scenes list as described above.
