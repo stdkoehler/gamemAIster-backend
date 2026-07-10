@@ -10,7 +10,7 @@ if __name__ == "__main__":
         "src.main:app",
         host="0.0.0.0",
         port=8000,
-        workers=1,
+        workers=2,
         ssl_keyfile="cert/key.pem" if ssl_enabled else None,
         ssl_certfile="cert/cert.pem" if ssl_enabled else None,
     )

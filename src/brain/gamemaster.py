@@ -25,17 +25,13 @@ from src.llmclient.llm_client import (
     LLMClientDeepSeek,
     LLMClientMiniMax,
     LLMClientOpenRouter,
-    Message,
-    MessageContent,
-    MessageRole,
 )
 
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_config_registry import LLMTask
 
-from src.brain.structured_output import parse_with_retry
 from src.utils.logger import configure_logger
-from src.utils.sqllogger import SQLLogger
+from src.utils.sqllogger import SQLLogger, LogType
 
 from pydantic import BaseModel, ConfigDict
 
@@ -441,21 +437,10 @@ class Gamemaster:
         # our input token is already quite large, so we limit max_tokens to 4096
         # (this includes thinking process for some local models, e.g. gemma3)
         # the limit is configured per-task in LLMTask.ARCHITECT
-        messages = [
-            Message(
-                role=MessageRole.SYSTEM,
-                content=MessageContent(text=system_prompt),
-            ),
-            Message(role=MessageRole.USER, content=MessageContent(text=topic)),
-        ]
-
-        parsed = parse_with_retry(
-            messages=messages,
-            result_type=_MissionBody,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        mission_agent = self._llm_client_reasoning.build_agent(
+            LLMTask.ARCHITECT, output_type=_MissionBody, system_prompt=system_prompt, reasoning=True
         )
+        parsed = self._llm_client_reasoning.run_agent(mission_agent, system_prompt, topic, LogType.MISSION)
         name = parsed.meta.title
         description = json.dumps(parsed.model_dump(), ensure_ascii=False, indent=2)
         _log.info("GenerateMission complete | title=%s | output_len=%d", name, len(description))
@@ -465,7 +450,7 @@ class Gamemaster:
             oracle_background=full_background,
             oracle_roll=oracle_result.roll if oracle_result else "",
             oracle_aligned=oracle_result.aligned if oracle_result else "",
-            llm_input=str(messages),
+            llm_input=f"{system_prompt}\n\n{topic}",
             llm_output=description,
         )
 
@@ -481,24 +466,32 @@ class Gamemaster:
         }
         return api_schema_mission.Mission.model_validate(mission)
 
+    def _run_npc_stage(
+        self, system_prompt: str, user_prompt: str, output_type: type, log_type: LogType
+    ):
+        """Builds and runs one reasoning-agent stage of the NPC pipeline (Profiler/Stats/Equipment)."""
+        agent = self._llm_client_reasoning.build_agent(
+            LLMTask.ARCHITECT, output_type=output_type, system_prompt=system_prompt, reasoning=True
+        )
+        return self._llm_client_reasoning.run_agent(agent, system_prompt, user_prompt, log_type)
+
     def generate_npc(self, name: str, mission_id: int) -> NpcGenerationResult:
         """
         Generate an NPC content dict for `mission_id`, chaining three
-        structured-output LLM calls (same parse_with_retry pattern as
-        generate_mission): a shared Profiler (narrative description +
-        equipment budget), a per-system Stats agent (combat-relevant
-        attributes/skills), and a per-system Equipment step that picks from a
-        deterministically pre-filtered slice of the system's equipment
-        catalog (embedded as prompt text, no tool calling). The result is
-        merged into a full CharacterProps-shaped dict scoped to what
-        NpcCard.tsx's NPC view renders, with all other required fields
-        safe-defaulted.
+        pydantic_ai structured-output calls: a shared Profiler (narrative
+        description + equipment budget), a per-system Stats agent
+        (combat-relevant attributes/skills), and a per-system Equipment step
+        that picks from a deterministically pre-filtered slice of the
+        system's equipment catalog (embedded as prompt text, no tool
+        calling). The result is merged into a full CharacterProps-shaped
+        dict scoped to what NpcCard.tsx's NPC view renders, with all other
+        required fields safe-defaulted.
         """
         if self._game_type not in NPC_CONFIGS:
             raise ValueError(f"NPC generation is not supported for game type: {self._game_type}")
 
         npc_cfg = NPC_CONFIGS[self._game_type]
-        stats_model, equipment_model = npc_cfg.stats_model, npc_cfg.equipment_model
+        stats_type, equipment_type = npc_cfg.stats_model, npc_cfg.equipment_model
         game_type = self._game_type
 
         prompt_dir = Path(__file__).parent / "prompt_templates"
@@ -517,49 +510,25 @@ class Gamemaster:
 
         _log.info("GenerateNpc | game_type=%s | name=%s | mission_id=%d", self._game_type, name, mission_id)
 
-        profile_messages = [
-            Message(role=MessageRole.SYSTEM, content=MessageContent(text=profile_system_prompt)),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=(
-                        f"Game: {self._game_name}\nNPC name: {name}\n\n"
-                        f"NPCs already established in this adventure (the new NPC may be one of "
-                        f"these):\n{roster_text}\n\n"
-                        f"Recent interactions:\n{interactions_text}"
-                    )
-                ),
-            ),
-        ]
-        profile = parse_with_retry(
-            messages=profile_messages,
-            result_type=NpcProfile,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        profile_user_prompt = (
+            f"Game: {self._game_name}\nNPC name: {name}\n\n"
+            f"NPCs already established in this adventure (the new NPC may be one of "
+            f"these):\n{roster_text}\n\n"
+            f"Recent interactions:\n{interactions_text}"
+        )
+        profile = self._run_npc_stage(
+            profile_system_prompt, profile_user_prompt, NpcProfile, LogType.NPC_PROFILE
         )
 
         valid_categories = get_npc_equipment_categories(game_type)
-        stats_messages = [
-            Message(role=MessageRole.SYSTEM, content=MessageContent(text=stats_system_prompt)),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=(
-                        f"NPC name: {name}\nDescription: {profile.character_description}\n\n"
-                        f"Valid equipment categories for this system (pick `equipment_categories` only "
-                        f"from this list, choosing the ones relevant to this NPC's archetype/role):\n"
-                        f"{', '.join(valid_categories)}"
-                    )
-                ),
-            ),
-        ]
-        stats = parse_with_retry(
-            messages=stats_messages,
-            result_type=stats_model,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        stats_user_prompt = (
+            f"NPC name: {name}\nDescription: {profile.character_description}\n\n"
+            f"Valid equipment categories for this system (pick `equipment_categories` only "
+            f"from this list, choosing the ones relevant to this NPC's archetype/role):\n"
+            f"{', '.join(valid_categories)}"
+        )
+        stats = self._run_npc_stage(
+            stats_system_prompt, stats_user_prompt, stats_type, LogType.NPC_STATS
         )
 
         budget_cost = _parse_budget_cost(profile.value)
@@ -567,25 +536,13 @@ class Gamemaster:
             game_type, categories=stats.equipment_categories, max_cost=budget_cost
         )
         candidates_text = json.dumps(candidates, ensure_ascii=False, indent=2)
-        equipment_messages = [
-            Message(role=MessageRole.SYSTEM, content=MessageContent(text=equipment_system_prompt)),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=(
-                        f"NPC name: {name}\nDescription: {profile.character_description}\n"
-                        f"Equipment budget: {profile.value}\n\n"
-                        f"Available catalog items to choose from (pick only by exact name):\n{candidates_text}"
-                    )
-                ),
-            ),
-        ]
-        equipment = parse_with_retry(
-            messages=equipment_messages,
-            result_type=equipment_model,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        equipment_user_prompt = (
+            f"NPC name: {name}\nDescription: {profile.character_description}\n"
+            f"Equipment budget: {profile.value}\n\n"
+            f"Available catalog items to choose from (pick only by exact name):\n{candidates_text}"
+        )
+        equipment = self._run_npc_stage(
+            equipment_system_prompt, equipment_user_prompt, equipment_type, LogType.NPC_EQUIPMENT
         )
 
         npc_id = int(time.time() * 1000)

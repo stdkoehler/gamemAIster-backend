@@ -261,13 +261,187 @@
     All four compression LLM calls (entities, scenes, summary recap, digest refresh) are built on
     <code>pydantic_ai.Agent</code> rather than a hand-rolled call-and-parse helper — what started as a single-call
     pilot on <code>scene_summary()</code> (see §6's earlier framing in commit history) is now how every structured
-    call in this subsystem works. <code>SummaryMemory._run_agent()</code> is the one shared run/log/error-wrapping
-    helper; building the <code>Agent</code> — its output type and any extra validators — stays at each call site,
-    since both differ per call. <code>LLMClientBase.to_pydantic_ai_model()</code> (<code>src/llmclient/llm_client.py</code>)
-    maps any of our LLM clients to the equivalent pydantic_ai <code>Model</code>, overridden per subclass — every
-    concrete client (<code>LLMClientLocal</code>, <code>LLMClientDeepSeek</code>, the Anthropic-compatible clients,
-    <code>LLMClientOpenRouter</code>) has one. The old <code>_call_structured()</code> helper (manual JSON extraction,
-    no retries) is gone entirely.
+    call in this subsystem works, and the same approach has since been extended to <code>Gamemaster.generate_npc()</code>'s
+    three-stage NPC pipeline, <code>Gamemaster.generate_mission()</code>, and <code>Oracle._align()</code>
+    (<code>src/brain/gamemaster.py</code>, <code>src/brain/oracle.py</code>) — see the "NPC generation" row in the file
+    map below. <code>LLMClientBase.run_agent()</code> (<code>src/llmclient/llm_client.py</code>, next to
+    <code>build_agent()</code>) is the one shared run/log/error-wrapping helper used by all of them; building the
+    <code>Agent</code> — its output type and any extra validators — stays at each call site, since that differs per
+    call. <code>LLMClientBase._to_pydantic_ai_model()</code> (same file) maps any of our LLM clients to the equivalent
+    pydantic_ai <code>Model</code>, overridden per subclass — every concrete client except <code>LLMClientLocal</code>
+    (<code>LLMClientDeepSeek</code>, the Anthropic-compatible clients, <code>LLMClientOpenRouter</code>) has one;
+    <code>LLMClientLocal</code> doesn't use pydantic_ai for structured output at all — see the
+    "LLMClientLocal doesn't use pydantic_ai" callout below. The old <code>_call_structured()</code> and
+    <code>parse_with_retry()</code> helpers (manual JSON extraction, repair-prompt retries) are gone entirely, along
+    with the <code>src/brain/structured_output.py</code> module they lived in — though the same underlying idea
+    (schema in prompt text, JSON-extract, validate, retry) lives on specifically for <code>LLMClientLocal</code> as
+    <code>CompletionAgent</code>, described below.
+  </div>
+  <div class="callout note">
+    <strong>Reasoning parity.</strong> The pre-pydantic_ai code (<code>_call_structured()</code> for compaction,
+    <code>parse_with_retry()</code> for NPC/mission generation) always called the LLM with <code>reasoning=True</code>
+    for these structured calls — the initial pydantic_ai conversion silently dropped that, since
+    <code>_to_pydantic_ai_model()</code> had no reasoning parameter at all. Fixed by giving it one:
+    <code>_to_pydantic_ai_model(task, reasoning: bool = False)</code>, with every call site that used to hardcode
+    <code>reasoning=True</code> now passing it explicitly. Each client decides how (or whether) to honor it — and
+    the "how" matters more than it looks, because pydantic_ai's unified <code>thinking: True</code> setting is
+    <strong>not</strong> a one-size-fits-all knob: it's translated per pydantic_ai <code>Model</code> subclass, and
+    the generic <code>OpenAIChatModel</code> always maps it to OpenAI's own <code>reasoning_effort</code> request
+    parameter — which only means something to real OpenAI reasoning models. Verified each client's actual outgoing
+    request shape directly (via <code>Model.prepare_request()</code>/<code>_translate_thinking()</code>) rather than
+    trusting the docs list of "supported by" providers, since that list describes pydantic_ai's <em>own</em>
+    purpose-built model classes for those providers, not necessarily whatever class a given client happens to wrap
+    its base_url in:
+    <ul>
+      <li><code>LLMClientAnthropicBase</code> (Claude, MiniMax) sets <code>thinking: True</code> directly —
+        <code>AnthropicModel</code> is Anthropic-native (not an <code>OpenAIChatModel</code> wrapper) and its own
+        <code>_translate_thinking()</code> correctly resolves the unified setting to
+        <code>{"type": "enabled", "budget_tokens": ...}</code>, confirmed by inspecting the literal request
+        parameter it builds.</li>
+      <li><code>LLMClientOpenRouter</code> now builds pydantic_ai's dedicated <code>OpenRouterModel</code> +
+        <code>OpenRouterProvider</code> (it previously used a generic <code>OpenAIChatModel</code> + <code>OpenAIProvider</code>
+        pointed at OpenRouter's base_url, which would have silently sent the meaningless
+        <code>reasoning_effort</code> field instead). <code>OpenRouterModel</code> is the one pydantic_ai class that
+        overrides <code>_translate_thinking()</code> to build OpenRouter's real
+        <code>extra_body["reasoning"] = {"effort": ..., "enabled": ...}</code> shape from the unified setting —
+        confirmed via <code>prepare_request()</code>.</li>
+      <li><code>LLMClientDeepSeek</code> sets <code>extra_body={"thinking": {"type": "enabled" | "disabled"}}</code>
+        by hand instead of the unified setting — mirroring its own <code>_execute_chat_completion(_stream)</code>
+        exactly, which sends this unconditionally based on `reasoning` regardless of which model
+        (<code>deepseek-chat</code> vs. <code>deepseek-reasoner</code>) is selected. (pydantic_ai does ship a
+        DeepSeek-aware model profile, but it only affects <em>response</em> parsing — reconstructing
+        <code>reasoning_content</code> — not how thinking is requested; <code>OpenAIChatModel</code>'s request-side
+        translation has no DeepSeek-specific branch, so the unified setting would hit the same
+        <code>reasoning_effort</code> dead end as the un-fixed OpenRouter case above.)</li>
+      <li><code>LLMClientLocal</code> doesn't participate in this pydantic_ai bridge at all anymore — see the
+        "LLMClientLocal doesn't use pydantic_ai" callout below for why and what it uses instead.</li>
+    </ul>
+  </div>
+  <div class="callout note">
+    <strong>Thinking vs. forced tool-calling.</strong> Live-testing reasoning against real DeepSeek/OpenRouter/MiniMax
+    accounts surfaced a second, independent conflict beyond the wire-format one above: <code>output_type=SomeModel</code>
+    (every call in this subsystem) makes pydantic_ai default to <em>forcing</em> a tool call to a synthetic
+    structured-output tool — its most reliable mechanism, since the provider can enforce schema compliance at the
+    decoding level rather than just hoping the model follows an instruction. Some real reasoning-model APIs reject
+    that combination outright: <strong>Anthropic</strong> (Claude) disallows extended thinking with a forced
+    <code>tool_choice</code>, and <strong>DeepSeek's <code>deepseek-reasoner</code></strong> does too (confirmed live:
+    a hard <code>400 "Thinking mode does not support this tool_choice"</code> before the <code>DeepSeekProvider</code>
+    fix below). OpenAI's reasoning models and xAI's Grok have no such restriction — this is a per-provider API fact,
+    not a property of "thinking models" as a category.
+    <p>
+    pydantic_ai already has fixes for the providers it ships dedicated classes for, but those fixes don't carry
+    over to <code>OpenRouterModel</code> (which routes to the same underlying models without inheriting either
+    fix), and we weren't using the dedicated classes for DeepSeek either:
+    </p>
+    <ul>
+      <li><strong>Claude/MiniMax</strong> — nothing to do. <code>AnthropicModel</code> auto-switches to native/prompted
+        output internally when it detects thinking + a would-be-forced tool call, before ever sending the request.</li>
+      <li><strong>DeepSeek</strong> — fixed by switching <code>LLMClientDeepSeek._to_pydantic_ai_model()</code> from a
+        generic <code>OpenAIProvider</code> to pydantic_ai's own <code>DeepSeekProvider</code>, whose
+        <code>model_profile()</code> sets <code>openai_supports_tool_choice_required=False</code> for
+        <code>deepseek-reasoner</code> specifically — relaxes the forced tool call to <code>tool_choice='auto'</code>,
+        and verified live that <code>deepseek-reasoner</code> still reliably calls the structured-output tool anyway
+        (real thinking <em>and</em> correct validated output, still via tool-calling).</li>
+      <li><strong>OpenRouter</strong> — no equivalent exists in pydantic_ai for this path, so
+        <code>LLMClientOpenRouter._needs_prompted_output_for_reasoning = True</code> tells <code>build_agent()</code>
+        to swap to <code>PromptedOutput(output_type)</code> when <code>reasoning=True</code>, sidestepping
+        tool-calling entirely. Verified live this still produces correct, fully-validated output (the pydantic
+        validation/retry loop applies identically to <code>PromptedOutput</code> as to the default tool-calling mode
+        — the schema is still communicated to the model either way, just via a prompt template instead of a tool's
+        parameter schema) — it's a "best effort" compliance mode rather than a decode-level guarantee, so a real
+        increase in retry rates (visible in the <code>LLMCallLog</code> table) is the signal to reconsider, not
+        something to design around preemptively.</li>
+    </ul>
+    <p>
+    <strong>Architecture:</strong> none of this is business logic's concern. Whether a client needs the
+    <code>PromptedOutput</code> swap is a static fact about the client, not something that varies per call — modeled
+    as a plain class attribute, <code>LLMClientBase._needs_prompted_output_for_reasoning: bool = False</code>, flipped
+    to <code>True</code> only on <code>LLMClientOpenRouter</code>, rather than a virtual method every subclass would
+    have to implement with the same signature just to leave most of it unused. (An earlier version of this used a
+    <code>_wrap_output_type(output_type, reasoning)</code> override hook instead — correct, but the per-call method
+    shape was the wrong fit for what's actually a per-class fact, and it meant four of five clients implemented a
+    method that ignored one of its two parameters.) <code>LLMClientBase.build_agent(task, output_type, system_prompt, reasoning, **agent_kwargs)</code>
+    reads that attribute and composes it with <code>_to_pydantic_ai_model()</code> into the one entry point
+    <code>SummaryMemory</code>/<code>Gamemaster</code> actually call — they pass an output type and a reasoning flag,
+    never <code>PromptedOutput</code> or a client-type check. All four compression calls and all three NPC-pipeline
+    calls in this codebase use <code>build_agent()</code>, not <code>_to_pydantic_ai_model()</code> + <code>Agent(...)</code>
+    directly.
+    </p>
+  </div>
+  <div class="callout note">
+    <strong>LLMClientLocal doesn't use pydantic_ai at all — it drives structured output through
+    <code>chat_completion()</code> instead.</strong> This replaced an earlier, more surgical fix (a per-model
+    <code>_always_needs_prompted_output</code> property, described below in the git history) after live-testing
+    surfaced a second, more fundamental problem the surgical fix couldn't reach.
+    <p>
+    <strong>What the surgical fix addressed:</strong> pydantic_ai's default output mode (<code>ToolOutput</code>)
+    sends the schema via an OpenAI-style <code>tools=[...]</code> + <code>tool_choice: "required"</code> request
+    field, not as prompt text. Verified live (intercepting the raw HTTP request below the OpenAI SDK) that
+    pydantic_ai <em>does</em> send that field correctly — the gap was on the receiving end: textgen-webui/llama.cpp's
+    chat-template rendering for a Gemma "R1" GGUF doesn't surface tool definitions in the model's actual context at
+    all (confirmed: Gemma 3's chat template has no tool-call tokens whatsoever). Swapping to <code>PromptedOutput</code>
+    (an in-prompt schema instruction) for unconfirmed models fixed this specific gap.
+    </p>
+    <p>
+    <strong>What it couldn't reach:</strong> the local reasoning-tuned models this client targets
+    (<code>_adjust_reasoning_mistral24b</code>/<code>_adjust_reasoning_gemma3_r1</code>) need an assistant-message
+    prefill (e.g. seeding the response with a literal <code>&lt;think&gt;</code> token) plus a <code>continue_</code>
+    request flag to actually engage their thinking mode — <code>chat_completion()</code> already implements this
+    correctly and has since before pydantic_ai was introduced. pydantic_ai's <code>Agent.run_sync()</code> always
+    appends the prompt as a <em>new</em> user turn; there is no supported way through the standard
+    <code>Agent</code>/<code>Model</code> interface to make the final message in a request a partial assistant
+    continuation instead. Confirmed live: with pydantic_ai, <code>reasoning=True</code> was a silent no-op for
+    <code>LLMClientLocal</code> — zero <code>ThinkingPart</code> content across repeated runs of a multi-step word
+    problem the model got wrong every time.
+    </p>
+    <p>
+    <strong>The fix:</strong> <code>LLMClientLocal.build_agent()</code> now overrides the base implementation
+    entirely, returning <code>CompletionAgent</code> (<code>src/llmclient/llm_client.py</code>) instead of a real
+    pydantic_ai <code>Agent</code>. <code>CompletionAgent.run_sync()</code> builds a system/user message pair,
+    spells the output schema out in the system prompt itself (the exact same instruction template pydantic_ai's own
+    <code>PromptedOutput</code> uses, kept identical since it was already proven reliable), and calls
+    <code>chat_completion()</code> — the same call every other structured-output path used before pydantic_ai
+    existed, which already threads through every local-model-specific reasoning trick. On a parse/validation
+    failure it retries once, feeding the error back as a follow-up user turn in the same conversation (mirroring
+    pydantic_ai's own retry semantics, not the older two-persona "JSON repair assistant" approach that used to live
+    in the now-deleted <code>structured_output.py</code>). <code>_needs_prompted_output_for_reasoning</code>,
+    <code>_always_needs_prompted_output</code>, and <code>_TOOL_CALLING_CONFIRMED_MODELS</code> are all now dead for
+    <code>LLMClientLocal</code> and were removed from it (they remain live for <code>LLMClientOpenRouter</code>,
+    which still benefits from the pydantic_ai bridge).
+    </p>
+    <p>
+    <strong>Why this is still transparent to callers:</strong> <code>CompletionAgent</code> exposes exactly the
+    structural shape <code>LLMClientBase.run_agent()</code> needs — a <code>run_sync(user_prompt)</code> returning
+    an object with <code>.output</code>/<code>.all_messages_json()</code> — captured as the
+    <code>_RunnableAgent</code>/<code>_RunResultLike</code> <code>Protocol</code>s at the top of
+    <code>llm_client.py</code>, which <code>run_agent()</code> is now typed against instead of
+    <code>pydantic_ai.Agent</code> directly. <code>SummaryMemory</code>, <code>Gamemaster</code>, and
+    <code>Oracle</code> call <code>build_agent()</code>/<code>run_agent()</code> identically regardless of which
+    client they're holding — none of their code changed for this. Verified live end-to-end (both directly via
+    <code>CompletionAgent.run_sync()</code> and through the shared <code>run_agent()</code> helper): schema
+    delivered in-prompt, valid JSON parsed and validated on the first attempt, no retry needed.
+    </p>
+    <p>
+    <strong>Separate, pre-existing bug surfaced along the way — root-caused and fixed:</strong> with
+    <code>reasoning=True</code> and the <code>continue_</code>-based <code>&lt;think&gt;</code> prefill trick
+    engaged (<code>_adjust_reasoning_mistral24b</code>/<code>_adjust_reasoning_gemma3_r1</code>), the non-streaming
+    <code>/v1/chat/completions</code> response's <code>message.content</code> field came back empty — confirmed live
+    against a running Gemma-3-R1 server by intercepting the raw HTTP response, independent of the
+    <code>--jinja</code>/<code>--enable-thinking</code> server flags. The actual generated answer (a valid,
+    schema-compliant JSON object) was landing in a separate <code>message.reasoning_content</code> field instead:
+    this llama-server build classifies the <em>entire</em> completion as reasoning content whenever the model never
+    emits a literal closing <code>&lt;/think&gt;</code> in its own continuation — which it never did in every run
+    observed, since the model treats the prefilled opening tag as already "spent" and just writes the answer
+    directly. <code>_execute_chat_completion</code> (<code>src/llmclient/llm_client.py</code>) only ever read
+    <code>content</code>, so <code>chat_completion()</code> returned <code>""</code> every time this path was hit,
+    dooming <code>CompletionAgent</code>'s retry loop. This gap predates <code>CompletionAgent</code> entirely — the
+    pre-pydantic_ai <code>structured_output.py</code>'s <code>parse_with_retry</code> made the exact same
+    <code>chat_completion(reasoning=True)</code> call and would have hit it too; it's a dormant gap this test run
+    surfaced by actually exercising Local reasoning end-to-end. Fixed by falling back to
+    <code>reasoning_content</code> when <code>content</code> is empty (<code>extract_json_schema()</code> already
+    strips the <code>```json</code> fencing either field comes wrapped in). Verified live post-fix: single-attempt
+    success, schema parsed and validated correctly.
+    </p>
   </div>
 
   <div class="lenses">
@@ -887,8 +1061,15 @@
   <table>
     <tr><th>Concern</th><th>Where</th></tr>
     <tr><td>Compression prompts bundle</td><td><code>CompressionPrompts</code> — <code>src/brain/conversation_memory.py</code></td></tr>
-    <tr><td>Shared pydantic_ai run/log helper</td><td><code>SummaryMemory._run_agent()</code> — <code>src/brain/conversation_memory.py</code></td></tr>
-    <tr><td>Client → pydantic_ai Model mapping</td><td><code>LLMClientBase.to_pydantic_ai_model()</code> + <code>._to_pydantic_ai_settings()</code> — <code>src/llmclient/llm_client.py</code>, overridden per concrete client</td></tr>
+    <tr><td>Agent construction (the entry point business logic uses)</td><td><code>LLMClientBase.build_agent(task, output_type, system_prompt, reasoning, **agent_kwargs)</code> — <code>src/llmclient/llm_client.py</code>; composes <code>_to_pydantic_ai_model()</code> + <code>_needs_prompted_output_for_reasoning</code> so callers never branch on client type</td></tr>
+    <tr><td>Shared pydantic_ai run/log helper</td><td><code>LLMClientBase.run_agent(agent, system_prompt, user_prompt, log_type)</code> — <code>src/llmclient/llm_client.py</code>, next to <code>build_agent()</code> (shared with mission/NPC generation and Oracle alignment, see below)</td></tr>
+    <tr><td>Client → pydantic_ai Model mapping (incl. reasoning)</td><td><code>LLMClientBase._to_pydantic_ai_model(task, reasoning=False)</code> + <code>._to_pydantic_ai_settings()</code> — <code>src/llmclient/llm_client.py</code>, overridden per concrete client</td></tr>
+    <tr><td>Output-mode adjustment for thinking-incompatible tool-forcing</td><td><code>LLMClientBase._needs_prompted_output_for_reasoning: bool = False</code> — class attribute, flipped to <code>True</code> only on <code>LLMClientOpenRouter</code>; read by <code>build_agent()</code> to decide whether to swap in <code>PromptedOutput</code></td></tr>
+    <tr><td>Non-pydantic_ai structured output for local models</td><td><code>CompletionAgent</code>/<code>_CompletionRunResult</code> — <code>src/llmclient/llm_client.py</code>, used only by <code>LLMClientLocal.build_agent()</code>; drives structured output through <code>chat_completion()</code> instead of pydantic_ai's <code>Agent</code>/<code>Model</code>, so local-model reasoning tricks (<code>_adjust_reasoning_*</code>) actually apply</td></tr>
+    <tr><td>Structural typing making both agent kinds interchangeable</td><td><code>_RunnableAgent</code>/<code>_RunResultLike</code> <code>Protocol</code>s — <code>src/llmclient/llm_client.py</code>, top of file; what <code>LLMClientBase.run_agent()</code> is typed against instead of <code>pydantic_ai.Agent</code> directly</td></tr>
+    <tr><td>NPC generation (pydantic_ai pipeline)</td><td><code>Gamemaster.generate_npc()</code> — <code>src/brain/gamemaster.py</code>; per-system output models in <code>src/brain/npc_models.py</code></td></tr>
+    <tr><td>Mission generation (pydantic_ai pipeline)</td><td><code>Gamemaster.generate_mission()</code> — <code>src/brain/gamemaster.py</code></td></tr>
+    <tr><td>Oracle alignment (pydantic_ai pipeline)</td><td><code>BaseOracle._align()</code> — <code>src/brain/oracle.py</code></td></tr>
     <tr><td>Trigger / orchestration</td><td><code>SummaryMemory._try_summarize()</code> — <code>src/brain/conversation_memory.py</code></td></tr>
     <tr><td>Entity extraction + reference-integrity validator</td><td><code>SummaryMemory.extract_entities()</code> + <code>text_entity_prompt.txt</code></td></tr>
     <tr><td>Scene summarization + Single Open Scene validator</td><td><code>SummaryMemory.scene_summary()</code> + <code>text_scene_prompt_examples.txt</code></td></tr>

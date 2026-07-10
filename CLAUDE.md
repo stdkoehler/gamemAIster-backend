@@ -8,6 +8,7 @@ Python/FastAPI backend for a multi-TTRPG-system AI gamemaster app.
 
 - `poetry run python -m pytest tests/` — run the test suite. Note: the `dev/` directory holds manual scripts that expect a local LLM server (textgen-webui) running on `127.0.0.1:5000` — they are not part of the real suite and will fail to collect without that server; run `pytest tests/` (not bare `pytest .`) to skip them.
 - `poetry run python -m pytest tests/test_npc_schema_contract.py` — verify the NPC generation pipeline's output still matches the frontend's character schemas (run this after touching `npc_models.py`, `system_registry.py`, or `character_formatters.py`).
+- `RUN_LIVE_LLM_TESTS=1 poetry run python -m pytest tests/test_llm_clients_live.py -v` — hits real provider APIs (DeepSeek, OpenRouter, MiniMax, Claude, plus Local if a textgen-webui server is reachable) to verify `reasoning=True` actually produces thinking output *and* correctly validated structured output through `LLMClientBase.build_agent()`. Costs real tokens, so it's skipped by default under plain `pytest tests/` — NEVER run it without explicit permission by the user.
 
 ## Supported game systems
 

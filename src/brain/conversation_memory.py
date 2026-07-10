@@ -10,10 +10,7 @@ import json
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any, TypeVar
-
 from pydantic import BaseModel, model_validator
-from pydantic_ai import Agent
 
 from src.llmclient.llm_parameters import LLMLogicConfig
 from src.llmclient.llm_config_registry import LLMTask
@@ -22,13 +19,10 @@ from src.crud.crud import crud_instance
 
 from src.brain.data_types import Interaction, EntityResponse, Scene
 
-from src.utils.sqllogger import SQLLogger, LogType
+from src.utils.sqllogger import LogType
 from src.utils.logger import configure_logger
 
 _log = configure_logger("conversation_memory")
-logger = SQLLogger()
-
-T = TypeVar("T", bound=BaseModel)
 
 
 # ---------------------------------------------------------------------------
@@ -209,44 +203,6 @@ class SummaryMemory:
         return self._state.digest if self._state.digest else self._state.summary
 
     # ------------------------------------------------------------------
-    # Shared pydantic_ai run + log pattern
-    # ------------------------------------------------------------------
-
-    def _run_agent(
-        self,
-        agent: Agent[Any, T],
-        system_prompt: str,
-        user_prompt: str,
-        log_type: LogType,
-    ) -> T:
-        """
-        Runs a pre-built pydantic_ai Agent and logs the outcome the same way
-        for all four compression calls. Building the Agent — its output_type
-        and any extra output validators — stays at each call site, since
-        both differ per call; this only covers the mechanical run/log/error
-        part that doesn't.
-        """
-        try:
-            result = agent.run_sync(user_prompt)
-        except Exception as exc:
-            logger.log_llm_call(
-                log_type,
-                llm_input=f"{system_prompt}\n\n{user_prompt}",
-                llm_output=str(exc),
-                processed_output="pydantic_ai error",
-            )
-            raise ValueError(f"pydantic_ai call failed ({log_type}): {exc}") from exc
-
-        logger.log_llm_call(
-            log_type,
-            llm_input=f"{system_prompt}\n\n{user_prompt}",
-            llm_output=result.all_messages_json().decode("utf-8"),
-            extracted_json=result.output.model_dump_json(),
-            processed_output=result.output.model_dump_json(),
-        )
-        return result.output
-
-    # ------------------------------------------------------------------
     # Structured extraction methods
     # ------------------------------------------------------------------
 
@@ -274,10 +230,10 @@ class SummaryMemory:
             roster=self._npc_roster_json,
         )
 
-        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
-        agent = Agent(model, output_type=_SceneListOutput, system_prompt=system_prompt)
-
-        output = self._run_agent(agent, system_prompt, user_prompt, LogType.SCENE)
+        agent = self._llm_client.build_agent(
+            LLMTask.SUMMARY, output_type=_SceneListOutput, system_prompt=system_prompt, reasoning=True
+        )
+        output = self._llm_client.run_agent(agent, system_prompt, user_prompt, LogType.SCENE)
 
         # only update last scene and newly created scenes
         return [scene for scene in output.scenes if scene.id >= last_scene_id]
@@ -307,18 +263,18 @@ class SummaryMemory:
             roster=self._npc_roster_json,
         )
 
-        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
-        agent = Agent(
-            model,
+        agent = self._llm_client.build_agent(
+            LLMTask.SUMMARY,
             output_type=EntityResponse,
             system_prompt=system_prompt,
+            reasoning=True,
             validation_context={
                 "known_entity_names": {e.name.strip().lower() for e in known_entities},
                 "roster_names": {r["name"].strip().lower() for r in self._npc_roster},
             },
         )
 
-        return self._run_agent(agent, system_prompt, user_prompt, LogType.ENTITY)
+        return self._llm_client.run_agent(agent, system_prompt, user_prompt, LogType.ENTITY)
 
     def summarize(self, text_interaction: str) -> str:
         """
@@ -343,10 +299,10 @@ class SummaryMemory:
             current=text_interaction,
         )
 
-        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
-        agent = Agent(model, output_type=_Recap, system_prompt=system_prompt)
-
-        return self._run_agent(agent, system_prompt, user_prompt, LogType.SUMMARY).recap
+        agent = self._llm_client.build_agent(
+            LLMTask.SUMMARY, output_type=_Recap, system_prompt=system_prompt, reasoning=True
+        )
+        return self._llm_client.run_agent(agent, system_prompt, user_prompt, LogType.SUMMARY).recap
 
     def _refresh_digest(self, ledger: str) -> str:
         """
@@ -364,10 +320,10 @@ class SummaryMemory:
         system_prompt = self._digest_prompt.replace("__RPG__", self._game_name)
         user_prompt = digest_input.format(ledger=ledger)
 
-        model = self._llm_client.to_pydantic_ai_model(LLMTask.SUMMARY)
-        agent = Agent(model, output_type=_Digest, system_prompt=system_prompt)
-
-        return self._run_agent(agent, system_prompt, user_prompt, LogType.DIGEST).digest
+        agent = self._llm_client.build_agent(
+            LLMTask.SUMMARY, output_type=_Digest, system_prompt=system_prompt, reasoning=True
+        )
+        return self._llm_client.run_agent(agent, system_prompt, user_prompt, LogType.DIGEST).digest
 
     # ------------------------------------------------------------------
     # History management

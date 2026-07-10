@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 import re
 
-from typing import Generator, Any
+from typing import Generator, Any, Generic, Protocol, TypeVar
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 from abc import ABC, abstractmethod
 
 from src.utils.logger import configure_logger
-from src.utils.sqllogger import SQLLogger
+from src.utils.sqllogger import LogType, SQLLogger
 
 _log = configure_logger("llm_client")
 _sql_logger = SQLLogger()
@@ -48,12 +48,40 @@ from src.llmclient.llm_parameters import (
     UNSET,
 )
 
+from pydantic_ai import Agent, PromptedOutput
+from pydantic_ai.output import OutputSpec
 from pydantic_ai.models import Model
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.models.anthropic import AnthropicModel
+from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.anthropic import AnthropicProvider
+from pydantic_ai.providers.openrouter import OpenRouterProvider
+from pydantic_ai.providers.deepseek import DeepSeekProvider
 from pydantic_ai.settings import ModelSettings
+from pydantic import BaseModel, ValidationError
+
+from src.brain.json_tools import extract_json_schema
+
+_OutputT = TypeVar("_OutputT", bound=BaseModel)
+
+
+class _RunResultLike(Protocol[_OutputT]):
+    """Structural shape run_agent() needs from a run_sync() result — matches
+    pydantic_ai's own AgentRunResult, but doesn't require importing it, so
+    LLMClientLocal's non-pydantic_ai CompletionAgent (see below) satisfies
+    this without inheriting from anything pydantic_ai-specific."""
+
+    output: _OutputT
+
+    def all_messages_json(self) -> bytes: ...
+
+
+class _RunnableAgent(Protocol[_OutputT]):
+    """Structural shape run_agent() needs from whatever build_agent() returns.
+    A real pydantic_ai.Agent satisfies this already; so does CompletionAgent."""
+
+    def run_sync(self, user_prompt: str) -> _RunResultLike[_OutputT]: ...
 
 
 class MessageRole(StrEnum):
@@ -256,13 +284,21 @@ class LLMClientBase(ABC):
     # pydantic_ai bridge (pilot — see docs/conversation_memory.html)
     # ------------------------------------------------------------------
 
-    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+    def _to_pydantic_ai_model(self, task: LLMTask, reasoning: bool = False) -> Model:
         """
         Builds the pydantic_ai Model equivalent to this client, for callers
         that want pydantic_ai's validator-driven retry loop instead of our
-        own _call_structured/parse_with_retry. Reuses this client's own
-        connection details and the same ConfigRegistry-resolved settings
-        every other call for `task` already goes through.
+        own chat_completion(). Reuses this client's own connection details
+        and the same ConfigRegistry-resolved settings every other call for
+        `task` already goes through.
+
+        `reasoning` mirrors the `reasoning` flag our own chat_completion()
+        takes — every structured-output call site (compaction, NPC
+        generation, mission generation, oracle alignment) always passed
+        reasoning=True before this bridge existed, so callers should keep
+        passing reasoning=True for parity rather than silently dropping it.
+        Each subclass decides how (or whether) to honor it — see the
+        per-client overrides.
 
         Overridden by every concrete client (LLMClientLocal, LLMClientDeepSeek,
         the Anthropic-compatible clients, LLMClientOpenRouter). Defined here
@@ -295,6 +331,102 @@ class LLMClientBase(ABC):
         if config.stop is not UNSET:
             settings["stop_sequences"] = config.stop
         return settings
+
+    # Whether this client needs output_type swapped to PromptedOutput when
+    # reasoning is requested, to avoid forcing a tool call. This is a static
+    # fact about the client/pydantic_ai Model class it wraps, not something
+    # that varies per call — forcing a tool call (pydantic_ai's default
+    # output_type=SomeModel behavior) is rejected by some reasoning-capable
+    # models' real APIs when thinking is also enabled (Anthropic,
+    # deepseek-reasoner). See _to_pydantic_ai_model()'s docstring for which
+    # of our clients already get a free pass on this via pydantic_ai's own
+    # per-provider handling (Claude/MiniMax via AnthropicModel's internal
+    # auto-switch, DeepSeek via DeepSeekProvider's profile fix) — those stay
+    # False. Only LLMClientOpenRouter, which has no such handling, sets this
+    # True.
+    _needs_prompted_output_for_reasoning: bool = False
+
+    def build_agent(
+        self,
+        task: LLMTask,
+        output_type: type[_OutputT],
+        system_prompt: str,
+        reasoning: bool = False,
+        **agent_kwargs: Any,
+    ) -> _RunnableAgent[_OutputT]:
+        """
+        One-stop agent builder — the entry point business logic
+        (SummaryMemory, Gamemaster) should use instead of calling
+        _to_pydantic_ai_model() separately or constructing Agent() directly.
+        Composes the reasoning model-setting with the output-mode adjustment
+        some clients need to keep structured output working (see
+        _needs_prompted_output_for_reasoning above). Callers never need to
+        know which clients need which — that's the whole point of
+        encapsulating it here rather than branching on client type in
+        business logic.
+
+        `**agent_kwargs` passes through to Agent() for the few things that
+        vary per call site (e.g. extract_entities()'s validation_context).
+
+        This base implementation always returns a real pydantic_ai Agent.
+        LLMClientLocal overrides this method entirely to return a
+        CompletionAgent instead — see its docstring for why pydantic_ai's
+        Agent/Model interface can't express what local structured-output
+        calls actually need.
+        """
+        model = self._to_pydantic_ai_model(task, reasoning=reasoning)
+        wrapped_output_type: OutputSpec[_OutputT] = (
+            PromptedOutput(output_type)
+            if reasoning and self._needs_prompted_output_for_reasoning
+            else output_type
+        )
+        return Agent(model, output_type=wrapped_output_type, system_prompt=system_prompt, **agent_kwargs)
+
+    @staticmethod
+    def run_agent(
+        agent: _RunnableAgent[_OutputT],
+        system_prompt: str,
+        user_prompt: str,
+        log_type: LogType,
+    ) -> _OutputT:
+        """
+        Runs a pre-built agent (from build_agent()) and logs the outcome.
+        Shared by every structured-output call site (SummaryMemory's
+        compaction calls, Gamemaster's mission/NPC generation, Oracle
+        alignment) — building the agent (its output_type and any extra
+        output validators/validation_context) stays at each call site, since
+        those differ per call; this only covers the mechanical run/log/error
+        part that doesn't.
+
+        Typed against the `_RunnableAgent` structural protocol rather than
+        `pydantic_ai.Agent` directly: every client except LLMClientLocal
+        returns a real pydantic_ai Agent (retries on validation failure
+        handled by pydantic_ai itself — a Pydantic validator's ValueError is
+        fed back to the model verbatim and retried automatically).
+        LLMClientLocal.build_agent() returns CompletionAgent instead, which
+        satisfies the same protocol but drives retries itself through
+        chat_completion(); see its docstring for why.
+        """
+        try:
+            result = agent.run_sync(user_prompt)
+        except Exception as exc:
+            _sql_logger.log_llm_call(
+                log_type,
+                llm_input=f"{system_prompt}\n\n{user_prompt}",
+                llm_output=str(exc),
+                processed_output="pydantic_ai error",
+            )
+            raise ValueError(f"pydantic_ai call failed ({log_type}): {exc}") from exc
+
+        output_json = result.output.model_dump_json()
+        _sql_logger.log_llm_call(
+            log_type,
+            llm_input=f"{system_prompt}\n\n{user_prompt}",
+            llm_output=result.all_messages_json().decode("utf-8"),
+            extracted_json=output_json,
+            processed_output=output_json,
+        )
+        return result.output
 
     # ------------------------------------------------------------------
     # Shared helpers
@@ -335,6 +467,138 @@ class LLMClientBase(ABC):
         return {idx: (num - rank) for rank, idx in enumerate(assistant_indices)}
 
 
+@dataclass
+class _CompletionRunResult(Generic[_OutputT]):
+    """Duck-typed stand-in for pydantic_ai's AgentRunResult — see
+    CompletionAgent's docstring for why LLMClientLocal needs one."""
+
+    output: _OutputT
+    _log_payload: dict[str, Any]
+
+    def all_messages_json(self) -> bytes:
+        return json.dumps(self._log_payload, ensure_ascii=False, indent=2).encode("utf-8")
+
+
+class CompletionAgent(Generic[_OutputT]):
+    """
+    Duck-typed pydantic_ai.Agent replacement, used only by
+    LLMClientLocal.build_agent(). Drives structured output through
+    chat_completion() — the raw completions path — instead of pydantic_ai's
+    OpenAIChatModel/Agent machinery.
+
+    Why: two separate, hard-won findings this session showed pydantic_ai's
+    Agent/Model interface structurally cannot serve local models well:
+
+    1. Schema delivery is unreliable. pydantic_ai's default output mode
+       sends the schema via an OpenAI-style `tools` field, a separate
+       request parameter from the prompt text. Verified live (HTTP
+       interception) that at least one real local backend/template
+       combination silently drops that field — the model never sees the
+       schema at all, in any form — while returning a normal 200 response,
+       so nothing about the failure is visible without inspecting the raw
+       request. PromptedOutput (an in-prompt schema instruction) sidesteps
+       this, but the fact that it was ever needed at all — for structured
+       output style local models genuinely are supposed to support well —
+       is itself evidence the request-shape approach doesn't transfer
+       cleanly to arbitrary local model/server/template combinations the
+       way it does for well-known hosted providers.
+    2. Real reasoning support is impossible to express. The local
+       reasoning-tuned models this client targets (see _adjust_reasoning())
+       need an assistant-message prefill + a `continue_` request flag to
+       actually engage their thinking mode — chat_completion() already
+       implements this correctly and has for the whole time this client has
+       existed. pydantic_ai's Agent.run_sync() always appends the prompt as
+       a *new* user turn; there's no supported way to make the final message
+       in the request a partial assistant continuation instead. `reasoning`
+       is consequently a silent no-op for LLMClientLocal through
+       pydantic_ai — confirmed live (zero ThinkingPart content across
+       repeated runs of a multi-step word problem).
+
+    Routing back through chat_completion() closes both gaps at once, using
+    code this project has relied on since before pydantic_ai was
+    introduced. The cost: retries are driven by hand here (one retry,
+    feeding the validation error back as a follow-up user turn) rather than
+    by pydantic_ai's own loop, and the schema has to be spelled out in the
+    prompt text ourselves (mirroring PromptedOutput's own instruction
+    template) since nothing else will communicate it. Exposes exactly the
+    surface run_agent() needs (see _RunnableAgent/_RunResultLike above), so
+    this is fully transparent to callers — SummaryMemory/Gamemaster never
+    know LLMClientLocal uses a different mechanism than every other client.
+    """
+
+    _MAX_RETRIES = 1
+
+    def __init__(
+        self,
+        client: LLMClientLocal,
+        task: LLMTask,
+        output_type: type[_OutputT],
+        system_prompt: str,
+        reasoning: bool,
+        validation_context: dict[str, Any] | None = None,
+    ) -> None:
+        self._client = client
+        self._task = task
+        self._output_type = output_type
+        self._reasoning = reasoning
+        self._validation_context = validation_context
+        # Same instruction template pydantic_ai's own PromptedOutput uses —
+        # kept identical since that phrasing is already proven to work.
+        schema = json.dumps(output_type.model_json_schema())
+        self._system_prompt = (
+            f"{system_prompt}\n\n"
+            f"Always respond with a JSON object that's compatible with this schema:\n\n{schema}\n\n"
+            "Don't include any text or Markdown fencing before or after."
+        )
+
+    def run_sync(self, user_prompt: str) -> _CompletionRunResult[_OutputT]:
+        messages = [
+            Message(role=MessageRole.SYSTEM, content=MessageContent(text=self._system_prompt)),
+            Message(role=MessageRole.USER, content=MessageContent(text=user_prompt)),
+        ]
+        last_error: Exception | None = None
+        response = ""
+        for attempt in range(self._MAX_RETRIES + 1):
+            response = self._client.chat_completion(
+                messages=messages, reasoning=self._reasoning, task=self._task
+            )
+            try:
+                json_str = extract_json_schema(response)
+                output = self._output_type.model_validate_json(
+                    json_str, context=self._validation_context
+                )
+                return _CompletionRunResult(
+                    output=output,
+                    _log_payload={
+                        "system_prompt": self._system_prompt,
+                        "conversation": [
+                            {"role": m.role.value, "content": m.content.text} for m in messages
+                        ],
+                        "final_response": response,
+                    },
+                )
+            except (ValueError, ValidationError) as exc:
+                last_error = exc
+                if attempt < self._MAX_RETRIES:
+                    messages.append(Message(role=MessageRole.ASSISTANT, content=MessageContent(text=response)))
+                    messages.append(
+                        Message(
+                            role=MessageRole.USER,
+                            content=MessageContent(
+                                text=(
+                                    f"Your last response could not be parsed/validated: {exc}\n\n"
+                                    "Respond again with ONLY the corrected JSON object — no other text."
+                                )
+                            ),
+                        )
+                    )
+
+        raise ValueError(
+            f"LLMClientLocal structured-output call failed after {self._MAX_RETRIES + 1} "
+            f"attempt(s): {last_error}"
+        )
+
+
 class LLMClientLocal(LLMClientBase):
     """
     LLMClient is a class that provides methods for interacting with the LLM API.
@@ -345,6 +609,31 @@ class LLMClientLocal(LLMClientBase):
         _token_url: The URL for counting tokens in a text.
 
     """
+
+    def build_agent(
+        self,
+        task: LLMTask,
+        output_type: type[_OutputT],
+        system_prompt: str,
+        reasoning: bool = False,
+        **agent_kwargs: Any,
+    ) -> CompletionAgent[_OutputT]:
+        """
+        Overrides the base pydantic_ai-based implementation entirely — see
+        CompletionAgent's docstring for why. `**agent_kwargs` only carries
+        `validation_context` in practice (the one thing call sites pass
+        beyond the fixed params); threaded through to
+        model_validate_json(context=...) exactly like pydantic_ai's own
+        validation_context threads to ValidationInfo.context.
+        """
+        return CompletionAgent(
+            client=self,
+            task=task,
+            output_type=output_type,
+            system_prompt=system_prompt,
+            reasoning=reasoning,
+            validation_context=agent_kwargs.get("validation_context"),
+        )
 
     def __init__(
         self,
@@ -402,12 +691,22 @@ class LLMClientLocal(LLMClientBase):
             if msg.role == MessageRole.USER or msg.role == MessageRole.ASSISTANT
         ]
 
-        # In-place safety for the user message content, we add the system message to the
-        # first user message because our actual system message needs to be the thinking
-        # command
+        # We add the system message to the first user message because our actual
+        # system message needs to be the thinking command. Builds a new Message
+        # rather than mutating user_msgs[0] in place: user_msgs[0] is the same
+        # object living in the caller's own `messages` list, and CompletionAgent
+        # (llm_client.py) reuses that same list/objects across its own retry
+        # loop — an in-place mutation here would re-prepend the system message
+        # onto an already-adjusted first user message on every retry.
         if user_msgs:
-            user_msgs[0].content.text = (
-                f"{system_msg.content.text}\n\n{user_msgs[0].content.text}"
+            user_msgs[0] = Message(
+                role=user_msgs[0].role,
+                content=MessageContent(
+                    text=f"{system_msg.content.text}\n\n{user_msgs[0].content.text}",
+                    thinking=user_msgs[0].content.thinking,
+                    thinking_signature=user_msgs[0].content.thinking_signature,
+                    reasoning_details=user_msgs[0].content.reasoning_details,
+                ),
             )
 
         # this is the message the assistant should complete, we add the warmstart
@@ -620,7 +919,15 @@ class LLMClientLocal(LLMClientBase):
             }
         )
         result = self._post_request(self._chat_completion_url, payload, timeout=3600)
-        text = result["choices"][0]["message"]["content"]
+        message = result["choices"][0]["message"]
+        # With reasoning_warmstart's continue_ trick, this server has been observed
+        # to classify the ENTIRE completion as reasoning_content (leaving content
+        # empty) when the model never emits a literal closing </think> in its own
+        # continuation — confirmed live against Gemma-3-R1, independent of the
+        # --jinja/--enable-thinking server flags. Falling back to reasoning_content
+        # recovers the answer either way; extract_json_schema() already strips any
+        # ```json fencing regardless of which field it came from.
+        text = message.get("content") or message.get("reasoning_content")
         return text if text is not None else ""
 
     def count_tokens(self, text: str) -> int:
@@ -643,12 +950,10 @@ class LLMClientLocal(LLMClientBase):
         """
         requests.post(self._stop_generation_url, timeout=60)
 
-    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
-        return OpenAIChatModel(
-            self.model_identifier,
-            provider=OpenAIProvider(base_url=f"{self._base_url}/v1", api_key="not-needed"),
-            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
-        )
+    # No _to_pydantic_ai_model() override: build_agent() is overridden
+    # entirely above (see CompletionAgent), so the base class's
+    # NotImplementedError-raising default is correct here — nothing should
+    # ever call this for LLMClientLocal.
 
 
 # --- DeepSeek Client (OpenAI-Compatible SDK) ---
@@ -691,6 +996,14 @@ class LLMClientDeepSeek(LLMClientBase):
             base_url="https://api.deepseek.com", api_key=api_key
         )
         self._model = model
+
+    @staticmethod
+    def _thinking_extra_body(reasoning: bool) -> dict[str, Any]:
+        """DeepSeek's `thinking` toggle, sent unconditionally based on `reasoning`
+        regardless of which model (deepseek-chat vs. deepseek-reasoner) is
+        selected — shared by the raw chat_completion path (streaming and
+        non-streaming) and the pydantic_ai bridge so all three stay in sync."""
+        return {"thinking": {"type": "enabled" if reasoning else "disabled"}}
 
     def _adjust_reasoning(
         self, messages: list[Message], payload: dict[str, Any]
@@ -745,11 +1058,7 @@ class LLMClientDeepSeek(LLMClientBase):
                 temperature=config.temperature,  # type: ignore
                 top_p=config.top_p,  # type: ignore
                 stream=True,
-                extra_body=(
-                    {"thinking": {"type": "enabled"}}
-                    if reasoning
-                    else {"thinking": {"type": "disabled"}}
-                ),
+                extra_body=self._thinking_extra_body(reasoning),
             )
             for event in stream_response:
                 delta = event.choices[0].delta  # type: ignore
@@ -841,11 +1150,7 @@ class LLMClientDeepSeek(LLMClientBase):
             max_tokens=config.max_tokens,  # type: ignore
             temperature=config.temperature,  # type: ignore
             top_p=config.top_p,  # type: ignore
-            extra_body=(
-                {"thinking": {"type": "enabled"}}
-                if reasoning
-                else {"thinking": {"type": "disabled"}}
-            ),
+            extra_body=self._thinking_extra_body(reasoning),
         )
 
         if reasoning:
@@ -872,13 +1177,36 @@ class LLMClientDeepSeek(LLMClientBase):
         )  # DeepSeek uses similar tokenization
         return len(encoding.encode(text))
 
-    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+    def _to_pydantic_ai_model(self, task: LLMTask, reasoning: bool = False) -> Model:
+        # Uses the same _thinking_extra_body() as our own _execute_chat_completion(_stream)
+        # so the "thinking" toggle can't drift between the raw and pydantic_ai paths.
+        #
+        # Uses pydantic_ai's dedicated DeepSeekProvider rather than a generic
+        # OpenAIProvider pointed at DeepSeek's base_url — verified live that
+        # this matters: with the generic provider, deepseek-reasoner returns
+        # a 400 ("Thinking mode does not support this tool_choice") on any
+        # structured-output call, because our output_type forces a specific
+        # tool_choice and the generic OpenAI profile assumes that's safe.
+        # DeepSeekProvider's model_profile() sets
+        # openai_supports_tool_choice_required=False for deepseek-reasoner
+        # specifically so pydantic_ai falls back to tool_choice='auto'
+        # instead of forcing it — which is exactly what's needed here.
+        #
+        # NOTE: tool_choice='auto' means the model is no longer *forced* to
+        # call the structured-output tool — deepseek-reasoner has reliably
+        # chosen to call it anyway in live testing, but this is "best
+        # effort" compliance, not a hard guarantee, the same trade-off
+        # LLMClientOpenRouter's _needs_prompted_output_for_reasoning makes
+        # explicit via PromptedOutput. If SQL call logs (LogType.* tables) start
+        # showing a real increase in pydantic_ai validation retries for
+        # this client, that's the signal to stop forcing reasoning=True
+        # here rather than silently eating the extra round trips.
+        settings = self._to_pydantic_ai_settings(self.get_task_config(task))
+        settings["extra_body"] = self._thinking_extra_body(reasoning)
         return OpenAIChatModel(
             self._model,
-            provider=OpenAIProvider(
-                base_url="https://api.deepseek.com", api_key=self._client.api_key
-            ),
-            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
+            provider=DeepSeekProvider(api_key=self._client.api_key),
+            settings=settings,
         )
 
 
@@ -1091,13 +1419,34 @@ class LLMClientAnthropicBase(LLMClientBase):
         """
         return len(tiktoken.get_encoding("cl100k_base").encode(text))
 
-    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
+    def _to_pydantic_ai_model(self, task: LLMTask, reasoning: bool = False) -> Model:
+        # Unified pydantic_ai setting — translates to extended thinking with
+        # a sensible default budget, same intent as the
+        # ThinkingConfigEnabledParam our own _execute_chat_completion builds
+        # when reasoning=True.
+        #
+        # NOTE: Anthropic's real API rejects combining extended thinking
+        # with a *forced* tool call, which is what our output_type=SomeModel
+        # calls normally do. AnthropicModel already handles this internally
+        # (auto-switches to native/prompted output instead of forcing a
+        # tool call when it detects the conflict) — verified
+        # _needs_prompted_output_for_reasoning can stay False here, unlike
+        # LLMClientOpenRouter.
+        # That auto-switch is itself a "best effort" structured-output mode
+        # rather than the (slightly more reliable) forced-tool-call default.
+        # If SQL call logs (LogType.* tables) start showing a real increase
+        # in pydantic_ai validation retries for this client, that's the
+        # signal to stop forcing reasoning=True here rather than silently
+        # eating the extra round trips.
+        settings = self._to_pydantic_ai_settings(self.get_task_config(task))
+        if reasoning:
+            settings["thinking"] = True
         return AnthropicModel(
             self._model,
             provider=AnthropicProvider(
                 api_key=self._client.api_key, base_url=self._base_url
             ),
-            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
+            settings=settings,
         )
 
 
@@ -1150,6 +1499,22 @@ class LLMClientOpenRouter(LLMClientBase):
         - "google/gemini-flash-thinking" - Gemini thinking model
     """
 
+    # Unlike LLMClientAnthropicBase/LLMClientDeepSeek, OpenRouterModel has no
+    # internal handling for the thinking-vs-forced-tool-call conflict (see
+    # _to_pydantic_ai_model() below) — the upstream provider's profile
+    # functions it reuses (e.g. anthropic_model_profile) don't carry that
+    # protection, only the dedicated AnthropicModel/DeepSeekProvider classes
+    # do, and OpenRouterModel is neither. So build_agent() swaps to
+    # PromptedOutput when reasoning is on, to sidestep tool-calling entirely
+    # instead of forcing a tool call the downstream model may have to
+    # silently drop thinking to honor. Verified live: still produces
+    # correct, fully-validated output (same pydantic validation/retry loop
+    # as the default tool-calling mode), just via a prompted JSON
+    # instruction instead of a tool call — a "best effort" compliance mode
+    # rather than a hard guarantee, so if retry rates climb, that's the
+    # trade-off being made here.
+    _needs_prompted_output_for_reasoning = True
+
     def __init__(
         self,
         api_key: str,
@@ -1176,12 +1541,23 @@ class LLMClientOpenRouter(LLMClientBase):
             "Content-Type": "application/json",
         }
 
-    def to_pydantic_ai_model(self, task: LLMTask) -> Model:
-        # OpenRouter is itself an OpenAI-compatible aggregator API.
-        return OpenAIChatModel(
+    def _to_pydantic_ai_model(self, task: LLMTask, reasoning: bool = False) -> Model:
+        # Uses pydantic_ai's dedicated OpenRouterModel/OpenRouterProvider
+        # rather than a generic OpenAIChatModel + OpenAIProvider pointed at
+        # OpenRouter's base_url — OpenRouter's actual reasoning toggle is
+        # `extra_body['reasoning'] = {"effort": ..., "enabled": ...}`, not
+        # OpenAI's `reasoning_effort` parameter, and OpenRouterModel is the
+        # one pydantic_ai class that overrides _translate_thinking() to
+        # build that shape from the unified `thinking` setting. Plain
+        # OpenAIChatModel would silently send `reasoning_effort`, which
+        # OpenRouter's API doesn't use for this and would just ignore.
+        settings = self._to_pydantic_ai_settings(self.get_task_config(task))
+        if reasoning:
+            settings["thinking"] = True
+        return OpenRouterModel(
             self._model,
-            provider=OpenAIProvider(base_url=self._base_url, api_key=self._api_key),
-            settings=self._to_pydantic_ai_settings(self.get_task_config(task)),
+            provider=OpenRouterProvider(api_key=self._api_key),
+            settings=settings,
         )
 
     def _convert_messages(

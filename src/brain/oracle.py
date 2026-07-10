@@ -9,9 +9,9 @@ from typing import ClassVar, Generic, TypeVar
 
 from pydantic import BaseModel, RootModel
 
-from src.brain.structured_output import parse_with_retry
-from src.llmclient.llm_client import LLMClientBase, Message, MessageContent, MessageRole
+from src.llmclient.llm_client import LLMClientBase
 from src.llmclient.llm_config_registry import LLMTask
+from src.utils.sqllogger import LogType
 
 # ---------------------------------------------------------------------------
 # Oracle pool config
@@ -226,25 +226,14 @@ class BaseOracle(ABC, Generic[TProposal, TAligned]):
     def _align(self, proposal: TProposal, background: str) -> TAligned:
         proposal_dict = proposal.model_dump()
         proposal_dict["background"] = background
-        messages: list[Message] = [
-            Message(
-                role=MessageRole.SYSTEM,
-                content=MessageContent(text=self._alignment_prompt),
-            ),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=json.dumps(proposal_dict, ensure_ascii=False)
-                ),
-            ),
-        ]
-        return parse_with_retry(
-            messages=messages,
-            result_type=self._aligned_type,
-            llm_client=self._llm_client,
+        user_prompt = json.dumps(proposal_dict, ensure_ascii=False)
+        agent = self._llm_client.build_agent(
+            LLMTask.ARCHITECT,
+            output_type=self._aligned_type,
+            system_prompt=self._alignment_prompt,
             reasoning=True,
-            task=LLMTask.ARCHITECT,
         )
+        return self._llm_client.run_agent(agent, self._alignment_prompt, user_prompt, LogType.ORACLE_ALIGN)
 
     def mission(self, background: str) -> OracleResult:
         proposal = self._assemble_proposal_seed()
