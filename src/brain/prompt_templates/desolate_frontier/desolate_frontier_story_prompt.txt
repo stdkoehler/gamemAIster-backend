@@ -267,7 +267,7 @@ The following JSON array describes the player party's current state. It is inten
 The following JSON array describes NPCs currently active in the scene — distinct from the experience's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in `keyNPCs`, or a scene-only NPC with no prior mention at all (e.g. a town deputy or a wandering drifter) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
 - `skills`: only non-zero skill ranks are listed.
 - `talents`: included only when the NPC actually has them.
-- `weapons` (each `{name, grip, damage, range, features}` — Forbidden Lands stats, `damage` applies directly to the target's Strength), `armor` (`{name, rating: {current, max}}` — rating drops as it absorbs hits and is repaired back up to max), `gear`: included only when the NPC actually has them.
+- `weapons` (each `{{name, grip, damage, range, features}}` — Forbidden Lands stats, `damage` applies directly to the target's Strength), `armor` (`{{name, rating: {{current, max}}}}` — rating drops as it absorbs hits and is repaired back up to max), `gear`: included only when the NPC actually has them.
 This is the ground truth for these NPCs' current gear, equipment, and physical appearance, taking precedence over the `keyNPCs` entry of the same name (flagged there with `_activeNpcOverride`) for those details — `keyNPCs` remains the source for backstory, personality, motivations, and secrets.
 <ACTIVE_NPCS>
 {NPCS}
