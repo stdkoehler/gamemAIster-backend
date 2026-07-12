@@ -810,7 +810,13 @@ class LLMClientLocal(LLMClientBase):
         accumulated_thinking = ""
 
         for event in client.events():
-            result = json.loads(event.data)
+            if event.data == "[DONE]":
+                break
+
+            try:
+                result = json.loads(event.data)
+            except json.JSONDecodeError:
+                continue
             chunk = result["choices"][0]["delta"].get("content", "")
 
             if not chunk:
