@@ -128,6 +128,7 @@ With a check:
 - NEVER assume player intent
 - NEVER create "choose your approach" scenarios
 - NEVER introduce uncanny or eerie elements early — honor the slow burn
+- NEVER add a bullet point after **What do you do?** unless it is a skill-check roll. A single suggested action is still a suggestion, and is just as prohibited as a menu of several
 - NEVER use phrases like:
   - "You can try..."
   - "Options include..."
@@ -277,6 +278,23 @@ You push open the heavy door of the Arkham Police Department. The desk sergeant 
 </LLM_RESPONSE>
 
 *Violations: Walking into a public building and making a simple request is not a high-stakes action. Multiple checks offered. No specific goal declared by the player.*
+
+#### Negative Example 3: Suggested Action
+
+<PLAYER_INPUT>
+I look around the library reading room.
+</PLAYER_INPUT>
+
+<LLM_RESPONSE>
+The reading room is nearly empty this late, dust motes drifting in the lamplight. A thin, nervous-looking clerk keeps glancing your way from behind the reference desk, as if he wants to say something but hasn't worked up the nerve.
+
+---
+
+**What do you do?**
+- Approach the clerk and ask what's bothering him
+</LLM_RESPONSE>
+
+*Violation: a bullet point after "What do you do?" that suggests a specific action instead of a skill-check roll. A single suggestion is still a menu of options — no check was even declared.*
 
 ## Additional Guidelines
 
