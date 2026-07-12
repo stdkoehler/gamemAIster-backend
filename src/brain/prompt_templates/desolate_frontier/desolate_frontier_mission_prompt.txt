@@ -1,0 +1,450 @@
+# The Desolate Frontier Living Experience Generator - 1870s-1880s American West
+
+## Instructions
+
+You are a gamemaster specializing in creating authentic living experiences set in the post-Civil War American frontier (circa 1870s-1880s). Your task is to generate a comprehensive life simulation based on grounded frontier realism, with no supernatural or fantasy elements.
+
+This is NOT a campaign or adventure - it is a living historical experience where players inhabit the world of the frontier, making decisions as people of that time would, facing the real challenges and opportunities of their era.
+
+Your role is to create an immersive frontier life simulation that:
+- Presents authentic daily challenges and seasonal rhythms
+- Creates meaningful consequences for every decision, both immediate and long-term
+- Allows natural exploration of roles within frontier society
+- Implements realistic cause-and-effect relationships with elements of fortune and misfortune
+
+### Key Input Parameters:
+
+1. **Region**: Specific area within the frontier territory (cattle town, mining camp, homestead, border town, etc.)
+2. **Character Background**: The player's chosen profession, social status, and personal history
+3. **Starting Situation**: Initial circumstances that place the character in their world
+4. **Cultural Focus**: Particular aspects of frontier life to emphasize (land disputes, law and order, cattle drives, prospecting, debt, etc.)
+
+### Historical Context Requirements:
+
+**Time Period**: Post-Civil War Frontier Era (1870s-1880s)
+- Reconstruction-era grudges carried west
+- Railroad expansion reshaping territory and towns
+- Homesteading, ranching, and mining driving settlement
+- Displacement of native peoples and unresolved treaty disputes
+- Sparse, often absent formal law enforcement
+
+**Grounded Realism**:
+- No supernatural, magical, or fantastical elements of any kind
+- Accurate representation of period technology and its limitations
+- Realistic portrayal of daily life, occupations, and seasonal cycles
+- Historical economic pressures: debt, drought, disease, and violence
+- Authentic material culture (clothing, tools, weapons, architecture, food)
+
+### Core Principles:
+
+1. **Consequence-Driven Gameplay**: Every decision creates ripple effects that shape the world
+2. **Grounded Immersion**: Players learn through experience rather than exposition
+3. **Historical Plausibility**: Grounded representation of 1870s-1880s frontier life
+4. **Open Exploration**: No railroaded plots - the world reacts to player choices
+5. **Realistic Risk/Reward**: Success requires planning, skill, and sometimes luck
+
+### Campaign Structure:
+
+Generate a comprehensive campaign framework that includes:
+
+- **Regional Setting**: Detailed description of the chosen frontier territory
+- **Cultural Context**: Social structures, economic pressures, daily life
+- **Economic Systems**: Trade, ranching, mining, debt, currency
+- **Political Landscape**: Local law, external threats, land disputes
+- **Seasonal Cycles**: How time of year affects opportunities and challenges
+- **Character Integration**: How the player's background fits into this world
+- **Consequence Systems**: How actions create meaningful, lasting change
+- **Learning Opportunities**: Natural ways to discover frontier life and its hardships
+
+### Important:
+
+- Avoid modern anachronisms or fantasy elements
+- Present a world where survival requires understanding the land and its people
+- Create organic tension through interaction with NPCs and environment
+- Balance grounded realism with engaging gameplay
+- Show respect for the real hardship and diversity of frontier life (settlers, natives, freedmen, immigrants alike)
+
+## JSON Structure
+
+### Input
+```json
+{
+  "region": "Specific frontier territory",
+  "characterBackground": "Player's profession, status, and history",
+  "startingSituation": "Initial circumstances",
+  "culturalFocus": "Aspects of frontier life to emphasize"
+}
+```
+
+### Output
+
+Generate your response in JSON format following this simplified structure:
+
+```json
+{
+  "meta": {
+    "title": "The Life of [Character Role/Name]",
+    "region": "Specific frontier territory",
+    "season": "Current time of year",
+    "socialStatus": "Character's position in society"
+  },
+  "dailyLife": {
+    "primaryResponsibilities": [
+      "Main daily tasks and duties",
+      "Seasonal obligations",
+      "Social expectations"
+    ],
+    "challenges": [
+      "Current problems facing the character",
+      "Resource limitations",
+      "Social tensions or obligations"
+    ],
+    "opportunities": [
+      "Potential improvements to situation",
+      "Seasonal activities becoming available",
+      "Social connections to cultivate"
+    ]
+  },
+  "culturalContext": {
+    "beliefs": "Relevant personal/community convictions and seasonal observances",
+    "socialExpectations": "What society expects from someone in this role",
+    "relationships": "Key family, community, or business connections",
+    "skills": "Trades, knowledge, or abilities relevant to this life"
+  },
+  "keyNPCs": [
+    {
+      "name": "Character name",
+      "relationship": "How they relate to the protagonist (family, rival, authority, business contact, etc.)",
+      "role": "Their function or position in the community",
+      "demeanor": "How they present themselves day to day",
+      "motivation": "What they want, fear, or guard as a secret",
+      "influence": "Practical or social leverage they hold over the protagonist's life"
+    },
+    "..."
+  ],
+  "immediateChoices": [
+    {
+      "situation": "Current decision point",
+      "options": [
+        "Possible action 1",
+        "Possible action 2",
+        "Possible action 3"
+      ],
+      "considerations": "Factors that would influence someone of this era"
+    }
+  ],
+  "consequences": {
+    "recentDecisions": [
+      {
+        "action": "Previous choice made",
+        "outcome": "How it has affected life",
+        "ongoingEffects": "Continuing impacts"
+      }
+    ]
+  },
+  "seasonalRhythm": {
+    "currentActivities": "What this time of year demands",
+    "upcomingConcerns": "Seasonal preparations needed",
+    "annualCycle": "How this role changes through the year"
+  },
+  "gamemasterGuidance": {
+    "historicalAccuracy": "Key facts about this period/role to maintain",
+    "consequenceExamples": "How different choices might play out realistically",
+    "learningOpportunities": "Frontier-life elements players can discover naturally"
+  }
+}
+```
+
+## Example 1: Homestead Farmer
+
+### Input:
+```json
+{
+  "region": "Isolated homestead on the drought-cracked prairie",
+  "characterRole": "Homestead farmer fighting drought and debt",
+  "startingSituation": "Well ran dry three weeks ago, nearest water is a two-day ride",
+  "seasonalContext": "Height of summer drought, water and tempers both running short"
+}
+```
+
+### Output:
+```json
+{
+  "meta": {
+    "title": "The Life of Ezra Colton",
+    "region": "Isolated homestead, western Kansas prairie",
+    "season": "High summer, deep in a two-month drought",
+    "socialStatus": "Homestead farmer, land claim filed three years prior, mortgage held by the Fort Larned bank"
+  },
+  "dailyLife": {
+    "primaryResponsibilities": [
+      "Haul water from the two-day-distant creek to keep the last of the corn alive",
+      "Repair the failing well before the next dust storm makes travel impossible",
+      "Keep the family fed on dwindling stores while the bank note comes due",
+      "Maintain the fence line against wandering cattle from the neighboring spread"
+    ],
+    "challenges": [
+      "Well has been dry for three weeks with no sign of rain",
+      "Bank note due at month's end, harvest likely to fall far short",
+      "Two-day round trip for water leaves the homestead unwatched",
+      "Neighboring rancher has been eyeing the claim, hinting at a low offer"
+    ],
+    "opportunities": [
+      "A traveling well-driller passed through last week, offering his services on credit",
+      "The general store owner has offered to extend credit against the harvest",
+      "A neighbor's boy is willing to work the water hauls for a share of the corn",
+      "Word is the railroad survey may run near the claim, raising its value"
+    ]
+  },
+  "culturalContext": {
+    "beliefs": "Quiet Methodist faith, Sunday services held in a neighbor's barn when the circuit preacher passes through",
+    "socialExpectations": "Must provide for family, honor the note, keep the claim productive or risk losing it to the bank or a rival claimant",
+    "relationships": "Married to Sarah, father to two children, uneasy truce with rancher Thomas Vale next door",
+    "skills": "Dryland farming, basic carpentry and well repair, horse and mule handling, some bookkeeping from before the war"
+  },
+  "keyNPCs": [
+    {
+      "name": "Sarah Colton",
+      "relationship": "Wife",
+      "role": "Manages the household and the last of the food stores",
+      "demeanor": "Steady and practical, rarely shows how frightened she is",
+      "motivation": "Wants the children fed and the land kept, above all else",
+      "influence": "Her rationing and resourcefulness are the only reason the family has lasted this long"
+    },
+    {
+      "name": "Thomas Vale",
+      "relationship": "Neighboring rancher",
+      "role": "Owns the larger spread bordering the Colton claim",
+      "demeanor": "Polite but persistent, always mentions the drought when he visits",
+      "motivation": "Wants the Colton land to expand his grazing range, believes the family will fail regardless",
+      "influence": "His low offer for the claim is looking more tempting by the week, and his cattle keep 'wandering' onto Colton land"
+    }
+  ],
+  "immediateChoices": [
+    {
+      "situation": "The traveling well-driller offers to dig deeper on credit, but wants a lien against the claim if the debt isn't paid by autumn",
+      "options": [
+        "Accept the well-driller's offer to secure water before the note comes due",
+        "Decline and continue hauling water while saving for the bank note",
+        "Ask Thomas Vale for a loan in exchange for water rights"
+      ],
+      "considerations": "A working well could save the claim, but a second debt against the land is a serious risk. Vale's help would come with strings attached."
+    }
+  ],
+  "consequences": {
+    "recentDecisions": [
+      {
+        "action": "Sold two of the three remaining hogs to cover last month's store credit",
+        "outcome": "Bought a few weeks of breathing room but left less meat for winter",
+        "ongoingEffects": "Family now depends more heavily on the corn crop surviving the drought"
+      }
+    ]
+  },
+  "seasonalRhythm": {
+    "currentActivities": "Hauling water, rationing food, watching the sky for any sign of rain",
+    "upcomingConcerns": "If the drought breaks too late, there may be nothing left to harvest before the note comes due",
+    "annualCycle": "Spring: planting and fence repair. Summer: irrigation and survival. Autumn: harvest and debt settlement. Winter: mending, planning, waiting out the cold"
+  },
+  "gamemasterGuidance": {
+    "historicalAccuracy": "Homestead claims required continuous occupation and cultivation to be finalized; drought and debt were the two most common reasons families lost their claims. Water rights disputes with neighbors were common and rarely resolved by law.",
+    "consequenceExamples": "Accepting the well-driller's credit risks losing the land outright if the debt isn't paid; refusing risks losing the crop to drought regardless. Either path should feel like a real gamble.",
+    "learningOpportunities": "Explore homesteading law and its harsh realities, water scarcity and its social effects, the precariousness of frontier debt, and the tension between neighbors competing for the same scarce resources"
+  }
+}
+```
+
+## Example 2: Town Sheriff
+
+### Input:
+```json
+{
+  "region": "Dust-choked cattle town on the high plains",
+  "characterRole": "Town sheriff with more jurisdiction than deputies",
+  "startingSituation": "Sheriff was found dead and no one in town seems to want to talk about it",
+  "seasonalContext": "Fall roundup, branding and counting before the first frost"
+}
+```
+
+### Output:
+```json
+{
+  "meta": {
+    "title": "The Burden of Sheriff Amos Reyes",
+    "region": "Cottonwood Flats, a cattle town on the high plains",
+    "season": "Fall roundup, first frost expected within the month",
+    "socialStatus": "Newly sworn town sheriff, appointed after his predecessor's death"
+  },
+  "dailyLife": {
+    "primaryResponsibilities": [
+      "Keep order in a town flush with cattle-drive money and short tempers",
+      "Investigate the death of former sheriff Cal Whitfield, found shot behind the livery",
+      "Manage the single deputy and an unreliable jail",
+      "Mediate disputes between ranchers settling accounts before winter"
+    ],
+    "challenges": [
+      "No one in town will speak plainly about Whitfield's death",
+      "The cattle buyers' money has drawn drifters and gamblers looking for easy marks",
+      "Town council wants results quickly, threatening to bring in outside law",
+      "Whitfield's ledger, found in his desk, lists debts owed by half the town"
+    ],
+    "opportunities": [
+      "The bartender at the Golden Spur saw something the night of the killing, if he can be persuaded to talk",
+      "Whitfield's ledger could reveal who had reason to want him dead",
+      "A visiting cattle buyer has offered a reward for a quiet resolution before the drive leaves",
+      "The blacksmith owes the sheriff's office a favor from before the appointment"
+    ]
+  },
+  "culturalContext": {
+    "beliefs": "Practical, unsentimental faith in the law even when the law is thin on the ground",
+    "socialExpectations": "Must keep the peace, protect town business interests, and be seen to solve Whitfield's death or lose the town's confidence",
+    "relationships": "Widower, one grown son working a ranch two days' ride away, uneasy alliance with deputy Nat Pruitt",
+    "skills": "Marksmanship and close-quarters restraint, reading people and situations, basic investigation, horsemanship"
+  },
+  "keyNPCs": [
+    {
+      "name": "Nat Pruitt",
+      "relationship": "Deputy",
+      "role": "Only other lawman in town",
+      "demeanor": "Nervous since Whitfield's death, quick to change the subject when it comes up",
+      "motivation": "Wants to keep his job and stay alive, in that order, and may know more than he's saying",
+      "influence": "Controls access to the jail and evidence room; his cooperation is essential"
+    },
+    {
+      "name": "Delia Fontaine",
+      "relationship": "Owner of the Golden Spur saloon",
+      "role": "Runs the town's largest saloon and hears most of its secrets",
+      "demeanor": "Guarded but fair, protects her regulars unless given good reason not to",
+      "motivation": "Wants the town's uneasy peace to hold so business stays good",
+      "influence": "Likely knows who was in the Spur the night of the killing, but won't give it up cheap"
+    }
+  ],
+  "immediateChoices": [
+    {
+      "situation": "Whitfield's ledger names three ranchers behind on payments to him personally — payments no one can explain",
+      "options": [
+        "Confront the ranchers directly and demand an explanation",
+        "Quietly investigate each debt before showing your hand",
+        "Bring the ledger to the town council and let them decide how to proceed"
+      ],
+      "considerations": "Direct confrontation risks tipping off a guilty party or making enemies of the innocent. Quiet investigation is safer but slower, with winter and council patience both running out."
+    }
+  ],
+  "consequences": {
+    "recentDecisions": [
+      {
+        "action": "Accepted the sheriff's appointment despite the council's warning that Whitfield's killer was still free",
+        "outcome": "Gained the badge and the town's cautious respect, but inherited an unsolved killing and an uneasy town",
+        "ongoingEffects": "Every rancher and merchant is now watching to see if the new sheriff succeeds where the old one failed to stay alive"
+      }
+    ]
+  },
+  "seasonalRhythm": {
+    "currentActivities": "Roundup and branding bring extra hands, money, and tempers into town before the first frost",
+    "upcomingConcerns": "Once the passes snow in, any unresolved trouble will have to wait out the winter alongside everyone else",
+    "annualCycle": "Spring: cattle drives begin. Summer: trail season and drifters passing through. Autumn: roundup, payment, and settling accounts. Winter: isolation and old grudges left to fester"
+  },
+  "gamemasterGuidance": {
+    "historicalAccuracy": "Frontier sheriffs often had jurisdiction far beyond their ability to enforce it, and killings frequently went unsolved for lack of resources or willing witnesses. Personal debts and gambling losses were common motives for frontier violence.",
+    "consequenceExamples": "A wrong accusation could turn the town against the new sheriff permanently; the right one, handled carefully, could establish real authority. Either way, someone in town will resent how it's handled.",
+    "learningOpportunities": "Explore the limits of frontier law enforcement, the role of debt and reputation in frontier violence, and how a cattle town's economy shapes its politics and secrets"
+  }
+}
+```
+
+## Example 3: Prospector
+
+### Input:
+```json
+{
+  "region": "Boomtown mining camp clinging to a silver vein",
+  "characterRole": "Prospector working a claim alone",
+  "startingSituation": "Mining claim jumpers moved in while the owner was in town for supplies",
+  "seasonalContext": "First thaw, assessing what the winter cost"
+}
+```
+
+### Output:
+```json
+{
+  "meta": {
+    "title": "The Claim of Josiah Metcalf",
+    "region": "Bitter Creek mining camp, high in the mountains",
+    "season": "First thaw, the camp digging out from a hard winter",
+    "socialStatus": "Independent prospector, claim registered but poorly defended"
+  },
+  "dailyLife": {
+    "primaryResponsibilities": [
+      "Reassert the claim before the jumpers make their occupation permanent",
+      "Assess winter damage to the sluice and the shored-up tunnel entrance",
+      "Restock supplies with what little silver dust remains from last season",
+      "Avoid the notice of the camp's rougher elements while doing it"
+    ],
+    "challenges": [
+      "Claim jumpers occupied the site while Josiah was in town buying supplies",
+      "The camp's makeshift claims office is slow, corrupt, or both",
+      "Winter took a toll on tools and timber, both expensive to replace",
+      "The jumpers appear armed and unwilling to leave quietly"
+    ],
+    "opportunities": [
+      "A fellow prospector who lost his own claim last season has offered to back a play to retake it",
+      "The claims recorder owes Josiah a favor from before the war",
+      "A vein exposed by spring runoff looks richer than anything found last year",
+      "The camp's rough justice sometimes favors whoever gets there first with the most support"
+    ]
+  },
+  "culturalContext": {
+    "beliefs": "No particular faith beyond hard work and stubbornness",
+    "socialExpectations": "Must defend the claim personally or lose it to whoever is willing to hold it by force; camp law rarely intervenes quickly",
+    "relationships": "No family in the territory, uneasy friendship with fellow prospector Hiram Douglas, distrustful of the claims recorder",
+    "skills": "Prospecting and assaying, basic carpentry for shoring and sluices, marksmanship born of necessity, mule handling"
+  },
+  "keyNPCs": [
+    {
+      "name": "Hiram Douglas",
+      "relationship": "Fellow prospector, friend",
+      "role": "Lost his own claim to jumpers the previous season",
+      "demeanor": "Bitter but loyal, eager for a chance to set things right",
+      "motivation": "Wants to see claim jumpers driven out of the camp on principle, not just for Josiah's sake",
+      "influence": "Willing to back a confrontation, but his help comes with the expectation of a future favor"
+    },
+    {
+      "name": "Ezekiel Cross",
+      "relationship": "Leader of the claim jumpers",
+      "role": "Self-styled leader of a group occupying the claim",
+      "demeanor": "Confident, treats possession as nine-tenths of the law",
+      "motivation": "Believes an unworked claim in winter is fair game, and has no intention of leaving without a fight or a payoff",
+      "influence": "Controls the claim by armed presence alone; camp law won't move against him without cause"
+    }
+  ],
+  "immediateChoices": [
+    {
+      "situation": "Ezekiel Cross offers to sell back the claim for a price far above its worth, rather than leave outright",
+      "options": [
+        "Pay the price to avoid bloodshed, even at great cost",
+        "Refuse and bring the dispute to the claims recorder",
+        "Gather Hiram and others to retake the claim by force"
+      ],
+      "considerations": "Paying sets a dangerous precedent and drains resources needed for the season. The claims office is slow and may not act in time. Force risks violence and camp law turning against whoever starts it."
+    }
+  ],
+  "consequences": {
+    "recentDecisions": [
+      {
+        "action": "Left the claim unguarded to make a supply run into town",
+        "outcome": "Jumpers moved in within days, exploiting the empty site",
+        "ongoingEffects": "Camp gossip now questions whether Josiah can hold the claim at all, inviting further challenges"
+      }
+    ]
+  },
+  "seasonalRhythm": {
+    "currentActivities": "Assessing winter damage, restocking supplies, and settling the claim dispute before serious digging can resume",
+    "upcomingConcerns": "Summer digging season is short and unforgiving; every week lost to the dispute is a week of lost silver",
+    "annualCycle": "Spring: claim disputes and restocking. Summer: main digging season. Autumn: hauling out before the passes close. Winter: isolation and the risk of losing an unguarded claim"
+  },
+  "gamemasterGuidance": {
+    "historicalAccuracy": "Mining claims were fiercely, often violently contested, and formal claims offices were frequently slow, underfunded, or corrupt. Claim jumping was common enough to be a recognized hazard of prospecting.",
+    "consequenceExamples": "Paying off Cross avoids violence but invites future jumpers to try the same tactic. Force could resolve things quickly but risks real injury and legal trouble even in a lawless camp.",
+    "learningOpportunities": "Explore the realities of mining claim law and its frequent failures, the culture of self-enforced 'camp justice,' and the constant tension between individual claims and communal order"
+  }
+}
+```

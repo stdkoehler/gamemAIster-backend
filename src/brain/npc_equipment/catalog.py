@@ -140,6 +140,7 @@ _NPC_EQUIPMENT_CATEGORIES: dict[GameType, list[str]] = {
     ],
     GameType.SLAVIC: ["Melee", "Ranged", "Armor", "Helmet", "Shield", "Container", "Tools", "Trade"],
     GameType.DRAGONLANCE: ["Melee", "Ranged", "Armor", "Shield", "Adventuring Gear", "Tools", "Trade Goods"],
+    GameType.DESOLATE_FRONTIER: ["Melee", "Ranged", "Armor", "Container", "Tools", "Trade"],
 }
 
 # Item fields worth showing the LLM when picking equipment; everything else

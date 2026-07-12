@@ -13,7 +13,14 @@ class GameType(StrEnum):
     EXPANSE = "expanse"
     SLAVIC = "slavic"
     DRAGONLANCE = "dragonlance"
+    DESOLATE_FRONTIER = "desolate_frontier"
     CUSTOM = "custom"
+
+
+# GameTypes with a dedicated non-hero GameConfig entry in system_registry.py
+# (ordinary working people instead of protagonists/heroes) — add here when
+# wiring non-hero support for a new system.
+_NON_HERO_GAME_TYPES = {GameType.EXPANSE, GameType.DESOLATE_FRONTIER}
 
 
 class Mission(BaseModel):
@@ -30,8 +37,10 @@ class Mission(BaseModel):
 
     @model_validator(mode="after")
     def check_non_hero_mode(self) -> Mission:
-        if self.non_hero_mode and self.game_type != GameType.EXPANSE:
-            raise ValueError("Only GameType.EXPANSE may have non_hero_mode=True")
+        if self.non_hero_mode and self.game_type not in _NON_HERO_GAME_TYPES:
+            raise ValueError(
+                f"non_hero_mode=True is only supported for {sorted(t.value for t in _NON_HERO_GAME_TYPES)}"
+            )
         return self
 
 
@@ -95,6 +104,8 @@ class NewMissionPayload(BaseModel):
 
     @model_validator(mode="after")
     def check_non_hero_mode(self) -> NewMissionPayload:
-        if self.non_hero_mode and self.game_type != GameType.EXPANSE:
-            raise ValueError("Only GameType.EXPANSE may have non_hero_mode=True")
+        if self.non_hero_mode and self.game_type not in _NON_HERO_GAME_TYPES:
+            raise ValueError(
+                f"non_hero_mode=True is only supported for {sorted(t.value for t in _NON_HERO_GAME_TYPES)}"
+            )
         return self

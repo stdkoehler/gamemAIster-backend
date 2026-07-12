@@ -43,10 +43,15 @@ from src.brain.npc_models import (
     DragonlanceNpcStats,
     DragonlanceNpcEquipment,
     _merge_dragonlance,
+    DesolateFrontierNpcStats,
+    DesolateFrontierNpcEquipment,
+    _merge_desolate_frontier,
 )
 from src.brain.oracle import (
     BaseOracle,
     CustomOracle,
+    DesolateFrontierOracle,
+    DesolateFrontierNonHeroOracle,
     DragonlanceOracle,
     ExpanseNonHeroOracle,
     ExpanseOracle,
@@ -125,6 +130,20 @@ GAME_CONFIGS: dict[tuple[api_schema_mission.GameType, bool], GameConfig] = {
         mission_prompt="dragonlance/dragonlance_mission_prompt.txt",
         mission_prompt_non_oracle="dragonlance/dragonlance_non_oracle_mission_prompt.txt",
         oracle_class=DragonlanceOracle,
+    ),
+    (_GT.DESOLATE_FRONTIER, False): GameConfig(
+        game_name="The Desolate Frontier",
+        story_prompt="desolate_frontier/desolate_frontier_story_prompt.txt",
+        mission_prompt="desolate_frontier/desolate_frontier_mission_prompt.txt",
+        mission_prompt_non_oracle="desolate_frontier/desolate_frontier_non_oracle_mission_prompt.txt",
+        oracle_class=DesolateFrontierOracle,
+    ),
+    (_GT.DESOLATE_FRONTIER, True): GameConfig(
+        game_name="The Desolate Frontier",
+        story_prompt="desolate_frontier/desolate_frontier_story_prompt_non_hero.txt",
+        mission_prompt="desolate_frontier/desolate_frontier_mission_prompt_non_hero.txt",
+        mission_prompt_non_oracle="desolate_frontier/desolate_frontier_mission_prompt_non_hero_non_oracle.txt",
+        oracle_class=DesolateFrontierNonHeroOracle,
     ),
     (_GT.CUSTOM, False): GameConfig(
         game_name="Custom RPG",
@@ -213,6 +232,14 @@ NPC_CONFIGS: dict[api_schema_mission.GameType, NpcConfig] = {
         stats_model=DragonlanceNpcStats,
         equipment_model=DragonlanceNpcEquipment,
         merge_fn=_merge_dragonlance,
+    ),
+    _GT.DESOLATE_FRONTIER: NpcConfig(
+        profile_prompt="desolate_frontier/desolate_frontier_npc_profile_prompt.txt",
+        stats_prompt="desolate_frontier/desolate_frontier_npc_stats_prompt.txt",
+        equipment_prompt="desolate_frontier/desolate_frontier_npc_equipment_prompt.txt",
+        stats_model=DesolateFrontierNpcStats,
+        equipment_model=DesolateFrontierNpcEquipment,
+        merge_fn=_merge_desolate_frontier,
     ),
 }
 

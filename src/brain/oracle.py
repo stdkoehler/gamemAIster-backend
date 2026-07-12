@@ -163,6 +163,35 @@ class DragonlanceAligned(FactionEraAligned):
     pass
 
 
+class DesolateFrontierProposal(BaseModel):
+    region: str
+    characterRole: str
+    startingSituation: str
+    seasonalContext: str
+    culturalFoci: str
+
+
+class DesolateFrontierAligned(BaseModel):
+    region: str
+    characterRole: str
+    startingSituation: str
+    seasonalContext: str
+    culturalFoci: str
+
+
+class DesolateFrontierNonHeroProposal(BaseModel):
+    affectedInterests: list[str]
+    complicatingSituation: str
+    dailyConcerns: list[str]
+
+
+class DesolateFrontierNonHeroAligned(BaseModel):
+    affectedInterests: list[str]
+    complicatingSituation: str
+    dailyConcerns: list[str]
+    season: str
+
+
 # ---------------------------------------------------------------------------
 # Generic base
 # ---------------------------------------------------------------------------
@@ -470,6 +499,47 @@ class DragonlanceOracle(FactionBasedOracle[DragonlanceAligned]):
             aligned_type=DragonlanceAligned,
             config_filename="dragonlance.json",
             prompt_filename="dragonlance/dragonlance_background_mission_aligner.txt",
+        )
+
+
+class DesolateFrontierOracle(BaseOracle[DesolateFrontierProposal, DesolateFrontierAligned]):
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            aligned_type=DesolateFrontierAligned,
+            config_filename="desolate_frontier.json",
+            prompt_filename="desolate_frontier/desolate_frontier_background_mission_aligner.txt",
+        )
+
+    def _assemble_proposal_seed(self) -> DesolateFrontierProposal:
+        return DesolateFrontierProposal(
+            region=self._weighted_choice(self._pools["regions"]),
+            characterRole=self._weighted_choice(self._pools["characterRoles"]),
+            startingSituation=self._weighted_choice(self._pools["startingSituations"]),
+            seasonalContext=self._weighted_choice(self._pools["seasonalContexts"]),
+            culturalFoci=self._weighted_choice(self._pools["culturalFoci"]),
+        )
+
+
+class DesolateFrontierNonHeroOracle(
+    BaseOracle[DesolateFrontierNonHeroProposal, DesolateFrontierNonHeroAligned]
+):
+    def __init__(self, llm_client: LLMClientBase) -> None:
+        super().__init__(
+            llm_client=llm_client,
+            aligned_type=DesolateFrontierNonHeroAligned,
+            config_filename="desolate_frontier_non_hero.json",
+            prompt_filename="desolate_frontier/desolate_frontier_background_mission_aligner_non_hero.txt",
+        )
+
+    def _assemble_proposal_seed(self) -> DesolateFrontierNonHeroProposal:
+        interests = self._weighted_choice(self._pools["affectedInterests"])
+        situation = self._weighted_choice(self._pools["complicatingSituations"])
+        concern = self._weighted_choice(self._pools["dailyConcerns"])
+        return DesolateFrontierNonHeroProposal(
+            affectedInterests=[interests],
+            complicatingSituation=situation,
+            dailyConcerns=[concern],
         )
 
 
