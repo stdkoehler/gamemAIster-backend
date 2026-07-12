@@ -1,6 +1,5 @@
 from enum import Enum, auto
 from src.llmclient.llm_parameters import (
-    UNSET,
     TaskResolution,
     LLMConfig,
     LLMLogicConfig,
@@ -39,7 +38,9 @@ class ConfigRegistry:
         "LLMClientLocal": {
             LLMTask.SUMMARY: TaskResolution(
                 llm=LLMConfig(max_tokens=2048),
-                logic=LLMLogicConfig(last_k=5, min_summary_tokens=2048),
+                logic=LLMLogicConfig(
+                    last_k=5, min_summary_tokens=2048, digest_budget_tokens=1536
+                ),
             ),
             LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=12000)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=2048)),
@@ -130,21 +131,20 @@ class ConfigRegistry:
     @classmethod
     def get_llm_logic_config(cls, model_identifier: str) -> LLMLogicConfig:
         """
-        Retrieves internal logic parameters for a specific model.
+        Retrieves internal logic parameters for a specific model, fully resolved
+        (no UNSET fields) — same merge-onto-defaults pattern as get_llm_config,
+        so a registry entry only needs to override the fields it cares about.
 
-        Logic config (last_k, min_summary_tokens, keep_thinking_turns) is stored on
-        the SUMMARY task entry because these are model-level settings, not task-specific.
-        If you ever need per-task logic config, this will need to change.
+        Logic config (last_k, min_summary_tokens, digest_budget_tokens,
+        keep_thinking_turns) is stored on the SUMMARY task entry because these
+        are model-level settings, not task-specific. If you ever need
+        per-task logic config, this will need to change.
         """
         client_map = cls._MATRIX.get(model_identifier, cls._MATRIX["LLMClientLocal"])
         task_resolution = client_map.get(LLMTask.SUMMARY)
 
-        if (
-            task_resolution
-            and task_resolution.logic
-            and task_resolution.logic.last_k is not UNSET
-        ):
-            return task_resolution.logic
+        if task_resolution and task_resolution.logic:
+            return task_resolution.logic.apply_to(LLMLogicConfig.defaults())
 
         return LLMLogicConfig.defaults()
 

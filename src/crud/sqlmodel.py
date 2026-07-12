@@ -57,6 +57,14 @@ class SummaryMemory(Base):
     )
     summary: Mapped[str] = mapped_column(Text)
     n_summarized: Mapped[int] = mapped_column(Integer)
+    # `summary` above is the full append-only ledger. `digest` is the bounded,
+    # periodically-recomputed "story so far" derived from it — what's actually
+    # injected into the story prompt once the ledger outgrows digest_budget_tokens.
+    # digest_ledger_tokens records the ledger's token count at the last digest
+    # refresh, so we know when it's grown by another budget's worth.
+    # See docs/conversation_memory.html.
+    digest: Mapped[str] = mapped_column(Text, default="")
+    digest_ledger_tokens: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class EntityMemory(Base):
@@ -67,6 +75,7 @@ class EntityMemory(Base):
     name: Mapped[str] = mapped_column(Text, primary_key=True)
     type: Mapped[str] = mapped_column(Text)
     summary: Mapped[str] = mapped_column(Text)
+    matched_key_npc: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class SceneMemory(Base):
@@ -97,6 +106,13 @@ class CharacterSheet(Base):
     content: Mapped[str] = mapped_column(Text)  # JSON blob
     is_protagonist: Mapped[bool] = mapped_column(Boolean, default=False)
     is_npc: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Name of the mission's `keyNPCs` entry this NPC was matched to by the
+    # Profiler at generation time (see NpcProfile.matched_key_npc), or None
+    # if it's a scene-only NPC with no roster match. Kept as a sibling
+    # column rather than inside `content` since `content` must conform to
+    # the frontend's CharacterProps schema, which doesn't have this field.
+    matched_key_npc: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
 
 class ConversationSummaryMemory(Base):

@@ -151,6 +151,10 @@ class NpcConfig:
     stats_model: type[BaseModel]
     equipment_model: type[BaseModel]
     merge_fn: Callable[..., dict]
+    # Top-level key in the mission JSON holding named NPCs already established
+    # by the adventure, passed to the Profiler so it can match/stay consistent
+    # with an existing entry instead of inventing a contradictory one.
+    npc_roster_key: str = "keyNPCs"
 
 
 NPC_CONFIGS: dict[api_schema_mission.GameType, NpcConfig] = {

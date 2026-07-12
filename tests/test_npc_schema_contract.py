@@ -89,7 +89,9 @@ _CASES = [
             equipment_categories=["Melee"],
         ),
         VampireNpcEquipment(
-            weapons=[{"name": "Switchblade", "damage": 1, "skill": "Melee", "range": 0, "properties": ["Concealable"]}]
+            weapons=[{"name": "Switchblade", "damage": 1, "skill": "Melee", "range": 0, "properties": ["Concealable"]}],
+            armor_name="Leather Duster",
+            armor_rating=1,
         ),
     ),
     (
@@ -109,6 +111,8 @@ _CASES = [
         CthulhuNpcEquipment(
             weapons=[{"name": ".38 Revolver", "skill": "Firearms (Handgun)", "damage": "1d10",
                       "range": "15 yards", "attacksPerRound": 1, "ammo": 6, "malfunction": 100}],
+            armor_name="Kevlar Vest",
+            armor_rating=8,
             gear=["Notebook"],
         ),
     ),
@@ -145,7 +149,8 @@ _CASES = [
         ),
         ExpanseNpcEquipment(
             weapons=[{"name": "PCA PDW", "damage": "2d6+2", "range": "Short/Long 10/30m", "qualities": ["Burst Fire"]}],
-            armor="MCRN Infantry Battle Dress",
+            armor_name="MCRN Infantry Battle Dress",
+            armor_rating=4,
             gear=["Medpatch"],
         ),
     ),
@@ -156,12 +161,15 @@ _CASES = [
             kin_ability="Stubborn: reroll one failed Endurance roll per day.",
             calling="Warrior",
             attributes={"Strength": 4, "Agility": 3, "Wits": 2, "Empathy": 2},
-            skills={"Fight": 3, "Endurance": 2},
+            skills={"Melee": 3, "Endurance": 2},
             talents=["Berserker"],
             equipment_categories=["Melee", "Armor"],
         ),
         SlavicNpcEquipment(
-            weapons=["Hand Axe"], armor_name="Leather Jerkin", armor_rating=2, gear=["Waterskin"]
+            weapons=[{"name": "Hand Axe", "grip": "1H", "damage": 2, "range": "Arm's Length"}],
+            armor_name="Leather Jerkin",
+            armor_rating=2,
+            gear=["Waterskin"],
         ),
     ),
     (

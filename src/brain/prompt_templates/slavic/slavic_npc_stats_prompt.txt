@@ -9,8 +9,9 @@ Rules:
   (merchant), or another calling implied by the description.
 - `attributes` covers Strength, Agility, Wits, Empathy (range 2-5; these
   double as the NPC's damage/health pools).
-- `skills` should contain 2-5 of: Endurance, Fight, Sneak, Move,
-  Marksmanship, Scout, rated 0-5, fitting the calling and competence.
+- `skills` should contain 2-5 of the combat/competence-relevant skills —
+  Might, Endurance, Melee, Crafting, Stealth, Move, Marksmanship, Scouting —
+  rated 0-5, fitting the calling and competence.
 - `talents` is a short list (0-3) of special abilities matching the calling
   (e.g. "Spirit Caller", "Berserker", "Path Finder").
 - `equipment_categories` is a short list (1-4) of the valid equipment

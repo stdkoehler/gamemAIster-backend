@@ -13,6 +13,9 @@ Rules:
   "Concealable", "Two-handed", "Loud", "Automatic", "Special"]}.
 - Most kindred NPCs carry at most a melee weapon or a concealed firearm;
   reserve heavier loadouts for NPCs explicitly described as combat-focused.
+- `armor_name` and `armor_rating` (0-6) describe a single piece of armor the
+  NPC wears (e.g. "Leather Duster" / 1, "Kevlar Vest" / 3). Omit both if the
+  NPC wears no armor — most mortals and many kindred go unarmored.
 
 ## JSON Structure
 
@@ -23,9 +26,12 @@ commentary, no markdown outside the fenced block):
 {
   "weapons": [
     {"name": str, "damage": int, "skill": str, "range": int, "properties": list[str]}
-  ]
+  ],
+  "armor_name": str | None,
+  "armor_rating": int
 }
 ```
 
 Adhere strictly to this structure: `weapons` is a list of objects with the
 fields above (empty list is fine); `range` is 0 for melee weapons.
+`armor_name` may be `null`, in which case `armor_rating` should be 0.

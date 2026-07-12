@@ -290,6 +290,41 @@ class CRUD:
             except IntegrityError:
                 session.rollback()
 
+    def get_digest(self, mission_id: int) -> tuple[str, int]:
+        """Returns (digest, digest_ledger_tokens) — the bounded "story so far"
+        derived from the ledger, and the ledger's token count at the time it
+        was last refreshed. Empty/0 if no digest has been computed yet (the
+        ledger hasn't crossed digest_budget_tokens)."""
+        with self._sessionmaker() as session:
+            stmt = select(SummaryMemory).where(SummaryMemory.mission_id == mission_id)
+            existing_summary = session.execute(stmt).scalar_one_or_none()
+            if existing_summary:
+                return existing_summary.digest, existing_summary.digest_ledger_tokens
+            return "", 0
+
+    def update_digest(
+        self, mission_id: int, digest: str, digest_ledger_tokens: int
+    ) -> None:
+        with self._sessionmaker() as session:
+            stmt = select(SummaryMemory).where(SummaryMemory.mission_id == mission_id)
+            existing_summary = session.execute(stmt).scalar_one_or_none()
+            if not existing_summary:
+                # update_summary always runs first in the same cycle, so this
+                # shouldn't happen in practice.
+                _log.warning(
+                    "update_digest called with no existing SummaryMemory row | mission_id=%s",
+                    mission_id,
+                )
+                return
+
+            existing_summary.digest = digest
+            existing_summary.digest_ledger_tokens = digest_ledger_tokens
+
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+
     def get_entities(self, mission_id: int) -> list[Entity]:
         with self._sessionmaker() as session:
             stmt = (
@@ -303,6 +338,7 @@ class CRUD:
                     name=memory.name,
                     type=memory.type,
                     summary=memory.summary,
+                    matched_key_npc=memory.matched_key_npc,
                 )
                 for memory in result
             ]
@@ -319,23 +355,58 @@ class CRUD:
                         )
                     ).scalars()
                 }
+                # Secondary index on the roster link: a name-independent identity
+                # for entities matched to a keyNPCs (or equivalent) roster entry.
+                # Lets us resolve an LLM-named entity to the right DB row even if
+                # the model used an inconsistent display name this call (e.g.
+                # "the High Priestess" vs. the previously-stored "Devana") —
+                # exact-name matching alone can't catch that, since storage is
+                # keyed on name.
+                existing_by_match: dict[str, EntityMemory] = {
+                    e.matched_key_npc.strip().lower(): e
+                    for e in existing.values()
+                    if e.matched_key_npc
+                }
+
+                def resolve(name: str, matched_key_npc: str | None) -> EntityMemory | None:
+                    if matched_key_npc:
+                        match = existing_by_match.get(matched_key_npc.strip().lower())
+                        if match:
+                            return match
+                    return existing.get(name)
+
+                def reindex(db_entity: EntityMemory, new_name: str | None, new_match: str | None) -> None:
+                    """Keep both lookup dicts in sync after a name/match change."""
+                    if db_entity.matched_key_npc:
+                        existing_by_match.pop(db_entity.matched_key_npc.strip().lower(), None)
+                    if new_name is not None and new_name != db_entity.name:
+                        existing.pop(db_entity.name, None)
+                        existing[new_name] = db_entity
+                        db_entity.name = new_name
+                    if new_match is not None:
+                        db_entity.matched_key_npc = new_match
+                    if db_entity.matched_key_npc:
+                        existing_by_match[db_entity.matched_key_npc.strip().lower()] = db_entity
 
                 # 1. HANDLE DELETIONS FIRST (Standard and Overwrites)
                 for updated_entity in entity_response.updated_entities:
-                    db_entity = existing.get(updated_entity.name)
+                    db_entity = resolve(updated_entity.name, updated_entity.matched_key_npc)
                     if not db_entity:
                         continue
 
                     # Case A: Explicit deletion request
                     if updated_entity.updated_name == "DELETE":
                         session.delete(db_entity)
-                        existing.pop(updated_entity.name, None)
+                        existing.pop(db_entity.name, None)
+                        if db_entity.matched_key_npc:
+                            existing_by_match.pop(db_entity.matched_key_npc.strip().lower(), None)
 
                     # Case B: Rename Collision (Delete the target to make room)
-                    elif updated_entity.updated_name != updated_entity.name:
+                    elif updated_entity.updated_name != db_entity.name:
                         collision_entity = existing.get(updated_entity.updated_name)
-                        if collision_entity:
+                        if collision_entity and collision_entity is not db_entity:
                             session.delete(collision_entity)
+                            existing.pop(updated_entity.updated_name, None)
                             # We don't pop from existing yet, we'll overwrite it in step 2
 
                 # IMPORTANT: Flush deletions to the DB so the names are "freed up"
@@ -346,30 +417,30 @@ class CRUD:
                     if updated_entity.updated_name == "DELETE":
                         continue
 
-                    db_entity = existing.get(updated_entity.name)
+                    db_entity = resolve(updated_entity.name, updated_entity.matched_key_npc)
                     if db_entity:
-                        if updated_entity.updated_name != updated_entity.name:
-                            # Update dictionary and object name
-                            existing.pop(updated_entity.name, None)
-                            existing[updated_entity.updated_name] = db_entity
-                            db_entity.name = updated_entity.updated_name
-
+                        reindex(db_entity, updated_entity.updated_name, updated_entity.matched_key_npc)
                         db_entity.summary = updated_entity.summary
 
                 # 3. PROCESS NEW ENTITIES
                 for entity in entity_response.entities:
-                    db_entity = existing.get(entity.name)
+                    db_entity = resolve(entity.name, entity.matched_key_npc)
                     if db_entity:
                         db_entity.summary += "; " + entity.summary
+                        if entity.matched_key_npc and not db_entity.matched_key_npc:
+                            reindex(db_entity, None, entity.matched_key_npc)
                     else:
                         new_entity = EntityMemory(
                             mission_id=mission_id,
                             name=entity.name,
                             type=entity.type,
                             summary=entity.summary,
+                            matched_key_npc=entity.matched_key_npc,
                         )
                         session.add(new_entity)
                         existing[entity.name] = new_entity
+                        if entity.matched_key_npc:
+                            existing_by_match[entity.matched_key_npc.strip().lower()] = new_entity
 
                 session.commit()
 
@@ -446,6 +517,8 @@ class CRUD:
                     content=json.loads(row.content),
                     is_protagonist=row.is_protagonist,
                     is_npc=row.is_npc,
+                    is_active=row.is_active,
+                    matched_key_npc=row.matched_key_npc,
                 )
                 for row in rows
             ]
@@ -476,6 +549,8 @@ class CRUD:
                 row.content = json.dumps(sheet.content)
                 row.is_protagonist = sheet.is_protagonist
                 row.is_npc = sheet.is_npc
+                row.is_active = sheet.is_active
+                row.matched_key_npc = sheet.matched_key_npc
             else:
                 row = CharacterSheet(
                     mission_id=sheet.mission_id,
@@ -484,6 +559,8 @@ class CRUD:
                     content=json.dumps(sheet.content),
                     is_protagonist=sheet.is_protagonist,
                     is_npc=sheet.is_npc,
+                    is_active=sheet.is_active,
+                    matched_key_npc=sheet.matched_key_npc,
                 )
                 session.add(row)
                 session.flush()
@@ -497,6 +574,8 @@ class CRUD:
                 content=json.loads(row.content),
                 is_protagonist=row.is_protagonist,
                 is_npc=row.is_npc,
+                is_active=row.is_active,
+                matched_key_npc=row.matched_key_npc,
             )
 
     def delete_character_sheet(self, character_sheet_id: int, mission_id: int) -> None:
@@ -506,6 +585,24 @@ class CRUD:
                 CharacterSheet.mission_id == mission_id,
             )
             session.execute(stmt)
+
+    def set_character_sheet_active(
+        self, character_sheet_id: int, mission_id: int, is_active: bool
+    ) -> None:
+        with self._sessionmaker() as session:
+            stmt = (
+                update(CharacterSheet)
+                .where(
+                    CharacterSheet.character_sheet_id == character_sheet_id,
+                    CharacterSheet.mission_id == mission_id,
+                )
+                .values(is_active=is_active)
+            )
+            result = session.execute(stmt)
+            if result.rowcount == 0:
+                raise ValueError(
+                    f"CharacterSheet {character_sheet_id} not found for mission {mission_id}"
+                )
             session.commit()
 
 

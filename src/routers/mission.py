@@ -17,6 +17,7 @@ from src.routers.schema.mission import (
     UpsertCharacterSheet,
     DeleteCharacterSheet,
     CreateNpcPayload,
+    SetNpcActivePayload,
 )
 
 log = configure_logger("mission")
@@ -175,6 +176,28 @@ def delete_character_sheet(
     )
 
 
+@router.post("/set-npc-active")
+def set_npc_active(
+    payload: SetNpcActivePayload,
+    user: str = Depends(verify_user),
+) -> None:
+    """Mark an NPC as active/inactive in the current scene, without rewriting its content."""
+    try:
+        crud_instance.verify_mission_user(mission_id=payload.mission_id, user_id=user)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized"
+        ) from exc
+    try:
+        crud_instance.set_character_sheet_active(
+            character_sheet_id=payload.character_sheet_id,
+            mission_id=payload.mission_id,
+            is_active=payload.is_active,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
 @router.post("/create-npc")
 def create_npc(
     payload: CreateNpcPayload,
@@ -192,7 +215,7 @@ def create_npc(
     log.info("create-npc | mission_id=%d | name=%s", payload.mission_id, payload.name)
 
     try:
-        content = gamemaster.generate_npc(name=payload.name, mission_id=payload.mission_id)
+        result = gamemaster.generate_npc(name=payload.name, mission_id=payload.mission_id)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
@@ -200,9 +223,10 @@ def create_npc(
         character_sheet_id=None,
         mission_id=payload.mission_id,
         name=payload.name,
-        game_type=content["gameType"],
-        content=content,
+        game_type=result.content["gameType"],
+        content=result.content,
         is_protagonist=False,
         is_npc=True,
+        matched_key_npc=result.matched_key_npc,
     )
     return crud_instance.upsert_character_sheet(sheet=sheet)

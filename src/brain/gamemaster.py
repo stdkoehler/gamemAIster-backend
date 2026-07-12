@@ -13,6 +13,7 @@ from pathlib import Path
 
 from src.brain.data_types import Interaction
 from src.brain.chat import SummaryChat
+from src.brain.conversation_memory import CompressionPrompts
 from src.brain.npc_models import NpcProfile
 from src.brain.npc_equipment.catalog import get_npc_equipment_categories, npc_equipment_candidates
 from src.brain.system_registry import GAME_CONFIGS, NPC_CONFIGS, merge_npc
@@ -24,17 +25,13 @@ from src.llmclient.llm_client import (
     LLMClientDeepSeek,
     LLMClientMiniMax,
     LLMClientOpenRouter,
-    Message,
-    MessageContent,
-    MessageRole,
 )
 
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_config_registry import LLMTask
 
-from src.brain.structured_output import parse_with_retry
 from src.utils.logger import configure_logger
-from src.utils.sqllogger import SQLLogger
+from src.utils.sqllogger import SQLLogger, LogType
 
 from pydantic import BaseModel, ConfigDict
 
@@ -122,6 +119,59 @@ def _parse_budget_cost(value: str) -> float | None:
         return float(digits)
     except ValueError:
         return None
+
+
+def _extract_npc_roster(mission_id: int, roster_key: str) -> str:
+    """Pulls just the named-NPC roster (e.g. `keyNPCs`) out of the mission's
+    JSON description, so the NPC Profiler can match against it without
+    needing the whole mission JSON in context.
+
+    The mission generator only prompts the LLM to include this field — there
+    is no hard schema validation enforcing it — so it may legitimately be
+    missing, empty, or the mission JSON itself malformed. In all of those
+    cases we just omit the roster rather than failing NPC generation."""
+    mission = crud_instance.get_mission_description(mission_id)
+    if mission is None:
+        return "(no mission data)"
+    try:
+        parsed = json.loads(mission.description)
+    except json.JSONDecodeError:
+        return "(no mission data)"
+    roster = parsed.get(roster_key) if isinstance(parsed, dict) else None
+    if not roster:
+        return f"(no `{roster_key}` entries in this mission)"
+    return json.dumps(roster, ensure_ascii=False, indent=2)
+
+
+def _validate_matched_key_npc(roster_text: str, matched_name: str | None) -> str | None:
+    """Confirms the Profiler's `matched_key_npc` actually names an entry in
+    the roster it was given, returning that entry's exact-cased `name` (not
+    necessarily byte-identical to what the model echoed back). Returns None
+    if there's no match, the model didn't claim one, or the roster text
+    isn't valid JSON — a hallucinated/garbled match is treated the same as
+    no match rather than trusted as-is."""
+    if not matched_name:
+        return None
+    try:
+        roster = json.loads(roster_text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(roster, list):
+        return None
+    matched_lower = matched_name.strip().lower()
+    for entry in roster:
+        if isinstance(entry, dict) and str(entry.get("name", "")).strip().lower() == matched_lower:
+            return str(entry["name"]).strip()
+    return None
+
+
+@dataclass
+class NpcGenerationResult:
+    content: dict
+    # Name of the `keyNPCs` roster entry this NPC was matched to, if any —
+    # for chat.py to flag the corresponding mission-JSON entry as superseded
+    # without needing to re-derive the match from names at chat time.
+    matched_key_npc: str | None = None
 
 
 def _load_prompt(path: Path, max_examples: int | None = None) -> str:
@@ -285,15 +335,25 @@ class Gamemaster:
         self._mission_prompt_non_oracle = _load_prompt(prompt_dir / cfg.mission_prompt_non_oracle)
 
         with open(prompt_dir / "text_summary_prompt.txt", "r", encoding="utf-8") as f:
-            self._summary_prompt = f.read()
+            summary_prompt = f.read()
+
+        with open(prompt_dir / "text_digest_prompt.txt", "r", encoding="utf-8") as f:
+            digest_prompt = f.read()
 
         with open(prompt_dir / "text_entity_prompt.txt", "r", encoding="utf-8") as f:
-            self._entity_prompt = f.read()
+            entity_prompt = f.read()
 
         with open(
             prompt_dir / "text_scene_prompt_examples.txt", "r", encoding="utf-8"
         ) as f:
-            self._scene_prompt = f.read()
+            scene_prompt = f.read()
+
+        self._compression_prompts = CompressionPrompts(
+            summary=summary_prompt,
+            digest=digest_prompt,
+            entity=entity_prompt,
+            scene=scene_prompt,
+        )
 
         # currently we provide the complete history to the LLM
         # moving to RAG style summary could be better for longer sessions
@@ -321,12 +381,9 @@ class Gamemaster:
         chat = SummaryChat(
             llm_client_chat=self._llm_client_chat,
             llm_client_reasoning=self._llm_client_reasoning,
-            last_k=logic_config.last_k,  # type: ignore
-            min_summary_tokens=logic_config.min_summary_tokens,  # type: ignore
+            logic_config=logic_config,
             story_prompt=self._story_prompt,
-            summary_prompt=self._summary_prompt,
-            entity_prompt=self._entity_prompt,
-            scene_prompt=self._scene_prompt,
+            prompts=self._compression_prompts,
             summary_provider_prompt=self._summary_provider_prompt,
             game_name=self._game_name,
             mission_id=prompt.mission_id,
@@ -380,21 +437,10 @@ class Gamemaster:
         # our input token is already quite large, so we limit max_tokens to 4096
         # (this includes thinking process for some local models, e.g. gemma3)
         # the limit is configured per-task in LLMTask.ARCHITECT
-        messages = [
-            Message(
-                role=MessageRole.SYSTEM,
-                content=MessageContent(text=system_prompt),
-            ),
-            Message(role=MessageRole.USER, content=MessageContent(text=topic)),
-        ]
-
-        parsed = parse_with_retry(
-            messages=messages,
-            result_type=_MissionBody,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        mission_agent = self._llm_client_reasoning.build_agent(
+            LLMTask.ARCHITECT, output_type=_MissionBody, system_prompt=system_prompt, reasoning=True
         )
+        parsed = self._llm_client_reasoning.run_agent(mission_agent, system_prompt, topic, LogType.MISSION)
         name = parsed.meta.title
         description = json.dumps(parsed.model_dump(), ensure_ascii=False, indent=2)
         _log.info("GenerateMission complete | title=%s | output_len=%d", name, len(description))
@@ -404,7 +450,7 @@ class Gamemaster:
             oracle_background=full_background,
             oracle_roll=oracle_result.roll if oracle_result else "",
             oracle_aligned=oracle_result.aligned if oracle_result else "",
-            llm_input=str(messages),
+            llm_input=f"{system_prompt}\n\n{topic}",
             llm_output=description,
         )
 
@@ -420,24 +466,32 @@ class Gamemaster:
         }
         return api_schema_mission.Mission.model_validate(mission)
 
-    def generate_npc(self, name: str, mission_id: int) -> dict:
+    def _run_npc_stage(
+        self, system_prompt: str, user_prompt: str, output_type: type, log_type: LogType
+    ):
+        """Builds and runs one reasoning-agent stage of the NPC pipeline (Profiler/Stats/Equipment)."""
+        agent = self._llm_client_reasoning.build_agent(
+            LLMTask.ARCHITECT, output_type=output_type, system_prompt=system_prompt, reasoning=True
+        )
+        return self._llm_client_reasoning.run_agent(agent, system_prompt, user_prompt, log_type)
+
+    def generate_npc(self, name: str, mission_id: int) -> NpcGenerationResult:
         """
         Generate an NPC content dict for `mission_id`, chaining three
-        structured-output LLM calls (same parse_with_retry pattern as
-        generate_mission): a shared Profiler (narrative description +
-        equipment budget), a per-system Stats agent (combat-relevant
-        attributes/skills), and a per-system Equipment step that picks from a
-        deterministically pre-filtered slice of the system's equipment
-        catalog (embedded as prompt text, no tool calling). The result is
-        merged into a full CharacterProps-shaped dict scoped to what
-        NpcCard.tsx's NPC view renders, with all other required fields
-        safe-defaulted.
+        pydantic_ai structured-output calls: a shared Profiler (narrative
+        description + equipment budget), a per-system Stats agent
+        (combat-relevant attributes/skills), and a per-system Equipment step
+        that picks from a deterministically pre-filtered slice of the
+        system's equipment catalog (embedded as prompt text, no tool
+        calling). The result is merged into a full CharacterProps-shaped
+        dict scoped to what NpcCard.tsx's NPC view renders, with all other
+        required fields safe-defaulted.
         """
         if self._game_type not in NPC_CONFIGS:
             raise ValueError(f"NPC generation is not supported for game type: {self._game_type}")
 
         npc_cfg = NPC_CONFIGS[self._game_type]
-        stats_model, equipment_model = npc_cfg.stats_model, npc_cfg.equipment_model
+        stats_type, equipment_type = npc_cfg.stats_model, npc_cfg.equipment_model
         game_type = self._game_type
 
         prompt_dir = Path(__file__).parent / "prompt_templates"
@@ -452,46 +506,29 @@ class Gamemaster:
             interaction.format_interaction_summary() for interaction in interactions
         ) or "(no narrative history yet)"
 
+        roster_text = _extract_npc_roster(mission_id, npc_cfg.npc_roster_key)
+
         _log.info("GenerateNpc | game_type=%s | name=%s | mission_id=%d", self._game_type, name, mission_id)
 
-        profile_messages = [
-            Message(role=MessageRole.SYSTEM, content=MessageContent(text=profile_system_prompt)),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=f"Game: {self._game_name}\nNPC name: {name}\n\nRecent interactions:\n{interactions_text}"
-                ),
-            ),
-        ]
-        profile = parse_with_retry(
-            messages=profile_messages,
-            result_type=NpcProfile,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        profile_user_prompt = (
+            f"Game: {self._game_name}\nNPC name: {name}\n\n"
+            f"NPCs already established in this adventure (the new NPC may be one of "
+            f"these):\n{roster_text}\n\n"
+            f"Recent interactions:\n{interactions_text}"
+        )
+        profile = self._run_npc_stage(
+            profile_system_prompt, profile_user_prompt, NpcProfile, LogType.NPC_PROFILE
         )
 
         valid_categories = get_npc_equipment_categories(game_type)
-        stats_messages = [
-            Message(role=MessageRole.SYSTEM, content=MessageContent(text=stats_system_prompt)),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=(
-                        f"NPC name: {name}\nDescription: {profile.character_description}\n\n"
-                        f"Valid equipment categories for this system (pick `equipment_categories` only "
-                        f"from this list, choosing the ones relevant to this NPC's archetype/role):\n"
-                        f"{', '.join(valid_categories)}"
-                    )
-                ),
-            ),
-        ]
-        stats = parse_with_retry(
-            messages=stats_messages,
-            result_type=stats_model,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        stats_user_prompt = (
+            f"NPC name: {name}\nDescription: {profile.character_description}\n\n"
+            f"Valid equipment categories for this system (pick `equipment_categories` only "
+            f"from this list, choosing the ones relevant to this NPC's archetype/role):\n"
+            f"{', '.join(valid_categories)}"
+        )
+        stats = self._run_npc_stage(
+            stats_system_prompt, stats_user_prompt, stats_type, LogType.NPC_STATS
         )
 
         budget_cost = _parse_budget_cost(profile.value)
@@ -499,28 +536,22 @@ class Gamemaster:
             game_type, categories=stats.equipment_categories, max_cost=budget_cost
         )
         candidates_text = json.dumps(candidates, ensure_ascii=False, indent=2)
-        equipment_messages = [
-            Message(role=MessageRole.SYSTEM, content=MessageContent(text=equipment_system_prompt)),
-            Message(
-                role=MessageRole.USER,
-                content=MessageContent(
-                    text=(
-                        f"NPC name: {name}\nDescription: {profile.character_description}\n"
-                        f"Equipment budget: {profile.value}\n\n"
-                        f"Available catalog items to choose from (pick only by exact name):\n{candidates_text}"
-                    )
-                ),
-            ),
-        ]
-        equipment = parse_with_retry(
-            messages=equipment_messages,
-            result_type=equipment_model,
-            llm_client=self._llm_client_reasoning,
-            reasoning=True,
-            task=LLMTask.ARCHITECT,
+        equipment_user_prompt = (
+            f"NPC name: {name}\nDescription: {profile.character_description}\n"
+            f"Equipment budget: {profile.value}\n\n"
+            f"Available catalog items to choose from (pick only by exact name):\n{candidates_text}"
+        )
+        equipment = self._run_npc_stage(
+            equipment_system_prompt, equipment_user_prompt, equipment_type, LogType.NPC_EQUIPMENT
         )
 
         npc_id = int(time.time() * 1000)
         content = merge_npc(game_type, npc_id, name, profile, stats, equipment)
-        _log.info("GenerateNpc complete | game_type=%s | name=%s", game_type, name)
-        return content
+        matched_key_npc = _validate_matched_key_npc(roster_text, profile.matched_key_npc)
+        _log.info(
+            "GenerateNpc complete | game_type=%s | name=%s | matched_key_npc=%s",
+            game_type,
+            name,
+            matched_key_npc,
+        )
+        return NpcGenerationResult(content=content, matched_key_npc=matched_key_npc)

@@ -168,12 +168,35 @@ The following JSON describes a working-class scenario in The Expanse universe. U
 * **affectedInterests**: These are the characters' actual livelihood concerns—their jobs, housing, family obligations
 * **complicatingSituation**: A mundane but consequential problem that affects daily life and income
 * **dailyConcerns**: The practical worries that drive decision-making—not saving the world, but paying bills
-* **keyNPCs**: Coworkers, supervisors, neighbors, family—not spies, villains, or powerful figures
+* **keyNPCs**: Coworkers, supervisors, neighbors, family—not spies, villains, or powerful figures. If an entry carries `_activeNpcOverride`, that NPC is currently active in the scene — see Active NPCs below for their current gear, equipment, and physical appearance, which take precedence over anything described here. This `keyNPCs` entry remains the source for backstory, personality, motivations, and secrets regardless. The flag is only added when that NPC's generation was explicitly matched to this entry, so it may be absent even when a name here (in full, by title, or by surname/given name alone) clearly refers to someone in Active NPCs — apply the same gear/equipment/appearance precedence in that case too, using your own judgment rather than the presence of the flag.
 * **practicalQuestions**: Focus on "Can we fix this?" not "Can we save everyone?"
 * **communityImpact**: How the situation affects the neighborhood, workplace, or local community
 
 This is the background of the crew:
 {BACKGROUND}
+
+## Party
+The following JSON array describes the crew's current state. It is intentionally lean — focuses, gear, and weapons are already known to the players themselves, so only origin/background and dynamic state are included.
+- `abilities`: the nine core abilities (Accuracy, Communication, Constitution, Dexterity, Fighting, Intelligence, Perception, Strength, Willpower).
+- `health`: current/max track. `fortune`: current Fortune point total.
+- `protagonist`: marks whose perspective the narration should center on.
+{PARTY}
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the scenario's own `keyNPCs` mentions above. An entry here can be a live instance of an NPC already named in the scenario, or a scene-only NPC with no prior mention at all (e.g. a coworker or supervisor) generated as the scene demands. Unlike the crew, NPC entries carry full detail since you are the one playing them:
+- `faction`: the NPC's allegiance, if relevant to their community role.
+- `focuses`, `weapons`, `armor`, `gear`: included only when the NPC actually has them.
+This is the ground truth for these NPCs' current gear, equipment, and physical appearance, taking precedence over the `keyNPCs` entry of the same name in the mission JSON (flagged there with `_activeNpcOverride`) for those details — `keyNPCs` remains the source for backstory, personality, motivations, and secrets.
+{NPCS}
+
+## Conflict Resolution: Equipment
+For any NPC who appears in both `keyNPCs` and Active NPCs above, the Active NPCs entry is the sole source of truth for all equipment the NPC currently possesses and uses. This includes:
+- **Weapons** — the `weapons` array overrides any narrative description in `keyNPCs`.
+- **Armor** — the `armor` field overrides any described clothing or protection.
+- **Gear** — the `gear` array is exhaustive. Do not add items from `keyNPCs` descriptions or invent items not listed here.
+- **Any other equipped item** (tools, instruments, etc.) — if it isn't in an explicit field in Active NPCs, the NPC does not have it with them in the current scene.
+
+When describing the NPC, draw narrative flavor (color, wear, condition) from your own invention or from `keyNPCs` only where it does not contradict an Active NPCs equipment field. If a conflict exists, the Active NPCs field wins and the `keyNPCs` description is treated as background flavor only — a past or non-literal detail.
 
 Below is the scenario you will run for the players. Focus on practical problem-solving, community cooperation, and the everyday challenges of working-class life in space. Remember: these are ordinary people dealing with ordinary problems that happen to be set in the future. Consider the following only to be a rough guideline on what happens around the player. It is not a "mission".
 

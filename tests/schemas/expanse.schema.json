@@ -111,7 +111,7 @@
           }
         },
         "armor": {
-          "type": "string"
+          "$ref": "#/definitions/ArmorItem"
         },
         "gear": {
           "type": "array",
@@ -190,6 +190,22 @@
       "required": [
         "name",
         "damage"
+      ],
+      "additionalProperties": false
+    },
+    "ArmorItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "rating"
       ],
       "additionalProperties": false
     }

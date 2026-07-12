@@ -506,7 +506,7 @@ The following JSON describes a Vampire the Masquerade chronicle in structured de
 Interpret and apply the fields as follows:
 - **meta**: Use this to establish setting, tone, and overall duration expectations for the chronicle.
 - **overview**: Provides the chronicle hook, hidden truths, themes, and factional conflicts—key for introducing the story and maintaining dramatic tension.
-- **keyNPCs**: Offer dialogue, motivations, secrets, and roleplaying cues for important characters. Use their relationships and agendas to drive political intrigue.
+- **keyNPCs**: Offer dialogue, motivations, secrets, and roleplaying cues for important characters. Use their relationships and agendas to drive political intrigue. If an entry carries `_activeNpcOverride`, that NPC is currently active in the scene — see Active NPCs below for their current gear, equipment, and physical appearance, which take precedence over anything described here. This `keyNPCs` entry remains the source for backstory, personality, motivations, and secrets regardless. The flag is only added when that NPC's generation was explicitly matched to this entry, so it may be absent even when a name here (in full, by title, or by surname/given name alone) clearly refers to someone in Active NPCs — apply the same gear/equipment/appearance precedence in that case too, using your own judgment rather than the presence of the flag.
 - **keyLocations**: Provide atmospheric encounter zones, exploration opportunities, and environmental storytelling elements.
 - **dramaticQuestions**: Use these to maintain focus on the central tensions and drive player engagement with meaningful choices.
 - **complicationsAndTwists**: Dynamically introduce these based on player actions to heighten drama and add unexpected developments.
@@ -523,6 +523,35 @@ This is the detailed background of the coterie and the chronicle we're playing n
 <BACKGROUND>
 {BACKGROUND}
 </BACKGROUND>
+
+## Party
+The following JSON array describes the player party's current state. It is intentionally lean — skills, disciplines, and gear are already known to the players themselves, so only identity and the dynamic state you need to narrate around are included.
+- `nature`: one of `mortal`, `ghoul`, `thin-blood`, `kindred`. `clan`, `generation`, and `predatorType` are only present when `nature` is not `mortal` — a mortal genuinely has none of these, it isn't an omission.
+- `attributes`: the seven physical/social/mental attributes.
+- `health`, `willpower`: current/max tracks.
+- `hunger`: only present for `thin-blood`/`kindred`. `humanity`, `bloodPotency`: only present for `kindred` — these matter for how close the character is to frenzy or losing themselves to the Beast.
+- `protagonist`: marks whose perspective the narration should center on.
+<PARTY>
+{PARTY}
+</PARTY>
+
+## Active NPCs
+The following JSON array describes NPCs currently active in the scene — distinct from the chronicle's own `keyNPCs` roster above. An entry here can be a live instance of an NPC already named in the chronicle, or a scene-only NPC with no chronicle entry at all (e.g. a Camarilla enforcer or a frightened mortal bystander) generated as the scene demands. Unlike the party, NPC entries carry full detail since you are the one playing them:
+- `skills`: only non-zero skill ranks are listed.
+- `disciplines`: only present for `kindred`/`ghoul` NPCs that actually have one — use these to know what supernatural powers the NPC can bring to bear.
+- `weapons`, `armor` (`{name, rating}`, rating subtracted from incoming damage): included only when the NPC actually has them.
+This is the ground truth for these NPCs' current gear, equipment, and physical appearance, taking precedence over the `keyNPCs` entry of the same name in the mission JSON (flagged there with `_activeNpcOverride`) for those details — `keyNPCs` remains the source for backstory, personality, motivations, and secrets.
+<ACTIVE_NPCS>
+{NPCS}
+</ACTIVE_NPCS>
+
+## Conflict Resolution: Equipment
+For any NPC who appears in both `keyNPCs` and Active NPCs, the Active NPCs entry is the sole source of truth for all equipment the NPC currently possesses and uses. This includes:
+- **Weapons** — the `weapons` field overrides any narrative description in `keyNPCs`.
+- **Armor** — the `armor` field overrides any described clothing or protection.
+- **Any other equipped item** (gear, tools, etc.) — if it isn't in an explicit field in Active NPCs, the NPC does not have it with them in the current scene.
+
+When describing the NPC, draw narrative flavor (color, wear, condition) from your own invention or from `keyNPCs` only where it does not contradict an Active NPCs equipment field. If a conflict exists, the Active NPCs field wins and the `keyNPCs` description is treated as background flavor only — a past or non-literal detail.
 
 ## Detailed Background
 Following this system prompt, you will might receive a DETAILED_BACKGROUND message possibly containing:

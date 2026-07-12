@@ -12,8 +12,9 @@ Rules:
   "range": str (optional, e.g. "Short/Long 10/30m"),
   "qualities": [list of strings, e.g. "Accurate", "Burst Fire",
   "Piercing 2"]}.
-- `armor` (optional) is a single short armor name/description (e.g. "MCRN
-  Infantry Battle Dress"), or omit it for an unarmored NPC.
+- `armor_name` and `armor_rating` describe a single piece of armor the NPC
+  wears (e.g. "MCRN Infantry Battle Dress" / 4, "Vacuum Suit" / 1). Omit
+  both for an unarmored NPC.
 - `gear` is a short list of mission-appropriate items (e.g. "Tactical
   Helmet (HUD)", "Medpatch", "Encrypted Comm Unit"). Empty lists are fine.
 
@@ -27,13 +28,15 @@ commentary, no markdown outside the fenced block):
   "weapons": [
     {"name": str, "damage": str, "minStr": int, "range": str, "qualities": list[str]}
   ],
-  "armor": str | None,
+  "armor_name": str | None,
+  "armor_rating": int,
   "gear": list[str]
 }
 ```
 
-Adhere strictly to this structure: `armor` may be `null` for an unarmored
-NPC, `weapons`/`gear` are lists (both may be empty).
+Adhere strictly to this structure: `armor_name` may be `null` for an
+unarmored NPC (then `armor_rating` should be 0), `weapons`/`gear` are lists
+(both may be empty).
 
 Important: every weapon/armor item you select must have an availability_tn at
 or below the given cap. If you can't find a suitable item under the cap, pick

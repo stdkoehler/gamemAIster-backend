@@ -112,6 +112,17 @@ Generate your response in JSON format following this simplified structure:
     "relationships": "Key family, clan, or community connections",
     "skills": "Crafts, knowledge, or abilities relevant to this life"
   },
+  "keyNPCs": [
+    {
+      "name": "Character name",
+      "relationship": "How they relate to the protagonist (kin, rival, clan authority, trade contact, etc.)",
+      "role": "Their function or position in the community",
+      "demeanor": "How they present themselves day to day",
+      "motivation": "What they want, fear, or guard as a secret",
+      "influence": "Practical or social leverage they hold over the protagonist's life"
+    },
+    "..."
+  ],
   "immediateChoices": [
     {
       "situation": "Current decision point",
@@ -192,6 +203,24 @@ Generate your response in JSON format following this simplified structure:
     "relationships": "Married to Milena (weaver), father to three children, sworn brother to village chief's son",
     "skills": "Master of iron and bronze working, basic carpentry, trading negotiation, some knowledge of Viking language from coastal contact"
   },
+  "keyNPCs": [
+    {
+      "name": "Milena",
+      "relationship": "Wife, skilled weaver",
+      "role": "Manages household textile trade alongside her own weaving work",
+      "demeanor": "Warm but no-nonsense, quick to put unrealistic plans in their place",
+      "motivation": "Wants the family fed and warm through winter above all else",
+      "influence": "Her trade income and household management keep the family solvent between forge contracts"
+    },
+    {
+      "name": "Bogdan",
+      "relationship": "Apprentice",
+      "role": "Learning the smithing trade",
+      "demeanor": "Eager to prove himself, embarrassed by his injury",
+      "motivation": "Desperate to earn Zbigniew's trust back after his burned hand slowed the workshop",
+      "influence": "His recovery speed determines how much of the winter workload falls on Zbigniew alone"
+    }
+  ],
   "immediateChoices": [
     {
       "situation": "A Danish merchant ship has arrived offering iron ore in exchange for 20 spearheads, but this would use most remaining metal",
@@ -272,6 +301,24 @@ Generate your response in JSON format following this simplified structure:
     "relationships": "Married to chief's daughter from allied clan, father to two sons and daughter, sworn alliance with four neighboring clan chiefs, tense relationship with ambitious younger brother",
     "skills": "Experienced warfare leader, diplomatic negotiation, understanding of tribal law and customs, basic literacy in Latin from captured Saxon priest"
   },
+  "keyNPCs": [
+    {
+      "name": "Ratibor",
+      "relationship": "Younger brother",
+      "role": "Senior warrior, commands a third of the clan's fighting men",
+      "demeanor": "Outwardly loyal, quick to voice the warriors' frustrations in council",
+      "motivation": "Believes he could lead more decisively and resents being passed over for chieftainship",
+      "influence": "Could split clan loyalty if Władysław is seen to falter"
+    },
+    {
+      "name": "Jarosław of the Veleti",
+      "relationship": "Rival clan chief",
+      "role": "Leader of the neighboring Veleti, disputing winter fishing rights",
+      "demeanor": "Proud, formal, quick to invoke tradition and precedent",
+      "motivation": "Needs the spawning grounds to feed his own people through winter, not merely posturing",
+      "influence": "Can escalate the dispute to armed conflict or be brought to a lasting accord"
+    }
+  ],
   "immediateChoices": [
     {
       "situation": "Veleti clan chief demands meeting to settle fishing dispute before waters freeze completely",
@@ -353,6 +400,32 @@ Generate your response in JSON format following this simplified structure:
     "relationships": "Devoted to parents despite their disagreement, close friendship with daughter of rival merchant family, attracted to young silversmith despite social complications",
     "skills": "Fluent in Old Norse and basic Greek for trade, expert in textile production and quality assessment, trained in household management and basic medicine, learning amber evaluation and silver testing"
   },
+  "keyNPCs": [
+    {
+      "name": "Yaroslav of Novgorod",
+      "relationship": "Suitor",
+      "role": "Wealthy merchant from Novgorod, proposed marriage match",
+      "demeanor": "Confident, courteous, treats the match as already settled business",
+      "motivation": "Wants the alliance for the trade connections her family offers, genuinely fond of her but doesn't know her",
+      "influence": "Marrying him would secure distant trade routes but remove her from her own family's business"
+    },
+    {
+      "name": "Bogumił",
+      "relationship": "Suitor",
+      "role": "Local silversmith's son, skilled craftsman",
+      "demeanor": "Earnest, a little awkward, openly admires her business sense",
+      "motivation": "Wants to marry for genuine affection and to build a partnership, not just a transaction",
+      "influence": "A match with him keeps her close to home and her own trade work, but offers less wealth and reach"
+    },
+    {
+      "name": "Anastazja",
+      "relationship": "Close friend, daughter of a rival merchant family",
+      "role": "Confidante and informal trade-news source",
+      "demeanor": "Sharp-tongued, fiercely loyal",
+      "motivation": "Wants Svetlana to choose for herself rather than be bargained away",
+      "influence": "Hears things from her own family's dealings that Svetlana otherwise wouldn't"
+    }
+  ],
   "immediateChoices": [
     {
       "situation": "Father offers to take her on important spring trading expedition to Constantinople, but this would delay marriage negotiations for entire season",

@@ -81,13 +81,22 @@
         "skills": {
           "type": "object",
           "properties": {
+            "Might": {
+              "type": "number"
+            },
             "Endurance": {
               "type": "number"
             },
-            "Fight": {
+            "Melee": {
               "type": "number"
             },
-            "Sneak": {
+            "Crafting": {
+              "type": "number"
+            },
+            "Stealth": {
+              "type": "number"
+            },
+            "Sleight of Hand": {
               "type": "number"
             },
             "Move": {
@@ -96,7 +105,7 @@
             "Marksmanship": {
               "type": "number"
             },
-            "Scout": {
+            "Scouting": {
               "type": "number"
             },
             "Lore": {
@@ -105,36 +114,39 @@
             "Survival": {
               "type": "number"
             },
-            "Craft": {
-              "type": "number"
-            },
             "Insight": {
               "type": "number"
             },
             "Manipulation": {
               "type": "number"
             },
+            "Performance": {
+              "type": "number"
+            },
             "Healing": {
               "type": "number"
             },
-            "Performance": {
+            "Animal Handling": {
               "type": "number"
             }
           },
           "required": [
+            "Might",
             "Endurance",
-            "Fight",
-            "Sneak",
+            "Melee",
+            "Crafting",
+            "Stealth",
+            "Sleight of Hand",
             "Move",
             "Marksmanship",
-            "Scout",
+            "Scouting",
             "Lore",
             "Survival",
-            "Craft",
             "Insight",
             "Manipulation",
+            "Performance",
             "Healing",
-            "Performance"
+            "Animal Handling"
           ],
           "additionalProperties": false
         },
@@ -150,7 +162,7 @@
         "weapons": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/SlavicWeapon"
           }
         },
         "armor": {
@@ -212,6 +224,46 @@
       ],
       "additionalProperties": false
     },
+    "SlavicWeapon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "grip": {
+          "type": "string",
+          "enum": [
+            "1H",
+            "2H"
+          ]
+        },
+        "damage": {
+          "type": "number"
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "Arm's Length",
+            "Near",
+            "Short",
+            "Long"
+          ]
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "grip",
+        "damage",
+        "range"
+      ],
+      "additionalProperties": false
+    },
     "SlavicArmor": {
       "type": "object",
       "properties": {
@@ -219,7 +271,7 @@
           "type": "string"
         },
         "rating": {
-          "type": "number"
+          "$ref": "#/definitions/StatTrack"
         }
       },
       "required": [
