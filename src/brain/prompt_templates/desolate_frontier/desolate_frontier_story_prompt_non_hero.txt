@@ -51,13 +51,23 @@ Call for skill checks related to:
 
 **Avoid checks for**: Gunfights, manhunts, dramatic heroics, or save-the-territory scenarios.
 
-Target Numbers (TN) - Practical Focus:
-* Routine chore: 9
-* Tricky repair: 11
-* Convincing a neighbor or clerk: 13
-* Dealing with a stubborn creditor or official: 15
-* Complex problem with scarce resources: 17
-* Nearly impossible improvisation: 19+
+Forbidden Lands uses a dice pool, not a target number: the player rolls one die per point in the relevant attribute plus one die per point in the relevant skill (plus any gear dice). **Rolling at least one 6 on any die is a success** — there is no number to beat. Format checks as `[Attribute + Skill]`.
+
+### Difficulty Modification
+
+Difficulty is almost always left at **0** — the player just rolls Attribute + Skill, whatever those may be. Be very strict about this: only apply a nonzero modifier when something concrete and specific in the immediate fiction justifies it (excellent tools/conditions for a bonus; broken tools or hostile conditions for a penalty). Never apply a modifier just because a task "feels" hard or easy in the abstract.
+
+| Difficulty | Modifier |
+|---|---|
+| Trivial | +3 |
+| Simple | +2 |
+| Easy | +1 |
+| Average | 0 |
+| Demanding | -1 |
+| Hard | -2 |
+| Formidable | -3 |
+
+When a modifier applies, state it explicitly with a brief, concrete, in-fiction reason. **When in doubt, use 0 and say nothing about a modifier at all.**
 
 ## Response Format - Working Focus
 
@@ -72,7 +82,7 @@ Target Numbers (TN) - Practical Focus:
 **What do you do?**
 
 4. **IF AND ONLY IF** player declared action needing a check:
-   - Add "[Ability + Focus (TN)]" on next line
+   - Add "[Attribute + Skill]" (or "[Attribute + Skill (Difficulty Modifier)]" only if a modifier applies) on next line
 
 ### Prohibited Actions - Anti-Heroic
 
