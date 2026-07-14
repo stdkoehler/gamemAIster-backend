@@ -55,6 +55,7 @@ from src.llmclient.llm_client import (
     LLMClientClaude,
     LLMClientDeepSeek,
     LLMClientLocal,
+    LLMClientLocalOpenAI,
     LLMClientMiniMax,
     LLMClientOpenRouter,
 )
@@ -194,3 +195,36 @@ def test_local_reasoning_and_structured_output():
         f"Structured output wrong or unvalidated: got {result.output.answer!r}, "
         f"expected {_EXPECTED_ANSWER}"
     )
+
+
+def test_local_openai_reasoning_and_structured_output():
+    """
+    LLMClientLocalOpenAI — a local model with NATIVE reasoning + tool-calling
+    (e.g. Gemma 4 26B) served through textgen-webui's OpenAI-compatible
+    endpoint. Unlike LLMClientLocal (previous test), this one IS pydantic_ai-
+    backed, so it goes through the shared _assert_reasoning_and_structured_output
+    check that also asserts on a real ThinkingPart.
+
+    This test is the verification gate for LLMClientLocalOpenAI's best-guess
+    wire-format defaults — the `chat_template_kwargs.enable_thinking` thinking
+    toggle and the PromptedOutput schema-delivery mode (see the class
+    docstring). Two failure modes it's specifically here to catch:
+      * no ThinkingPart → the enable_thinking toggle isn't how this server
+        engages the model's thinking (or the server returns thinking inline as
+        <think> tags that pydantic_ai's generic OpenAI profile doesn't split
+        into a ThinkingPart — would need a model profile with thinking_tags).
+      * validation/parse failure → the schema isn't reaching the model even
+        via the prompt; inspect the raw request.
+
+    Same live-reachability skip as test_local_reasoning_and_structured_output
+    (checked in-body, not via skipif, so collection never hits the network).
+    Point it at the model with LOCAL_MODEL.
+    """
+    try:
+        requests.get(f"{_LOCAL_BASE_URL}/v1/internal/model/info", timeout=2)
+    except requests.exceptions.RequestException:
+        pytest.skip(f"No local LLM server reachable at {_LOCAL_BASE_URL}")
+
+    model = os.getenv("LOCAL_MODEL")
+    client = LLMClientLocalOpenAI(base_url=_LOCAL_BASE_URL, model_name=model)
+    _assert_reasoning_and_structured_output(client, LLMTask.ARCHITECT)
