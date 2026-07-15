@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/DesolateFrontierCharacter",
+  "definitions": {
+    "DesolateFrontierCharacter": {
+      "type": "object",
+      "properties": {
+        "gameType": {
+          "type": "string",
+          "const": "desolate_frontier"
+        },
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "originAbility": {
+          "type": "string"
+        },
+        "profession": {
+          "type": "string"
+        },
+        "age": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "Strength": {
+              "type": "number"
+            },
+            "Agility": {
+              "type": "number"
+            },
+            "Wits": {
+              "type": "number"
+            },
+            "Empathy": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Strength",
+            "Agility",
+            "Wits",
+            "Empathy"
+          ],
+          "additionalProperties": false
+        },
+        "attributeDamage": {
+          "type": "object",
+          "properties": {
+            "Strength": {
+              "type": "number"
+            },
+            "Agility": {
+              "type": "number"
+            },
+            "Wits": {
+              "type": "number"
+            },
+            "Empathy": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Strength",
+            "Agility",
+            "Wits",
+            "Empathy"
+          ],
+          "additionalProperties": false
+        },
+        "skills": {
+          "type": "object",
+          "properties": {
+            "Might": {
+              "type": "number"
+            },
+            "Endurance": {
+              "type": "number"
+            },
+            "Melee": {
+              "type": "number"
+            },
+            "Crafting": {
+              "type": "number"
+            },
+            "Stealth": {
+              "type": "number"
+            },
+            "Sleight of Hand": {
+              "type": "number"
+            },
+            "Move": {
+              "type": "number"
+            },
+            "Marksmanship": {
+              "type": "number"
+            },
+            "Scouting": {
+              "type": "number"
+            },
+            "Lore": {
+              "type": "number"
+            },
+            "Survival": {
+              "type": "number"
+            },
+            "Insight": {
+              "type": "number"
+            },
+            "Manipulation": {
+              "type": "number"
+            },
+            "Performance": {
+              "type": "number"
+            },
+            "Healing": {
+              "type": "number"
+            },
+            "Animal Handling": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "Might",
+            "Endurance",
+            "Melee",
+            "Crafting",
+            "Stealth",
+            "Sleight of Hand",
+            "Move",
+            "Marksmanship",
+            "Scouting",
+            "Lore",
+            "Survival",
+            "Insight",
+            "Manipulation",
+            "Performance",
+            "Healing",
+            "Animal Handling"
+          ],
+          "additionalProperties": false
+        },
+        "talents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "grit": {
+          "$ref": "#/definitions/StatTrack"
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DesolateFrontierWeapon"
+          }
+        },
+        "armor": {
+          "$ref": "#/definitions/DesolateFrontierArmor"
+        },
+        "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "experience": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameType",
+        "id",
+        "name",
+        "origin",
+        "originAbility",
+        "profession",
+        "description",
+        "attributes",
+        "attributeDamage",
+        "skills",
+        "talents"
+      ],
+      "additionalProperties": false
+    },
+    "StatTrack": {
+      "type": "object",
+      "properties": {
+        "current": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "current",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "DesolateFrontierWeapon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "grip": {
+          "type": "string",
+          "enum": [
+            "1H",
+            "2H"
+          ]
+        },
+        "damage": {
+          "type": "number"
+        },
+        "range": {
+          "type": "string",
+          "enum": [
+            "Arm's Length",
+            "Near",
+            "Short",
+            "Long"
+          ]
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "grip",
+        "damage",
+        "range"
+      ],
+      "additionalProperties": false
+    },
+    "DesolateFrontierArmor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rating": {
+          "$ref": "#/definitions/StatTrack"
+        }
+      },
+      "required": [
+        "name",
+        "rating"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,436 @@
+{
+    "regions": [
+        {
+            "name": "Dust-choked cattle town on the high plains",
+            "probability": 1.0
+        },
+        {
+            "name": "Boomtown mining camp clinging to a silver vein",
+            "probability": 1.0
+        },
+        {
+            "name": "Isolated homestead on the drought-cracked prairie",
+            "probability": 1.0
+        },
+        {
+            "name": "Border town straddling contested territory",
+            "probability": 0.9
+        },
+        {
+            "name": "Railroad construction camp at the end of the line",
+            "probability": 0.9
+        },
+        {
+            "name": "Settlement pressed against reservation boundary lines",
+            "probability": 0.9
+        },
+        {
+            "name": "Failing ranch in canyon country",
+            "probability": 0.8
+        },
+        {
+            "name": "River crossing trading post",
+            "probability": 0.8
+        },
+        {
+            "name": "Sun-bleached ghost town half-abandoned after the mine closed",
+            "probability": 0.8
+        },
+        {
+            "name": "Army outpost garrisoning a stretch of disputed trail",
+            "probability": 0.8
+        },
+        {
+            "name": "Sod-house farming community on the eastern plains",
+            "probability": 0.7
+        },
+        {
+            "name": "Stagecoach relay station in the badlands",
+            "probability": 0.7
+        },
+        {
+            "name": "Timber town in the high country",
+            "probability": 0.7
+        },
+        {
+            "name": "Cattle drive waypoint along the trail north",
+            "probability": 0.7
+        },
+        {
+            "name": "Squatter's camp on disputed grazing land",
+            "probability": 0.6
+        },
+        {
+            "name": "Desert way station on the wagon road",
+            "probability": 0.6
+        },
+        {
+            "name": "Company town built and owned by the mining outfit",
+            "probability": 0.6
+        },
+        {
+            "name": "Flood-prone river bottom settlement",
+            "probability": 0.5
+        },
+        {
+            "name": "Isolated line shack far from any town",
+            "probability": 0.5
+        },
+        {
+            "name": "Territorial capital with a courthouse and a jail",
+            "probability": 0.5
+        }
+    ],
+    "characterRoles": [
+        {
+            "name": "Homestead farmer fighting drought and debt",
+            "probability": 1.0
+        },
+        {
+            "name": "Town sheriff with more jurisdiction than deputies",
+            "probability": 1.0
+        },
+        {
+            "name": "Cattle rancher expanding a small herd",
+            "probability": 1.0
+        },
+        {
+            "name": "Former Confederate or Union soldier trying to start over",
+            "probability": 0.9
+        },
+        {
+            "name": "Bounty hunter working the territory circuit",
+            "probability": 0.9
+        },
+        {
+            "name": "Prospector working a claim alone",
+            "probability": 0.9
+        },
+        {
+            "name": "Saloon keeper managing debts and gossip",
+            "probability": 0.9
+        },
+        {
+            "name": "Traveling doctor with too many patients and too little medicine",
+            "probability": 0.8
+        },
+        {
+            "name": "Freed former slave building a new trade",
+            "probability": 0.8
+        },
+        {
+            "name": "Railroad foreman behind schedule and short on labor",
+            "probability": 0.8
+        },
+        {
+            "name": "Native scout caught between two worlds",
+            "probability": 0.8
+        },
+        {
+            "name": "Gambler with debts owed in more than one town",
+            "probability": 0.7
+        },
+        {
+            "name": "Preacher trying to hold a congregation together",
+            "probability": 0.7
+        },
+        {
+            "name": "Widow running her late husband's ranch alone",
+            "probability": 0.7
+        },
+        {
+            "name": "Outlaw trying to go straight, or pretending to",
+            "probability": 0.7
+        },
+        {
+            "name": "Blacksmith and farrier serving several ranches",
+            "probability": 0.6
+        },
+        {
+            "name": "Stagecoach driver running a dangerous route",
+            "probability": 0.6
+        },
+        {
+            "name": "Immigrant laborer new to the territory and its dangers",
+            "probability": 0.6
+        },
+        {
+            "name": "Schoolteacher new to a town that doesn't trust outsiders",
+            "probability": 0.6
+        },
+        {
+            "name": "Deputy carrying a badge nobody else wanted",
+            "probability": 0.6
+        },
+        {
+            "name": "Cattle drive trail boss responsible for the herd and the hands",
+            "probability": 0.5
+        },
+        {
+            "name": "Land speculator with claims of dubious legality",
+            "probability": 0.5
+        },
+        {
+            "name": "Mail and telegraph rider covering a lonely route",
+            "probability": 0.5
+        },
+        {
+            "name": "Undertaker who knows more about the town than most",
+            "probability": 0.5
+        },
+        {
+            "name": "Reformed gunslinger trying to stay out of trouble",
+            "probability": 0.5
+        }
+    ],
+    "startingSituations": [
+        {
+            "name": "Well ran dry three weeks ago, nearest water is a two-day ride",
+            "probability": 1.0
+        },
+        {
+            "name": "Rival ranch has been moving fence lines onto disputed range",
+            "probability": 1.0
+        },
+        {
+            "name": "Bank is threatening to foreclose unless the note is paid by month's end",
+            "probability": 1.0
+        },
+        {
+            "name": "A stranger rode into town asking pointed questions about the past",
+            "probability": 0.9
+        },
+        {
+            "name": "Cattle have been going missing, and the brands look altered",
+            "probability": 0.9
+        },
+        {
+            "name": "Sheriff was found dead and no one in town seems to want to talk about it",
+            "probability": 0.9
+        },
+        {
+            "name": "Railroad survey crew wants the homestead's land and won't take no easily",
+            "probability": 0.8
+        },
+        {
+            "name": "A wanted poster with a familiar face went up outside the saloon",
+            "probability": 0.8
+        },
+        {
+            "name": "Outbreak of fever is spreading through town, doctor is overwhelmed",
+            "probability": 0.8
+        },
+        {
+            "name": "A gang has been spotted scouting the stagecoach route",
+            "probability": 0.8
+        },
+        {
+            "name": "Water rights dispute is turning ugly between two families",
+            "probability": 0.7
+        },
+        {
+            "name": "A former partner shows up wanting a cut of something long buried",
+            "probability": 0.7
+        },
+        {
+            "name": "Mining claim jumpers moved in while the owner was in town for supplies",
+            "probability": 0.7
+        },
+        {
+            "name": "Army patrol is asking uncomfortable questions about recent trouble",
+            "probability": 0.7
+        },
+        {
+            "name": "A debt owed to the wrong man has come due",
+            "probability": 0.6
+        },
+        {
+            "name": "Grass fire destroyed half a season's hay just before winter",
+            "probability": 0.6
+        },
+        {
+            "name": "Someone's been rustling stock and the law suspects a neighbor",
+            "probability": 0.6
+        },
+        {
+            "name": "A telegram arrived with news that changes everything",
+            "probability": 0.6
+        },
+        {
+            "name": "New arrival in town claims a legal right to the land already being worked",
+            "probability": 0.5
+        },
+        {
+            "name": "A gunfight in the street left a bystander dead and the town wants answers",
+            "probability": 0.5
+        },
+        {
+            "name": "Flash flood washed out the only bridge into town",
+            "probability": 0.5
+        },
+        {
+            "name": "A card game ended badly and now there's a debt of honor to settle",
+            "probability": 0.5
+        },
+        {
+            "name": "The stray dog has been digging up something out past the tree line",
+            "probability": 0.85
+        },
+        {
+            "name": "A neighbor's fence needs mending before the cattle wander",
+            "probability": 0.85
+        },
+        {
+            "name": "The wagon wheel finally gave out on the way back from town",
+            "probability": 0.85
+        },
+        {
+            "name": "Two ranch hands are arguing over whose turn it is on night watch",
+            "probability": 0.8
+        },
+        {
+            "name": "The general store is out of the one thing that was needed most",
+            "probability": 0.8
+        },
+        {
+            "name": "A traveling peddler is trying to sell something too good to be true",
+            "probability": 0.8
+        },
+        {
+            "name": "The roof needs patching before the next storm rolls in",
+            "probability": 0.85
+        },
+        {
+            "name": "A borrowed horse came back lame",
+            "probability": 0.8
+        }
+    ],
+    "seasonalContexts": [
+        {
+            "name": "Height of summer drought, water and tempers both running short",
+            "probability": 1.0
+        },
+        {
+            "name": "Early spring, cattle drive season about to begin",
+            "probability": 1.0
+        },
+        {
+            "name": "Deep winter, snow closing the mountain passes",
+            "probability": 1.0
+        },
+        {
+            "name": "Fall roundup, branding and counting before the first frost",
+            "probability": 0.9
+        },
+        {
+            "name": "Harvest time, the difference between a hard winter and a starving one",
+            "probability": 0.9
+        },
+        {
+            "name": "Late spring, rivers swollen with snowmelt and travel treacherous",
+            "probability": 0.8
+        },
+        {
+            "name": "Dust storm season, visibility low and nerves worn thin",
+            "probability": 0.8
+        },
+        {
+            "name": "Early winter, last supply run before the roads close",
+            "probability": 0.8
+        },
+        {
+            "name": "Midsummer, railroad crews racing to lay track before the money runs out",
+            "probability": 0.7
+        },
+        {
+            "name": "First thaw, assessing what the winter cost",
+            "probability": 0.7
+        },
+        {
+            "name": "Grasshopper plague season, crops at risk of total loss",
+            "probability": 0.6
+        },
+        {
+            "name": "Election season in the territorial capital, tempers and ambitions high",
+            "probability": 0.6
+        },
+        {
+            "name": "Late autumn, final cattle shipments before the market closes",
+            "probability": 0.5
+        }
+    ],
+    "culturalFoci": [
+        {
+            "name": "Land disputes and fence lines",
+            "probability": 1.0
+        },
+        {
+            "name": "Law and order versus frontier justice",
+            "probability": 1.0
+        },
+        {
+            "name": "Debt, credit, and the bank's grip on the town",
+            "probability": 1.0
+        },
+        {
+            "name": "Cattle drives and range wars",
+            "probability": 0.9
+        },
+        {
+            "name": "Prospecting fever and claim disputes",
+            "probability": 0.9
+        },
+        {
+            "name": "Railroad expansion and the towns it makes or breaks",
+            "probability": 0.9
+        },
+        {
+            "name": "Outlaw gangs and bounty hunting",
+            "probability": 0.8
+        },
+        {
+            "name": "Drought, water rights, and survival",
+            "probability": 0.8
+        },
+        {
+            "name": "Reservation boundaries and broken treaties",
+            "probability": 0.8
+        },
+        {
+            "name": "Reconstruction-era grudges carried west",
+            "probability": 0.7
+        },
+        {
+            "name": "Gambling debts and saloon politics",
+            "probability": 0.7
+        },
+        {
+            "name": "Vigilante committees and mob justice",
+            "probability": 0.7
+        },
+        {
+            "name": "Immigrant labor and prejudice in boomtowns",
+            "probability": 0.6
+        },
+        {
+            "name": "Disease and the scarcity of proper medicine",
+            "probability": 0.6
+        },
+        {
+            "name": "Horse theft and its usual consequence",
+            "probability": 0.6
+        },
+        {
+            "name": "Telegraph lines and the speed news now travels",
+            "probability": 0.5
+        },
+        {
+            "name": "Widowhood and inheritance disputes",
+            "probability": 0.5
+        },
+        {
+            "name": "Company towns and company debts",
+            "probability": 0.5
+        }
+    ]
+}

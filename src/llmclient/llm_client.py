@@ -810,7 +810,13 @@ class LLMClientLocal(LLMClientBase):
         accumulated_thinking = ""
 
         for event in client.events():
-            result = json.loads(event.data)
+            if event.data == "[DONE]":
+                break
+
+            try:
+                result = json.loads(event.data)
+            except json.JSONDecodeError:
+                continue
             chunk = result["choices"][0]["delta"].get("content", "")
 
             if not chunk:
@@ -954,6 +960,258 @@ class LLMClientLocal(LLMClientBase):
     # entirely above (see CompletionAgent), so the base class's
     # NotImplementedError-raising default is correct here — nothing should
     # ever call this for LLMClientLocal.
+
+
+# --- Local Client for natively reasoning/tool-calling models (pydantic_ai) ---
+
+
+class LLMClientLocalOpenAI(LLMClientLocal):
+    """
+    Local client for models that natively support reasoning AND tool-calling
+    over textgen-webui's OpenAI-compatible endpoint — e.g. Gemma 4 26B.
+
+    The whole reason the parent LLMClientLocal bypasses pydantic_ai (returning
+    CompletionAgent instead of a real Agent) is that its target models —
+    DeepHermes, Gemma-3-R1 — are reasoning-tuned GGUFs that (a) only engage
+    thinking via a <think>-prefill + `continue_` request trick pydantic_ai's
+    Agent interface structurally cannot express, and (b) run on Gemma chat
+    templates with no tool-call tokens at all, so the schema never reaches the
+    model. See CompletionAgent's docstring and docs/conversation_memory.html.
+
+    A model with *native* reasoning removes blocker (a) entirely: no prefill
+    trick is needed, so pydantic_ai's ordinary "append a user turn" flow is
+    fine — exactly the situation deepseek-reasoner is already in. This subclass
+    therefore keeps all of LLMClientLocal's streaming / token-counting /
+    raw-completion machinery (reused as-is for the narrative chat path) but
+    routes structured output back through pydantic_ai's real Agent, via an
+    OpenAIChatModel pointed at the local server.
+
+    Two decisions, both live-verified against a real Gemma 4 26B GGUF served
+    by textgen-webui/llama.cpp (tests/test_llm_clients_live.py):
+
+      * Native tool-calling (`_needs_prompted_output_for_reasoning = False`,
+        inherited from base). Unlike the Gemma 3 "R1" GGUFs that motivated
+        blocker (b) — whose chat template has no tool-call tokens at all —
+        Gemma 4's template DOES support tool-calling: verified that a forced
+        `tool_choice: "required"` returns a proper `tool_calls` response,
+        AND that it coexists with thinking (the model reasons first, then
+        emits the tool call, given enough token budget — no 400, no conflict).
+        Forced tool-calling is pydantic_ai's most reliable structured-output
+        mode (decode-level schema enforcement), so it's preferred here.
+        PromptedOutput was tried first and *failed live* on this model — with
+        the schema in the prompt, Gemma 4 echoed the schema back verbatim as
+        its answer instead of an instance — which is exactly why this is
+        False, not True.
+      * Thinking always on. This model reasons unconditionally: verified that
+        `chat_template_kwargs.enable_thinking` (the HF/vLLM convention) is a
+        no-op on this build — identical reasoning output with it true vs false
+        — and that thinking comes back in a `reasoning_content` response field
+        that pydantic_ai's OpenAIChatModel already surfaces as a ThinkingPart.
+        `_thinking_body()` is still sent defensively (see there).
+      * Sampling lives in the ConfigRegistry, not here. In this codebase the
+        narrative-vs-structured distinction maps 1:1 to the task: STORY is the
+        only narrative (chat_completion) task, and ARCHITECT/SUMMARY are always
+        structured (build_agent) output — so the registry's per-(model, task)
+        resolution already expresses the whole split. The `LLMClientLocalOpenAI`
+        _MATRIX entry sets Gemma 4's narrative sampling on STORY (temp 1.0,
+        top_p 0.95, top_k 64) and the structured sampler set on ARCHITECT +
+        SUMMARY (low temp + scoped repetition penalty — temp=1.0 can't be used
+        for tool calls: llama.cpp doesn't hard-enforce tool_choice, so the model
+        answers in prose instead of calling the tool, and loops without a
+        repetition penalty; verified live). This client only *forwards* the
+        local-only sampler knobs the registry resolves into extra_body (see
+        `_to_pydantic_ai_model`), since pydantic_ai's ModelSettings can't carry
+        them — it holds no sampling values of its own.
+    """
+
+    # Native tool-calling verified working (incl. with thinking) — see the
+    # class docstring. Left at the base default of False explicitly for the
+    # reader, since the sibling LLMClientOpenRouter flips it to True.
+    _needs_prompted_output_for_reasoning = False
+
+    @property
+    def model_identifier(self) -> str:
+        """Key the ConfigRegistry by class name rather than the dynamic
+        LOCAL_MODEL string, so the `LLMClientLocalOpenAI` _MATRIX entry (which
+        carries this model's per-task sampling) is hit regardless of what the
+        loaded model is named. `self.model_name` still drives the actual API
+        model field in _to_pydantic_ai_model()."""
+        return type(self).__name__
+
+    # Local sampler knobs to forward via extra_body on the structured path.
+    # pydantic_ai's ModelSettings only carries temperature/top_p/max_tokens/
+    # penalties/stop; these have no OpenAI equivalent and would otherwise be
+    # dropped, but textgen-webui accepts them. Values come from the registry
+    # (get_task_config), not from here.
+    _STRUCTURED_EXTRA_SAMPLER_FIELDS = (
+        "top_k",
+        "min_p",
+        "repetition_penalty",
+        "repetition_penalty_range",
+        "smoothing_factor",
+        "sampler_priority",
+    )
+
+    @staticmethod
+    def _thinking_body(reasoning: bool) -> dict[str, Any]:
+        """The `chat_template_kwargs.enable_thinking` toggle (HF/vLLM convention).
+        Sent by both the raw streaming/completion path (_adjust_reasoning) and
+        the pydantic_ai bridge (_to_pydantic_ai_model's extra_body) so the two
+        can't drift — same containment pattern as LLMClientDeepSeek._thinking_extra_body.
+
+        VERIFIED to be a no-op on the tested Gemma 4 26B / llama.cpp build
+        (the model reasons unconditionally regardless of this flag), but kept
+        because it's harmless, self-documenting, and the correct lever for any
+        other model routed through LLM=LOCAL_OPENAI whose server DOES honor it.
+        Deliberately NOT pydantic_ai's unified `thinking=True`, which the
+        generic OpenAIChatModel maps to OpenAI's `reasoning_effort` — a dead
+        field against textgen-webui, same as the DeepSeek/OpenRouter cases in
+        conversation_memory.html."""
+        return {"chat_template_kwargs": {"enable_thinking": reasoning}}
+
+    def build_agent(
+        self,
+        task: LLMTask,
+        output_type: type[_OutputT],
+        system_prompt: str,
+        reasoning: bool = False,
+        **agent_kwargs: Any,
+    ) -> _RunnableAgent[_OutputT]:
+        """Bypass LLMClientLocal's CompletionAgent override and use the base
+        pydantic_ai Agent path — the entire point of this subclass. Calls the
+        grandparent (LLMClientBase) implementation explicitly, since plain
+        super() would resolve to LLMClientLocal's CompletionAgent version.
+
+        (No retry-count bump here: the structured-output failures found on this
+        model were sampling-driven — a low-temp forced-tool-call repetition
+        loop, and prose-instead-of-tool-call at high temp — fixed by the
+        registry's structured sampler set (temp/repetition_penalty) and the
+        larger structured max_tokens, not by extra retries, which just re-run
+        the whole slow always-on reasoning and fail the same way.)"""
+        return LLMClientBase.build_agent(
+            self, task, output_type, system_prompt, reasoning=reasoning, **agent_kwargs
+        )
+
+    def _adjust_reasoning(
+        self, messages: list[Message], payload: dict[str, Any]
+    ) -> tuple[list[Message], dict[str, Any]]:
+        """Native-reasoning path for the raw chat/streaming completions: request
+        the model's own thinking mode via the chat template instead of the
+        parent's <think>-prefill + continue_ hack (which is only for the
+        reasoning-tuned models LLMClientLocal targets)."""
+        payload.update(self._thinking_body(True))
+        return messages, payload
+
+    def _to_pydantic_ai_model(self, task: LLMTask, reasoning: bool = False) -> Model:
+        # Sampling (incl. the structured low-temp set) and max_tokens come from
+        # the ConfigRegistry entry for this client — see llm_config_registry.py.
+        config = self.get_task_config(task)
+        settings = self._to_pydantic_ai_settings(config)
+        # extra_body carries the thinking toggle plus the local-only sampler
+        # knobs pydantic_ai's ModelSettings can't express (temperature/top_p/
+        # max_tokens already went through settings).
+        extra_body = dict(self._thinking_body(reasoning))
+        for field in self._STRUCTURED_EXTRA_SAMPLER_FIELDS:
+            value = getattr(config, field)
+            if value is not UNSET:
+                extra_body[field] = value
+        settings["extra_body"] = extra_body
+        return OpenAIChatModel(
+            self.model_name or "local-model",
+            provider=OpenAIProvider(
+                base_url=f"{self._base_url.rstrip('/')}/v1",
+                api_key="not-needed",  # textgen-webui ignores it; SDK requires non-empty
+            ),
+            settings=settings,
+        )
+
+    def _execute_chat_completion_stream(
+        self, messages: list[Message], reasoning: bool, config: LLMConfig
+    ) -> Generator[StreamResponse, None, None]:
+        """Overrides the parent's inline-`<think>`-tag stream parser. A native
+        reasoning model on this server streams thinking in a separate
+        `reasoning_content` delta field (verified live — same shape DeepSeek
+        uses), never as `<think>` tokens inside `content`, so the parent's
+        tag-based state machine would emit zero THINKING events and the whole
+        reasoning trace would be silently dropped from the narrative stream and
+        the stored `full_thinking`. This handles the reasoning_content/content
+        split directly instead. Sampling (Gemma's narrative config on STORY)
+        comes from the registry via `config` — no overlay needed here."""
+        payload = asdict(config)
+        if reasoning:
+            messages, payload = self._adjust_reasoning(messages, payload)
+        payload.update(
+            {
+                "messages": [self._message_to_dict(msg) for msg in messages],
+                "stream": True,
+            }
+        )
+
+        stream_response = requests.post(
+            self._chat_completion_url,
+            headers=self._headers,
+            json=payload,
+            stream=True,
+            timeout=360,
+        )
+        client = SSEClient(stream_response)  # type: ignore
+
+        accumulated_thinking = ""
+        accumulated_text = ""
+        in_reasoning = False
+        reasoning_ended = False
+
+        for event in client.events():
+            if event.data == "[DONE]":
+                break
+            try:
+                result = json.loads(event.data)
+            except json.JSONDecodeError:
+                continue
+            choices = result.get("choices")
+            if not choices:
+                continue
+            delta = choices[0].get("delta", {})
+
+            reasoning_chunk = delta.get("reasoning_content")
+            if reasoning_chunk:
+                if not in_reasoning:
+                    in_reasoning = True
+                    yield StreamResponse(type=StreamType.THINKING, delta="")
+                accumulated_thinking += reasoning_chunk
+                yield StreamResponse(type=StreamType.THINKING, delta=reasoning_chunk)
+
+            content_chunk = delta.get("content")
+            if content_chunk:
+                # First content token marks the end of the thinking phase.
+                if in_reasoning and not reasoning_ended:
+                    in_reasoning = False
+                    reasoning_ended = True
+                    yield StreamResponse(
+                        type=StreamType.THINKING_END,
+                        delta="",
+                        full_thinking=self._maybe_extract_hidden_state(
+                            accumulated_thinking.strip()
+                        ),
+                    )
+                accumulated_text += content_chunk
+                yield StreamResponse(type=StreamType.TEXT, delta=content_chunk)
+
+        # Stream ended — close out any still-open thinking (e.g. a pure-thinking
+        # response that never produced content), then always the text.
+        if in_reasoning and not reasoning_ended:
+            yield StreamResponse(
+                type=StreamType.THINKING_END,
+                delta="",
+                full_thinking=self._maybe_extract_hidden_state(
+                    accumulated_thinking.strip()
+                ),
+            )
+        yield StreamResponse(
+            type=StreamType.TEXT_END,
+            delta="",
+            full_text=accumulated_text.strip(),
+        )
 
 
 # --- DeepSeek Client (OpenAI-Compatible SDK) ---

@@ -568,6 +568,89 @@ def _merge_dragonlance(
     }
 
 
+# ───────────────────────── Desolate Frontier ─────────────────────────
+
+_DESOLATE_FRONTIER_BLANK_ATTRIBUTES = {"Strength": 3, "Agility": 3, "Wits": 3, "Empathy": 3}
+
+_DESOLATE_FRONTIER_BLANK_SKILLS = {
+    k: 0
+    for k in (
+        # Strength
+        "Might",
+        "Endurance",
+        "Melee",
+        "Crafting",
+        # Agility
+        "Stealth",
+        "Sleight of Hand",
+        "Move",
+        "Marksmanship",
+        # Wits
+        "Scouting",
+        "Lore",
+        "Survival",
+        "Insight",
+        # Empathy
+        "Manipulation",
+        "Performance",
+        "Healing",
+        "Animal Handling",
+    )
+}
+
+
+class DesolateFrontierNpcStats(BaseModel):
+    origin: str
+    origin_ability: str
+    profession: str
+    attributes: dict[str, int]
+    skills: dict[str, int]
+    talents: list[str] = Field(default_factory=list)
+    equipment_categories: list[str] = Field(default_factory=list)
+
+
+class DesolateFrontierNpcEquipment(BaseModel):
+    weapons: list[dict] = Field(default_factory=list)  # DesolateFrontierWeapon-shaped
+    armor_name: str | None = None
+    armor_rating: int | None = None
+    gear: list[str] = Field(default_factory=list)
+
+
+def _merge_desolate_frontier(
+    npc_id: int,
+    name: str,
+    profile: NpcProfile,
+    stats: DesolateFrontierNpcStats,
+    equipment: DesolateFrontierNpcEquipment,
+) -> dict:
+    full_attributes = {**_DESOLATE_FRONTIER_BLANK_ATTRIBUTES, **stats.attributes}
+    full_skills = {**_DESOLATE_FRONTIER_BLANK_SKILLS, **stats.skills}
+    armor = (
+        {
+            "name": equipment.armor_name,
+            "rating": {"current": equipment.armor_rating or 0, "max": equipment.armor_rating or 0},
+        }
+        if equipment.armor_name
+        else None
+    )
+    return {
+        "gameType": GameType.DESOLATE_FRONTIER.value,
+        "id": npc_id,
+        "name": name,
+        "origin": stats.origin,
+        "originAbility": stats.origin_ability,
+        "profession": stats.profession,
+        "description": profile.character_description,
+        "attributes": full_attributes,
+        "attributeDamage": dict(full_attributes),
+        "skills": full_skills,
+        "talents": stats.talents,
+        "weapons": equipment.weapons,
+        "armor": armor,
+        "gear": equipment.gear,
+    }
+
+
 # Dispatch (which GameType uses which Stats/Equipment model + merge function)
 # lives in src/brain/system_registry.py, alongside the rest of the per-system
 # wiring (prompts, oracle class). This module only defines the per-system

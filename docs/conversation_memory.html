@@ -442,6 +442,56 @@
     strips the <code>```json</code> fencing either field comes wrapped in). Verified live post-fix: single-attempt
     success, schema parsed and validated correctly.
     </p>
+    <p>
+    <strong>The exception — <code>LLMClientLocalOpenAI</code>:</strong> the two blockers above are specific to
+    <em>reasoning-tuned GGUFs</em> (DeepHermes, Gemma-3-R1). A local model with <em>native</em> reasoning and
+    tool-calling — e.g. Gemma 4 26B — has neither problem: it needs no <code>&lt;think&gt;</code>-prefill/<code>continue_</code>
+    trick (so pydantic_ai's ordinary "append a user turn" flow works, exactly like <code>deepseek-reasoner</code>).
+    <code>LLMClientLocalOpenAI</code> (a subclass of <code>LLMClientLocal</code>) therefore keeps the parent's
+    streaming/completion/token-counting machinery for the narrative path but <em>rejoins</em> the pydantic_ai bridge
+    for structured output: its <code>build_agent()</code> delegates to the base <code>LLMClientBase.build_agent()</code>
+    (skipping the parent's <code>CompletionAgent</code> override), and <code>_to_pydantic_ai_model()</code> returns an
+    <code>OpenAIChatModel</code> pointed at the local <code>/v1</code> endpoint. Live-verified against a real Gemma 4
+    26B GGUF (textgen-webui/llama.cpp) via
+    <code>test_llm_clients_live.py::test_local_openai_reasoning_and_structured_output</code>, which settled three
+    things that had to be found empirically, not from code:
+    <ul>
+      <li><strong>Native tool-calling, not PromptedOutput.</strong> Unlike the Gemma 3 "R1" template (no tool tokens
+        at all — the blocker that forced <code>CompletionAgent</code>), Gemma 4's template <em>does</em> support
+        tool-calling: a forced <code>tool_choice="required"</code> returns a proper tool call, and coexists with
+        thinking. So <code>_needs_prompted_output_for_reasoning</code> stays at the base <code>False</code> (decode-level
+        schema enforcement). PromptedOutput was tried first and <em>failed live</em> — Gemma 4 echoed the schema back
+        verbatim as its answer — which is exactly why it isn't used.</li>
+      <li><strong>Thinking is always on and returned in <code>reasoning_content</code>.</strong> The
+        <code>chat_template_kwargs.enable_thinking</code> toggle (sent by <code>_thinking_body()</code>) is a verified
+        no-op on this build — the model reasons unconditionally — but is kept, harmless, for other models routed
+        through <code>LLM=LOCAL_OPENAI</code>. pydantic_ai's <code>OpenAIChatModel</code> already surfaces
+        <code>reasoning_content</code> as a <code>ThinkingPart</code>; the <em>streaming</em> narrative path needed an
+        override (<code>_execute_chat_completion_stream</code>) because the parent parses inline <code>&lt;think&gt;</code>
+        tags, which this server never emits (it streams a separate <code>reasoning_content</code> delta, DeepSeek-style).</li>
+      <li><strong>Sampling is split narrative vs. structured — and that split lives in the ConfigRegistry, not the
+        client.</strong> Gemma 4 wants different sampling for prose vs. tool calls: narrative uses its official config
+        (<code>temperature=1.0, top_p=0.95, top_k=64</code>), but the structured path can't — pydantic_ai forces
+        <code>tool_choice="required"</code>, and llama.cpp treats that as advisory, not a decode-time grammar constraint,
+        so at <code>temperature=1.0</code> the model ignores it and answers in prose (zero tool calls, nothing for
+        pydantic to validate — confirmed by capturing the raw request/response), and it loops unboundedly without a
+        repetition penalty. The key observation is that this narrative-vs-structured distinction maps <em>1:1 to the
+        LLMTask</em> in this codebase: <code>STORY</code> is the only narrative (<code>chat_completion</code>) task,
+        while <code>ARCHITECT</code> and <code>SUMMARY</code> are always structured (<code>build_agent</code>) output.
+        So the registry's per-(model, task) resolution already expresses the whole split — the
+        <code>LLMClientLocalOpenAI</code> <code>_MATRIX</code> entry carries Gemma's narrative sampling on
+        <code>STORY</code> and the structured sampler set (temp 0.1 + min_p + <code>repetition_penalty=1.05</code>/range
+        512 + sampler_priority, tested 3/3 reliable) on <code>ARCHITECT</code>/<code>SUMMARY</code>, with the larger
+        structured <code>max_tokens</code> for the always-on reasoning trace. The entry is keyed by <em>class name</em>
+        (<code>LLMClientLocalOpenAI</code> overrides <code>model_identifier</code>) so it's hit regardless of the dynamic
+        <code>LOCAL_MODEL</code> string. The client holds no sampling values of its own; <code>_to_pydantic_ai_model()</code>
+        only <em>forwards</em> the local-only sampler knobs the registry resolves (min_p, repetition_penalty, top_k, …)
+        into <code>extra_body</code>, since pydantic_ai's ModelSettings has no slot for them. There is no hard
+        reasoning-token budget on this server (<code>reasoning_budget</code>/<code>thinking_budget</code> are ignored;
+        <code>reasoning_effort</code> is only a soft ±20% nudge; only <code>max_tokens</code> hard-caps total generation).</li>
+    </ul>
+    Selected via <code>LLM=LOCAL_OPENAI</code> in <code>build_gamemaster()</code>.
+    </p>
   </div>
 
   <div class="lenses">

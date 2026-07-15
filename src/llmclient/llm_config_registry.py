@@ -23,6 +23,42 @@ class LLMTask(Enum):
     """The 'Summarizer' personality, used for condensing interactions and extracting key information."""
 
 
+# Gemma 4 (served locally via LLMClientLocalOpenAI) uses one standardized
+# sampling config per *mechanism*, and in this codebase mechanism maps 1:1 to
+# task: STORY is the only narrative (chat_completion) task, while ARCHITECT and
+# SUMMARY are always structured (build_agent) output. So the narrative sampling
+# lives on STORY and the structured sampler set on ARCHITECT + SUMMARY (see the
+# _MATRIX entry below and LLMClientLocalOpenAI).
+#   - Narrative: Gemma 4's official recommendation (temp 1.0, top_p 0.95,
+#     top_k 64); the other local samplers are neutralized.
+#   - Structured: low temperature + a scoped repetition penalty, because
+#     llama.cpp doesn't hard-enforce tool_choice — at temp 1.0 the model answers
+#     in prose instead of calling the tool, and loops without a repetition
+#     penalty. Verified live (tests/test_llm_clients_live.py).
+_GEMMA4_NARRATIVE_SAMPLING = dict(
+    temperature=1.0,
+    top_p=0.95,
+    top_k=64,
+    min_p=0,
+    repetition_penalty=1.0,
+    presence_penalty=0,
+    frequency_penalty=0,
+    smoothing_factor=0,
+    mirostat_mode=0,
+)
+_GEMMA4_STRUCTURED_SAMPLING = dict(
+    temperature=0.1,
+    top_p=1.0,
+    top_k=0,
+    min_p=0.05,
+    repetition_penalty=1.05,
+    repetition_penalty_range=512,
+    smoothing_factor=0.0,
+    presence_penalty=0,
+    sampler_priority=["min_p", "temperature", "repetition_penalty"],
+)
+
+
 # --- Registry Implementation ---
 
 
@@ -76,6 +112,29 @@ class ConfigRegistry:
             ),
             LLMTask.ARCHITECT: TaskResolution(llm=LLMConfig(max_tokens=16000)),
             LLMTask.STORY: TaskResolution(llm=LLMConfig(max_tokens=8192)),
+        },
+        # Gemma 4 (and any future native-reasoning local model behind
+        # LLMClientLocalOpenAI). Keyed by class name — LLMClientLocalOpenAI
+        # overrides model_identifier so this is hit regardless of the dynamic
+        # LOCAL_MODEL string. STORY carries Gemma's narrative sampling;
+        # ARCHITECT/SUMMARY carry the structured sampler set (identical between
+        # them — no per-task difference within the structured mechanism). The
+        # SUMMARY logic block mirrors LLMClientLocal's; the larger structured
+        # max_tokens leaves room for this model's always-on reasoning trace
+        # plus the tool call.
+        "LLMClientLocalOpenAI": {
+            LLMTask.SUMMARY: TaskResolution(
+                llm=LLMConfig(max_tokens=8192, **_GEMMA4_STRUCTURED_SAMPLING),
+                logic=LLMLogicConfig(
+                    last_k=5, min_summary_tokens=2048, digest_budget_tokens=1536
+                ),
+            ),
+            LLMTask.ARCHITECT: TaskResolution(
+                llm=LLMConfig(max_tokens=12000, **_GEMMA4_STRUCTURED_SAMPLING)
+            ),
+            LLMTask.STORY: TaskResolution(
+                llm=LLMConfig(max_tokens=2048, **_GEMMA4_NARRATIVE_SAMPLING)
+            ),
         },
         # Add other clients here (e.g., LLMClientGemini)
     }

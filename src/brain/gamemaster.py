@@ -22,6 +22,7 @@ from src.llmclient.llm_client import (
     LLMClientBase,
     LLMClientClaude,
     LLMClientLocal,
+    LLMClientLocalOpenAI,
     LLMClientDeepSeek,
     LLMClientMiniMax,
     LLMClientOpenRouter,
@@ -212,6 +213,26 @@ def build_gamemaster(
             user_id=user_id,
             llm_client_chat=client_story,
             llm_client_reasoning=client_reasoning,
+            game_type=game_type,
+            mission_options=mission_options,
+        )
+    elif llm_type == "LOCAL_OPENAI":
+        # A local model with native reasoning + tool-calling (e.g. Gemma 4 26B).
+        # No reasoning_warmstart: the <think>-prefill/continue_ trick is only
+        # for the reasoning-tuned GGUFs the LOCAL branch targets — this model
+        # reasons natively, and its structured output goes through pydantic_ai.
+        # See LLMClientLocalOpenAI.
+        local_model = os.getenv("LOCAL_MODEL", None)
+        return Gamemaster(
+            user_id=user_id,
+            llm_client_chat=LLMClientLocalOpenAI(
+                base_url="http://127.0.0.1:5000",
+                model_name=local_model,
+            ),
+            llm_client_reasoning=LLMClientLocalOpenAI(
+                base_url="http://127.0.0.1:5000",
+                model_name=local_model,
+            ),
             game_type=game_type,
             mission_options=mission_options,
         )

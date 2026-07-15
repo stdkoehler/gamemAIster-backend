@@ -24,6 +24,8 @@ import pytest
 from src.brain.npc_models import (
     CthulhuNpcEquipment,
     CthulhuNpcStats,
+    DesolateFrontierNpcEquipment,
+    DesolateFrontierNpcStats,
     DragonlanceNpcEquipment,
     DragonlanceNpcStats,
     ExpanseNpcEquipment,
@@ -193,6 +195,24 @@ _CASES = [
             armor_name="Chain Mail",
             shield=True,
             gear=["Bedroll"],
+        ),
+    ),
+    (
+        GameType.DESOLATE_FRONTIER,
+        DesolateFrontierNpcStats(
+            origin="Outlaw",
+            origin_ability="Wanted Man: gains an extra die when evading pursuit.",
+            profession="Gunslinger",
+            attributes={"Strength": 4, "Agility": 4, "Wits": 3, "Empathy": 2},
+            skills={"Melee": 2, "Marksmanship": 4},
+            talents=["Quick Draw"],
+            equipment_categories=["Melee", "Ranged", "Armor"],
+        ),
+        DesolateFrontierNpcEquipment(
+            weapons=[{"name": "Single-Action Revolver (.45 Colt)", "grip": "1H", "damage": 2, "range": "Near"}],
+            armor_name="Leather Duster",
+            armor_rating=1,
+            gear=["Gun Belt with Holster"],
         ),
     ),
 ]

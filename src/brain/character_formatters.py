@@ -383,6 +383,45 @@ class DragonlanceFormatter(SystemFormatter):
         return entry
 
 
+class DesolateFrontierFormatter(SystemFormatter):
+    def _attributes(self, c: dict) -> dict:
+        a = c.get("attributes", {})
+        d = c.get("attributeDamage", {})
+        return {
+            k: f"{d.get(k, a.get(k, 0))}/{a.get(k, 0)}"
+            for k in ("Strength", "Agility", "Wits", "Empathy")
+        }
+
+    def format_party(self, c: dict) -> dict:
+        return {
+            "name": c.get("name", "?"),
+            "origin": c.get("origin", ""),
+            "originAbility": c.get("originAbility", ""),
+            "profession": c.get("profession", ""),
+            "attributes": self._attributes(c),
+        }
+
+    def format_npc(self, c: dict) -> dict:
+        entry = {
+            "name": c.get("name", "?"),
+            "origin": c.get("origin", ""),
+            "originAbility": c.get("originAbility", ""),
+            "profession": c.get("profession", ""),
+            "description": _describe(c),
+            "attributes": self._attributes(c),
+            "skills": _nonzero(c.get("skills", {})),
+        }
+        if c.get("talents"):
+            entry["talents"] = c["talents"]
+        if c.get("weapons"):
+            entry["weapons"] = c["weapons"]
+        if c.get("armor"):
+            entry["armor"] = c["armor"]
+        if c.get("gear"):
+            entry["gear"] = c["gear"]
+        return entry
+
+
 _FORMATTERS: dict[str, SystemFormatter] = {
     "shadowrun": ShadowrunFormatter(),
     "vampire_the_masquerade": VampireFormatter(),
@@ -391,6 +430,7 @@ _FORMATTERS: dict[str, SystemFormatter] = {
     "expanse": ExpanseFormatter(),
     "slavic": SlavicFormatter(),
     "dragonlance": DragonlanceFormatter(),
+    "desolate_frontier": DesolateFrontierFormatter(),
 }
 
 

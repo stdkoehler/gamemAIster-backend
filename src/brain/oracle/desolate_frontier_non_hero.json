@@ -1,0 +1,300 @@
+{
+    "affectedInterests": [
+        {
+            "name": "The bank note on the homestead",
+            "probability": 1.0
+        },
+        {
+            "name": "The well and water rights",
+            "probability": 1.0
+        },
+        {
+            "name": "Store credit at the general store",
+            "probability": 1.0
+        },
+        {
+            "name": "The rented plot and its lease",
+            "probability": 1.0
+        },
+        {
+            "name": "Family remittances back east",
+            "probability": 1.0
+            },
+        {
+            "name": "Seed and feed costs for the season",
+            "probability": 0.9
+        },
+        {
+            "name": "The wagon and its upkeep",
+            "probability": 0.9
+        },
+        {
+            "name": "Grazing rights on shared land",
+            "probability": 0.9
+        },
+        {
+            "name": "The livery and boarding fees",
+            "probability": 0.9
+        },
+        {
+            "name": "Church and community collection dues",
+            "probability": 0.9
+        },
+        {
+            "name": "Tool and equipment repairs",
+            "probability": 0.8
+        },
+        {
+            "name": "Doctor's fees and medicine",
+            "probability": 0.8
+        },
+        {
+            "name": "The mail and telegraph line",
+            "probability": 0.8
+        },
+        {
+            "name": "Freight and delivery schedules",
+            "probability": 0.8
+        },
+        {
+            "name": "Schooling costs for the children",
+            "probability": 0.8
+        },
+        {
+            "name": "Pension owed from army service",
+            "probability": 0.7
+        },
+        {
+            "name": "Trade goods and their fair price",
+            "probability": 0.7
+        },
+        {
+            "name": "The claim's boundary markers",
+            "probability": 0.7
+        },
+        {
+            "name": "Livestock health and feed supply",
+            "probability": 0.7
+        },
+        {
+            "name": "A small inheritance tied up in probate",
+            "probability": 0.6
+        },
+        {
+            "name": "Funeral costs for a family member",
+            "probability": 0.5
+        },
+        {
+            "name": "A modest gambling debt",
+            "probability": 0.5
+        },
+        {
+            "name": "The town's shared irrigation ditch",
+            "probability": 0.7
+        },
+        {
+            "name": "Boarding house rent",
+            "probability": 0.7
+        }
+    ],
+    "complicatingSituations": [
+        {
+            "name": "The well has run low and won't recover before the crop needs it",
+            "probability": 1.0
+        },
+        {
+            "name": "The bank is calling in the note early",
+            "probability": 1.0
+        },
+        {
+            "name": "A wagon wheel or plow has broken at the worst possible time",
+            "probability": 1.0
+        },
+        {
+            "name": "The store owner is cutting off further credit",
+            "probability": 0.9
+        },
+        {
+            "name": "A neighbor's fence has been moved onto the claim",
+            "probability": 0.9
+        },
+        {
+            "name": "The freight wagon carrying needed supplies is overdue",
+            "probability": 0.9
+        },
+        {
+            "name": "Sickness has laid up a family member during the busiest season",
+            "probability": 0.9
+        },
+        {
+            "name": "The landlord is raising the lease price without warning",
+            "probability": 0.8
+        },
+        {
+            "name": "A hailstorm has damaged part of the crop",
+            "probability": 0.8
+        },
+        {
+            "name": "The mail rider missed the route, delaying an important letter",
+            "probability": 0.8
+        },
+        {
+            "name": "A dispute over grazing land has turned unfriendly with a neighbor",
+            "probability": 0.8
+        },
+        {
+            "name": "The town council has raised a fee or tax without much notice",
+            "probability": 0.7
+        },
+        {
+            "name": "A trusted trading partner has been slow to pay what's owed",
+            "probability": 0.7
+        },
+        {
+            "name": "The schoolteacher has left town, leaving the children without lessons",
+            "probability": 0.7
+        },
+        {
+            "name": "A prized animal has gone missing or turned up injured",
+            "probability": 0.7
+        },
+        {
+            "name": "The doctor is asking more than can easily be paid",
+            "probability": 0.6
+        },
+        {
+            "name": "A rumor is spreading that could hurt the family's standing in town",
+            "probability": 0.6
+        },
+        {
+            "name": "The irrigation ditch has silted up and needs communal repair",
+            "probability": 0.6
+        },
+        {
+            "name": "A distant relative has written asking for money that isn't easily spared",
+            "probability": 0.6
+        },
+        {
+            "name": "The claim's paperwork has an error that needs correcting in town",
+            "probability": 0.6
+        },
+        {
+            "name": "A late frost threatens the season's planting",
+            "probability": 0.7
+        },
+        {
+            "name": "A boarder or hired hand has stopped paying what's owed",
+            "probability": 0.6
+        },
+        {
+            "name": "Coyotes or wolves have been getting at the livestock",
+            "probability": 0.6
+        },
+        {
+            "name": "The town's only blacksmith is overbooked for weeks",
+            "probability": 0.6
+        },
+        {
+            "name": "A minor legal dispute over a boundary or a sale has come up",
+            "probability": 0.5
+        }
+    ],
+    "dailyConcerns": [
+        {
+            "name": "Making the next payment on the note",
+            "probability": 1.0
+        },
+        {
+            "name": "Stretching the water supply until the next rain",
+            "probability": 1.0
+        },
+        {
+            "name": "Keeping the family fed through a lean stretch",
+            "probability": 1.0
+        },
+        {
+            "name": "Getting the crop or herd through the season",
+            "probability": 1.0
+        },
+        {
+            "name": "Avoiding a serious injury with no doctor nearby",
+            "probability": 0.9
+        },
+        {
+            "name": "Staying on good terms with the neighbors",
+            "probability": 0.9
+        },
+        {
+            "name": "Keeping the wagon and tools in working order",
+            "probability": 0.9
+        },
+        {
+            "name": "Paying off the store credit before it comes due",
+            "probability": 0.9
+        },
+        {
+            "name": "Finding enough hired help during the busy season",
+            "probability": 0.8
+        },
+        {
+            "name": "Keeping the children fed, clothed, and in school",
+            "probability": 0.8
+        },
+        {
+            "name": "Sending a little money home to family",
+            "probability": 0.8
+        },
+        {
+            "name": "Avoiding trouble with the bank or the landlord",
+            "probability": 0.8
+        },
+        {
+            "name": "Managing an aging parent's care",
+            "probability": 0.8
+        },
+        {
+            "name": "Protecting the livestock from predators and thieves",
+            "probability": 0.8
+        },
+        {
+            "name": "Keeping up appearances at church and in town",
+            "probability": 0.7
+        },
+        {
+            "name": "Saving anything at all for a hard winter",
+            "probability": 0.8
+        },
+        {
+            "name": "Avoiding a dispute turning into real trouble",
+            "probability": 0.7
+        },
+        {
+            "name": "Finding a fair price for goods at market",
+            "probability": 0.7
+        },
+        {
+            "name": "Dealing with loneliness and isolation on the claim",
+            "probability": 0.6
+        },
+        {
+            "name": "Keeping a family secret from becoming town gossip",
+            "probability": 0.6
+        },
+        {
+            "name": "Managing grief after a recent loss",
+            "probability": 0.6
+        },
+        {
+            "name": "Avoiding drink or debt from getting the better of a family member",
+            "probability": 0.5
+        },
+        {
+            "name": "Keeping peace between family members under strain",
+            "probability": 0.7
+        },
+        {
+            "name": "Deciding whether to stay or move on if the season fails",
+            "probability": 0.6
+        }
+    ]
+}

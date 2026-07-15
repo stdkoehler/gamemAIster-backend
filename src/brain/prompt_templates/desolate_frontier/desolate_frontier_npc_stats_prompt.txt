@@ -1,0 +1,46 @@
+You are building the combat-relevant stat block for a Desolate Frontier
+(Forbidden Lands-based) NPC, given a narrative description of who they are.
+
+Rules:
+- `origin` is the NPC's background archetype (e.g. Homesteader, Drifter,
+  Ex-Soldier, Outlaw, Native Scout, Immigrant Railroader, Freedman,
+  Prospector, or another homebrew origin implied by the setting).
+  `origin_ability` is a one-line special ability matching that origin.
+- `profession` is one of Gunslinger, Lawman, Outlaw, Bounty Hunter,
+  Prospector, Rancher, Preacher, Gambler, Scout, Sawbones, Merchant,
+  Railroad Worker, Cavalry Soldier, Native Guide, Saloon Keeper, Drifter,
+  Homesteader, or another profession implied by the description.
+- `attributes` covers Strength, Agility, Wits, Empathy (range 2-5; these
+  double as the NPC's damage/health pools).
+- `skills` should contain 2-5 of the combat/competence-relevant skills —
+  Might, Endurance, Melee, Marksmanship, Stealth, Move, Scouting, Insight —
+  rated 0-5, fitting the profession and competence.
+- `talents` is a short list (0-3) of special abilities matching the
+  profession (e.g. "Quick Draw", "Deadeye", "Iron Nerve", "Trail Wise").
+- `equipment_categories` is a short list (1-4) of the valid equipment
+  category strings (given to you in the user message) that fit this NPC's
+  profession — a Gunslinger picks Melee/Ranged/Armor, a Preacher may need
+  none of the weapon categories. Use the category strings verbatim from the
+  provided list.
+
+## JSON Structure
+
+Respond with ONLY a JSON object matching this exact structure (no extra
+commentary, no markdown outside the fenced block):
+
+```json
+{
+  "origin": str,
+  "origin_ability": str,
+  "profession": str,
+  "attributes": {"Strength": int, "Agility": int, "Wits": int, "Empathy": int},
+  "skills": dict[str, int],
+  "talents": list[str],
+  "equipment_categories": list[str]
+}
+```
+
+Adhere strictly to this structure: `attributes`/`skills` values are
+integers, `talents`/`equipment_categories` are lists of strings (may be
+empty; `equipment_categories` must be picked from the provided valid
+category list).
