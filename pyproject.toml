@@ -21,6 +21,7 @@ dependencies = [
     "python-multipart>=0.0.20,<0.1.0",
     "firebase-admin>=6.9.0,<7.0.0",
     "pydantic-ai-slim[anthropic,openai] (>=2.1.0,<3.0.0)",
+    "cryptography>=44.0.0",
 ]
 
 [project.optional-dependencies]
@@ -103,3 +104,5 @@ addopts = "--capture=no"
 
 [tool.pytest_env]
 CREDENTIALS = ""
+SETTINGS_ENCRYPTION_KEY = "yJfqmeKZoBmFV5n0L7ya6rAodQPi_o3Q6B37AlGDlEY="
+USE_FIREBASE = "false"

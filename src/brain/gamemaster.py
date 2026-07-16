@@ -28,6 +28,14 @@ from src.llmclient.llm_client import (
     LLMClientOpenRouter,
 )
 
+
+class LlmNotConfiguredError(ValueError):
+    """Raised when an action needs an LLM but the user hasn't finished
+    setting one up (no stored settings, or a provider missing its API key).
+    Caught by a FastAPI exception handler (see src/main.py) and turned into
+    a friendly, actionable response instead of a raw 500."""
+
+from src.llmclient.known_local_models import LocalClientMode
 from src.llmclient.llm_parameters import LLMConfig
 from src.llmclient.llm_config_registry import LLMTask
 
@@ -192,20 +200,52 @@ def build_gamemaster(
 ) -> Gamemaster:
     """
     Factory helper to construct a `Gamemaster` with the configured LLM clients.
+
+    Requires a per-user setting saved via the /settings/llm endpoint (see
+    `src/crud/crud.py::get_llm_settings`) — there is no deployment-wide
+    env-var fallback for provider selection.
     """
-    llm_type = os.getenv("LLM")
+    user_settings = crud_instance.get_llm_settings(user_id)
+    if user_settings is None:
+        raise LlmNotConfiguredError(
+            "No LLM model selected yet. Open Manage > LLM Settings to "
+            "choose a provider and model before starting."
+        )
+    llm_type = user_settings.provider
+    user_api_key = user_settings.api_key
+    user_model_name = user_settings.model_name
+
     if llm_type == "LOCAL":
+        local_base_url = f"http://{user_settings.local_host}:{user_settings.local_port}"
+        local_model = user_model_name
+
+        # A per-user setting can request the native-tool-calling client (e.g.
+        # Gemma 4 26B — see known_local_models.py).
+        if user_settings.local_mode == LocalClientMode.NATIVE_TOOL_CALLING:
+            return Gamemaster(
+                user_id=user_id,
+                llm_client_chat=LLMClientLocalOpenAI(
+                    base_url=local_base_url,
+                    model_name=local_model,
+                ),
+                llm_client_reasoning=LLMClientLocalOpenAI(
+                    base_url=local_base_url,
+                    model_name=local_model,
+                ),
+                game_type=game_type,
+                mission_options=mission_options,
+            )
+
         reasoning_warmstart = REASONING_WARMSTART.get(game_type, None)
-        local_model = os.getenv("LOCAL_MODEL", None)
         client_story = LLMClientLocal(
-            base_url="http://127.0.0.1:5000",
+            base_url=local_base_url,
             model_name=local_model,
             reasoning_warmstart=(
                 "<think>" + reasoning_warmstart if reasoning_warmstart else None
             ),
         )
         client_reasoning = LLMClientLocal(
-            base_url="http://127.0.0.1:5000",
+            base_url=local_base_url,
             model_name=local_model,
             reasoning_warmstart="<think>",
         )
@@ -216,30 +256,13 @@ def build_gamemaster(
             game_type=game_type,
             mission_options=mission_options,
         )
-    elif llm_type == "LOCAL_OPENAI":
-        # A local model with native reasoning + tool-calling (e.g. Gemma 4 26B).
-        # No reasoning_warmstart: the <think>-prefill/continue_ trick is only
-        # for the reasoning-tuned GGUFs the LOCAL branch targets — this model
-        # reasons natively, and its structured output goes through pydantic_ai.
-        # See LLMClientLocalOpenAI.
-        local_model = os.getenv("LOCAL_MODEL", None)
-        return Gamemaster(
-            user_id=user_id,
-            llm_client_chat=LLMClientLocalOpenAI(
-                base_url="http://127.0.0.1:5000",
-                model_name=local_model,
-            ),
-            llm_client_reasoning=LLMClientLocalOpenAI(
-                base_url="http://127.0.0.1:5000",
-                model_name=local_model,
-            ),
-            game_type=game_type,
-            mission_options=mission_options,
-        )
     elif llm_type == "DEEPSEEK":
-        api_key = os.getenv("API_KEY_DEEPSEEK")
+        api_key = user_api_key
         if api_key is None:
-            raise ValueError("DeepSeek API key not set")
+            raise LlmNotConfiguredError(
+                "No DeepSeek API key saved. Open Manage > LLM Settings to "
+                "add one before starting."
+            )
         return Gamemaster(
             user_id=user_id,
             llm_client_chat=LLMClientDeepSeek(
@@ -282,9 +305,12 @@ def build_gamemaster(
             mission_options=mission_options,
         )
     elif llm_type == "MINIMAX":
-        api_key = os.getenv("API_KEY_MINIMAX")
+        api_key = user_api_key
         if api_key is None:
-            raise ValueError("MiniMax API key not set")
+            raise LlmNotConfiguredError(
+                "No MiniMax API key saved. Open Manage > LLM Settings to "
+                "add one before starting."
+            )
         return Gamemaster(
             user_id=user_id,
             llm_client_chat=LLMClientMiniMax(api_key=api_key, model="MiniMax-M2.5"),
@@ -295,10 +321,13 @@ def build_gamemaster(
             mission_options=mission_options,
         )
     elif llm_type == "OPENROUTER":
-        api_key = os.getenv("API_KEY_OPENROUTER")
-        open_router_model = os.getenv("OPENROUTER_MODEL", "stepfun/step-3.5-flash:free")
+        api_key = user_api_key
+        open_router_model = user_model_name or "stepfun/step-3.5-flash:free"
         if api_key is None:
-            raise ValueError("OpenRouter API key not set")
+            raise LlmNotConfiguredError(
+                "No OpenRouter API key saved. Open Manage > LLM Settings to "
+                "add one before starting."
+            )
         return Gamemaster(
             user_id=user_id,
             llm_client_chat=LLMClientOpenRouter(
