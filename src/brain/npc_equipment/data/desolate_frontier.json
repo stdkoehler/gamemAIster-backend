@@ -4,7 +4,7 @@
     "source": "Adapted from Forbidden Lands Core Rules and period American frontier material culture",
     "era": "Post-Civil War American Frontier, circa 1870s-1880s",
     "region": "American West (Great Plains, high desert, mountain territories)",
-    "total_items": 102,
+    "total_items": 113,
     "entry_fields": [
       "name",
       "category",
@@ -17,15 +17,15 @@
       "notes"
     ],
     "field_coverage": {
-      "name": "102/102 (100%)",
-      "category": "102/102 (100%)",
-      "type": "102/102 (100%)",
-      "damage": "102/102 (100%)",
-      "cost": "102/102 (100%)",
-      "weight": "102/102 (100%)",
-      "availability": "102/102 (100%)",
-      "source": "102/102 (100%)",
-      "notes": "102/102 (100%)"
+      "name": "113/113 (100%)",
+      "category": "113/113 (100%)",
+      "type": "113/113 (100%)",
+      "damage": "113/113 (100%)",
+      "cost": "113/113 (100%)",
+      "weight": "113/113 (100%)",
+      "availability": "113/113 (100%)",
+      "source": "113/113 (100%)",
+      "notes": "113/113 (100%)"
     }
   },
   "items": [
@@ -34,7 +34,7 @@
       "category": "Melee",
       "type": "Edged",
       "damage": "1",
-      "cost": "$2",
+      "cost": "$3",
       "weight": "0.5",
       "availability": "Common",
       "source": "Adapted",
@@ -78,11 +78,33 @@
       "category": "Melee",
       "type": "Edged",
       "damage": "2",
-      "cost": "$3",
+      "cost": "$2",
       "weight": "1.0",
       "availability": "Uncommon",
       "source": "Adapted",
       "notes": "Long clearing blade, common among border-country ranch hands."
+    },
+    {
+      "name": "Tomahawk",
+      "category": "Melee",
+      "type": "Edged",
+      "damage": "1",
+      "cost": "$2",
+      "weight": "0.6",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Light hand axe, can be thrown at Short range."
+    },
+    {
+      "name": "Knuckleduster",
+      "category": "Melee",
+      "type": "Blunt",
+      "damage": "1",
+      "cost": "$1",
+      "weight": "0.2",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Concealable brass knuckles."
     },
     {
       "name": "Cavalry Saber",
@@ -140,22 +162,22 @@
       "notes": "Prospector's mining tool, unwieldy but heavy."
     },
     {
-      "name": "Shovel",
+      "name": "Sharpened Shovel",
       "category": "Melee",
-      "type": "Blunt",
-      "damage": "1",
-      "cost": "$1.5",
+      "type": "Edged",
+      "damage": "2",
+      "cost": "$1",
       "weight": "2.0",
       "availability": "Common",
       "source": "Adapted",
-      "notes": "Digging tool, common improvised weapon."
+      "notes": "Digging tool with a filed edge, common improvised weapon. See also Shovel (Digging) under Tools for the unmodified version."
     },
     {
       "name": "Pitchfork",
       "category": "Melee",
       "type": "Piercing",
-      "damage": "1",
-      "cost": "$1.5",
+      "damage": "2",
+      "cost": "$1",
       "weight": "2.5",
       "availability": "Common",
       "source": "Adapted",
@@ -210,18 +232,18 @@
       "category": "Ranged",
       "type": "Firearm",
       "damage": "2",
-      "cost": "$17",
+      "cost": "$20",
       "weight": "1.1",
       "availability": "Common",
       "source": "Adapted",
-      "notes": "The standard sidearm of the era. Six-shot cylinder, reliable and widespread."
+      "notes": "The standard sidearm of the era, also known as the Army Revolver. Six-shot cylinder, reliable and widespread, Long range."
     },
     {
       "name": "Pocket Revolver (.32)",
       "category": "Ranged",
       "type": "Firearm",
       "damage": "1",
-      "cost": "$9",
+      "cost": "$10",
       "weight": "0.5",
       "availability": "Common",
       "source": "Adapted",
@@ -239,11 +261,33 @@
       "notes": "Older percussion revolver, slow to reload but still deadly."
     },
     {
+      "name": "Navy Revolver (.36 cal)",
+      "category": "Ranged",
+      "type": "Firearm",
+      "damage": "2",
+      "cost": "$15",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Cap-and-ball six-shooter, Short range only."
+    },
+    {
+      "name": "LeMat Revolver",
+      "category": "Ranged",
+      "type": "Firearm",
+      "damage": "2",
+      "cost": "$35",
+      "weight": "1.4",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Nine-shot cylinder plus a single shotgun barrel usable as a Slow Action. Short/Long range."
+    },
+    {
       "name": "Derringer",
       "category": "Ranged",
       "type": "Firearm",
       "damage": "1",
-      "cost": "$6",
+      "cost": "$5",
       "weight": "0.3",
       "availability": "Uncommon",
       "source": "Adapted",
@@ -253,8 +297,8 @@
       "name": "Lever-Action Rifle (Winchester-pattern)",
       "category": "Ranged",
       "type": "Firearm",
-      "damage": "3",
-      "cost": "$25",
+      "damage": "2",
+      "cost": "$30",
       "weight": "2.0",
       "availability": "Common",
       "source": "Adapted",
@@ -265,7 +309,7 @@
       "category": "Ranged",
       "type": "Firearm",
       "damage": "3",
-      "cost": "$14",
+      "cost": "$40",
       "weight": "2.2",
       "availability": "Common",
       "source": "Adapted",
@@ -275,29 +319,40 @@
       "name": "Buffalo Rifle",
       "category": "Ranged",
       "type": "Firearm",
-      "damage": "4",
-      "cost": "$35",
+      "damage": "3",
+      "cost": "$50",
       "weight": "3.0",
       "availability": "Uncommon",
       "source": "Adapted",
-      "notes": "Heavy long-range hunting rifle, devastating but slow to reload."
+      "notes": "Heavy long-range hunting rifle (a Sharps-pattern .52 cal), devastating but slow to reload. Capped at G3 like all other firearms."
     },
     {
       "name": "Double-Barrel Shotgun",
       "category": "Ranged",
       "type": "Firearm",
-      "damage": "4",
-      "cost": "$16",
+      "damage": "2",
+      "cost": "$20",
       "weight": "2.0",
       "availability": "Common",
       "source": "Adapted",
       "notes": "Brutal at close range, favored by stagecoach guards and saloon keepers."
     },
     {
+      "name": "Single-Barrel Shotgun",
+      "category": "Ranged",
+      "type": "Firearm",
+      "damage": "2",
+      "cost": "$10",
+      "weight": "1.6",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Break-action, one shell, Short range. Scatters for +1 damage at Arm's Length."
+    },
+    {
       "name": "Sawed-Off Shotgun",
       "category": "Ranged",
       "type": "Firearm",
-      "damage": "4",
+      "damage": "2",
       "cost": "$14",
       "weight": "1.5",
       "availability": "Uncommon",
@@ -308,8 +363,8 @@
       "name": "Carbine",
       "category": "Ranged",
       "type": "Firearm",
-      "damage": "3",
-      "cost": "$20",
+      "damage": "2",
+      "cost": "$25",
       "weight": "1.6",
       "availability": "Common",
       "source": "Adapted",
@@ -415,26 +470,37 @@
       "notes": "Required for cap-and-ball firearms."
     },
     {
+      "name": "Thick Clothing",
+      "category": "Armor",
+      "type": "Cloth/Leather",
+      "damage": "1",
+      "cost": "$2",
+      "weight": "0.5",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Layered work clothes. Minimal but genuine protection."
+    },
+    {
       "name": "Leather Vest",
       "category": "Armor",
       "type": "Light Leather",
-      "damage": "0",
-      "cost": "$3",
+      "damage": "1",
+      "cost": "$5",
       "weight": "1.5",
       "availability": "Common",
       "source": "Adapted",
       "notes": "Thickened leather vest. Minimal but genuine protection against blades and glancing blows."
     },
     {
-      "name": "Leather Duster",
+      "name": "Thick Leather Duster",
       "category": "Armor",
       "type": "Heavy Leather",
-      "damage": "1",
+      "damage": "2",
       "cost": "$8",
       "weight": "3.0",
       "availability": "Common",
       "source": "Adapted",
-      "notes": "Long oiled leather coat. Turns weather and blunts a knife's edge, no defense against a bullet."
+      "notes": "Long oiled leather coat, thickened for protection. Turns weather and blunts a knife's edge, no defense against a bullet."
     },
     {
       "name": "Sheepskin Coat",
@@ -490,6 +556,17 @@
       "availability": "Common",
       "source": "Adapted",
       "notes": "Cartridge belt worn across the chest; negligible protection but iconic."
+    },
+    {
+      "name": "Metal Breastplate",
+      "category": "Armor",
+      "type": "Metal",
+      "damage": "3",
+      "cost": "$50",
+      "weight": "8.0",
+      "availability": "Rare",
+      "source": "Adapted",
+      "notes": "Almost unheard of outside bizarre circumstances. -1 to AGILITY rolls while worn."
     },
     {
       "name": "Wide-Brim Hat",
@@ -589,6 +666,50 @@
       "availability": "Common",
       "source": "Adapted",
       "notes": "Saddle-mounted rifle sheath."
+    },
+    {
+      "name": "Bedroll",
+      "category": "Tools",
+      "type": "Camping",
+      "damage": "0",
+      "cost": "$2",
+      "weight": "2.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "Blanket roll for sleeping outdoors."
+    },
+    {
+      "name": "Dynamite (1 stick)",
+      "category": "Tools",
+      "type": "Explosive",
+      "damage": "3",
+      "cost": "$2",
+      "weight": "0.5",
+      "availability": "Uncommon",
+      "source": "Adapted",
+      "notes": "Blast weapon, requires a fuse. Capped at G3 like all other Gear bonuses."
+    },
+    {
+      "name": "Medical Kit",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$5",
+      "weight": "1.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "+1 Gear bonus to HEALING rolls, 3 uses before resupply. A lighter field kit; see Medical Bag for a full surgeon's set."
+    },
+    {
+      "name": "Mining Supplies",
+      "category": "Tools",
+      "type": "Tool",
+      "damage": "0",
+      "cost": "$10",
+      "weight": "4.0",
+      "availability": "Common",
+      "source": "Adapted",
+      "notes": "+1 Gear bonus to SURVIVAL rolls when Prospecting; a pan, pick, and sieve bundled together. See also Prospector's Pan and Assay Kit."
     },
     {
       "name": "Lantern",
@@ -1162,7 +1283,7 @@
         { "name": "Single-Action Revolver (.45 Colt)", "quantity": 1 },
         { "name": "Bowie Knife", "quantity": 1 },
         { "name": "Gun Belt with Holster", "quantity": 1 },
-        { "name": "Leather Duster", "quantity": 1 },
+        { "name": "Thick Leather Duster", "quantity": 1 },
         { "name": "Wide-Brim Hat", "quantity": 1 },
         { "name": "Pistol Cartridges (box of 25, .45)", "quantity": 1 }
       ]

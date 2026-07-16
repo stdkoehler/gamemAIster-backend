@@ -81,19 +81,22 @@
         "skills": {
           "type": "object",
           "properties": {
-            "Might": {
+            "Melee": {
               "type": "number"
             },
             "Endurance": {
               "type": "number"
             },
-            "Melee": {
+            "Labor": {
               "type": "number"
             },
-            "Crafting": {
+            "Intimidation": {
               "type": "number"
             },
-            "Stealth": {
+            "Shooting": {
+              "type": "number"
+            },
+            "Riding": {
               "type": "number"
             },
             "Sleight of Hand": {
@@ -102,51 +105,48 @@
             "Move": {
               "type": "number"
             },
-            "Marksmanship": {
-              "type": "number"
-            },
-            "Scouting": {
-              "type": "number"
-            },
-            "Lore": {
+            "Tracking": {
               "type": "number"
             },
             "Survival": {
               "type": "number"
             },
-            "Insight": {
+            "Gambling": {
               "type": "number"
             },
-            "Manipulation": {
+            "Repair": {
               "type": "number"
             },
-            "Performance": {
+            "Persuasion": {
               "type": "number"
             },
-            "Healing": {
+            "Leadership": {
               "type": "number"
             },
             "Animal Handling": {
               "type": "number"
+            },
+            "Healing": {
+              "type": "number"
             }
           },
           "required": [
-            "Might",
-            "Endurance",
             "Melee",
-            "Crafting",
-            "Stealth",
+            "Endurance",
+            "Labor",
+            "Intimidation",
+            "Shooting",
+            "Riding",
             "Sleight of Hand",
             "Move",
-            "Marksmanship",
-            "Scouting",
-            "Lore",
+            "Tracking",
             "Survival",
-            "Insight",
-            "Manipulation",
-            "Performance",
-            "Healing",
-            "Animal Handling"
+            "Gambling",
+            "Repair",
+            "Persuasion",
+            "Leadership",
+            "Animal Handling",
+            "Healing"
           ],
           "additionalProperties": false
         },
@@ -156,8 +156,20 @@
             "type": "string"
           }
         },
-        "grit": {
+        "pride": {
+          "type": "string"
+        },
+        "darkSecret": {
+          "type": "string"
+        },
+        "willpower": {
           "$ref": "#/definitions/StatTrack"
+        },
+        "reputation": {
+          "$ref": "#/definitions/DesolateFrontierReputation"
+        },
+        "bounty": {
+          "$ref": "#/definitions/DesolateFrontierBounty"
         },
         "weapons": {
           "type": "array",
@@ -169,6 +181,15 @@
           "$ref": "#/definitions/DesolateFrontierArmor"
         },
         "gear": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cash": {
+          "type": "number"
+        },
+        "relationships": {
           "type": "array",
           "items": {
             "type": "string"
@@ -209,6 +230,34 @@
       "required": [
         "current",
         "max"
+      ],
+      "additionalProperties": false
+    },
+    "DesolateFrontierReputation": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "DesolateFrontierBounty": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "Minor",
+            "Moderate",
+            "Major",
+            "Legendary"
+          ]
+        }
+      },
+      "required": [
+        "amount",
+        "level"
       ],
       "additionalProperties": false
     },

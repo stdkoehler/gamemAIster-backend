@@ -572,29 +572,31 @@ def _merge_dragonlance(
 
 _DESOLATE_FRONTIER_BLANK_ATTRIBUTES = {"Strength": 3, "Agility": 3, "Wits": 3, "Empathy": 3}
 
+# The Damned Frontier's custom 16-skill list, 4 per attribute (ruleset §1) —
+# distinct from Slavic's canonical Forbidden Lands skill list.
 _DESOLATE_FRONTIER_BLANK_SKILLS = {
     k: 0
     for k in (
         # Strength
-        "Might",
-        "Endurance",
         "Melee",
-        "Crafting",
+        "Endurance",
+        "Labor",
+        "Intimidation",
         # Agility
-        "Stealth",
+        "Shooting",
+        "Riding",
         "Sleight of Hand",
         "Move",
-        "Marksmanship",
         # Wits
-        "Scouting",
-        "Lore",
+        "Tracking",
         "Survival",
-        "Insight",
+        "Gambling",
+        "Repair",
         # Empathy
-        "Manipulation",
-        "Performance",
-        "Healing",
+        "Persuasion",
+        "Leadership",
         "Animal Handling",
+        "Healing",
     )
 }
 
