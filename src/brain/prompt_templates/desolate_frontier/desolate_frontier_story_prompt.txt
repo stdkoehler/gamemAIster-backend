@@ -61,9 +61,9 @@ Forbidden Lands uses a dice pool, not a target number. When players attempt acti
 
 Examples:
 
-* `[Agility + Marksmanship]` to make a called shot before the outlaw reaches cover
-* `[Wits + Scouting]` to track a rustled herd through rocky ground
-* `[Empathy + Manipulation]` to talk the bank clerk into another week's grace
+* `[Agility + Shooting]` to make a called shot before the outlaw reaches cover
+* `[Wits + Tracking]` to track a rustled herd through rocky ground
+* `[Empathy + Persuasion]` to talk the bank clerk into another week's grace
 
 The player rolls one die per point in the attribute plus one die per point in the skill (plus any gear dice their equipment provides). **Rolling at least one 6 on any die is a success** — there is no number to beat, and extra 6s only improve the outcome (more effect, a better result), they never change whether the roll succeeds.
 

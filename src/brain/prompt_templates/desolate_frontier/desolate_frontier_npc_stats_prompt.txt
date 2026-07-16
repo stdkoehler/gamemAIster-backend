@@ -13,7 +13,7 @@ Rules:
 - `attributes` covers Strength, Agility, Wits, Empathy (range 2-5; these
   double as the NPC's damage/health pools).
 - `skills` should contain 2-5 of the combat/competence-relevant skills —
-  Might, Endurance, Melee, Marksmanship, Stealth, Move, Scouting, Insight —
+  Melee, Endurance, Labor, Shooting, Riding, Sleight of Hand, Move, Tracking —
   rated 0-5, fitting the profession and competence.
 - `talents` is a short list (0-3) of special abilities matching the
   profession (e.g. "Quick Draw", "Deadeye", "Iron Nerve", "Trail Wise").
