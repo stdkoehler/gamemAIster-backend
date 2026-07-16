@@ -115,6 +115,27 @@ class CharacterSheet(Base):
     matched_key_npc: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
 
+class UserLlmSettings(Base):
+    """Per-user, per-provider override of the LLM model/API key used by
+    `build_gamemaster()` (see `src/brain/gamemaster.py`). Each provider a user
+    configures gets its own row, so swapping providers preserves each one's
+    key and settings. Exactly one row per user has `is_active=True` — that's
+    the provider `build_gamemaster` uses. No rows for a user means "use the
+    deployment's env-var-configured default"."""
+
+    __tablename__ = "UserLlmSettings"
+    user_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(50), primary_key=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    model_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Only meaningful when provider == LOCAL — see known_local_models.py.
+    local_host: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    local_port: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    local_interface: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    local_mode: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+
 class ConversationSummaryMemory(Base):
     """
     Let the LLM create a Summary of the Conversation Memory:

@@ -41,6 +41,10 @@ from anthropic.types import (
 )
 
 from src.llmclient.llm_config_registry import ConfigRegistry, LLMTask
+from src.llmclient.known_local_models import (
+    ReasoningAdjustment,
+    reasoning_adjustment_for,
+)
 from src.llmclient.llm_parameters import (
     LLMConfig,
     LLMLogicConfig,
@@ -751,10 +755,15 @@ class LLMClientLocal(LLMClientBase):
     def _adjust_reasoning(
         self, messages: list[Message], payload: dict[str, Any]
     ) -> tuple[list[Message], dict[str, Any]]:
-        """different models need different reasoning adjustments"""
-        if self.model_name == "mistral-24b-hermes":
+        """different models need different reasoning adjustments.
+
+        Which adjustment (if any) a model needs is resolved from the
+        known-local-models registry rather than matched here, so the model
+        identifiers live in exactly one place (see known_local_models.py)."""
+        adjustment = reasoning_adjustment_for(self.model_name)
+        if adjustment == ReasoningAdjustment.MISTRAL_24B_HERMES:
             messages, payload = self._adjust_reasoning_mistral24b(messages, payload)
-        elif self.model_name == "gemma-3-r1-27b":
+        elif adjustment == ReasoningAdjustment.GEMMA3_R1:
             messages, payload = self._adjust_reasoning_gemma3_r1(messages, payload)
 
         # Only previously extracted hidden state is stored as thinking in db for multi-turn preservation,

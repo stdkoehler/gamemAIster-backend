@@ -1,6 +1,7 @@
 """CRUD operations for the mission database."""
 
 import json
+from dataclasses import dataclass
 from typing import Any
 
 from src.utils.logger import configure_logger
@@ -20,7 +21,10 @@ from src.crud.sqlmodel import (
     SummaryMemory,
     EntityMemory,
     CharacterSheet,
+    UserLlmSettings,
 )
+from src.crud import secrets as secrets_crypto
+from src.llmclient.known_local_models import resolve_local_mode
 
 from src.brain.data_types import (
     Interaction,
@@ -30,6 +34,35 @@ from src.brain.data_types import (
 )
 
 import src.routers.schema.mission as api_schema_mission
+import src.routers.schema.settings as api_schema_settings
+
+
+@dataclass
+class ResolvedLlmSettings:
+    """The active provider's settings, with the API key decrypted — consumed
+    by build_gamemaster."""
+
+    provider: str
+    model_name: str | None
+    api_key: str | None
+    local_host: str | None = None
+    local_port: int | None = None
+    local_interface: str | None = None
+    local_mode: str | None = None
+
+
+@dataclass
+class LlmProviderOverview:
+    """One provider's stored settings for display — never carries the
+    decrypted key, only whether one exists."""
+
+    provider: str
+    model_name: str | None
+    has_api_key: bool
+    local_host: str | None
+    local_port: int | None
+    local_interface: str | None
+    local_mode: str | None
 
 
 class CRUD:
@@ -603,6 +636,143 @@ class CRUD:
                 raise ValueError(
                     f"CharacterSheet {character_sheet_id} not found for mission {mission_id}"
                 )
+            session.commit()
+
+
+    # ------------------------------------------------------------------
+    # Per-user LLM settings
+    # ------------------------------------------------------------------
+
+    def get_llm_settings(self, user_id: str) -> ResolvedLlmSettings | None:
+        """The user's *active* provider settings, key decrypted — what
+        build_gamemaster uses. None if the user has stored nothing."""
+        with self._sessionmaker() as session:
+            stmt = select(UserLlmSettings).where(
+                UserLlmSettings.user_id == user_id,
+                UserLlmSettings.is_active.is_(True),
+            )
+            row = session.execute(stmt).scalar_one_or_none()
+            if row is None:
+                return None
+            api_key: str | None = None
+            if row.api_key_encrypted:
+                try:
+                    api_key = secrets_crypto.decrypt(row.api_key_encrypted)
+                except Exception:
+                    # A rotated/invalid SETTINGS_ENCRYPTION_KEY or corrupt
+                    # ciphertext must not brick the user: providers that need no
+                    # key (LOCAL) keep working, and key-based providers surface a
+                    # clean "API key not set" instead of a 500. Re-saving the key
+                    # recovers.
+                    _log.warning(
+                        "Failed to decrypt stored API key | user_id=%s", user_id
+                    )
+            return ResolvedLlmSettings(
+                provider=row.provider,
+                model_name=row.model_name,
+                api_key=api_key,
+                local_host=row.local_host,
+                local_port=row.local_port,
+                local_interface=row.local_interface,
+                local_mode=row.local_mode,
+            )
+
+    def list_llm_settings(
+        self, user_id: str
+    ) -> tuple[str | None, list[LlmProviderOverview]]:
+        """All of the user's saved per-provider settings (no decrypted keys)
+        plus which provider is active — for populating the settings UI."""
+        with self._sessionmaker() as session:
+            stmt = select(UserLlmSettings).where(UserLlmSettings.user_id == user_id)
+            rows = session.execute(stmt).scalars().all()
+            active = next((r.provider for r in rows if r.is_active), None)
+            overviews = [
+                LlmProviderOverview(
+                    provider=r.provider,
+                    model_name=r.model_name,
+                    has_api_key=r.api_key_encrypted is not None,
+                    local_host=r.local_host,
+                    local_port=r.local_port,
+                    local_interface=r.local_interface,
+                    local_mode=r.local_mode,
+                )
+                for r in rows
+            ]
+            return active, overviews
+
+    def upsert_llm_settings(
+        self, user_id: str, settings: api_schema_settings.SaveLlmSettings
+    ) -> None:
+        """Save one provider's settings and make it the active provider. Each
+        provider keeps its own row/key, so a blank api_key keeps *that*
+        provider's existing key and never touches another provider's."""
+        provider = settings.provider.value
+        with self._sessionmaker() as session:
+            # Exactly one active provider per user.
+            session.execute(
+                update(UserLlmSettings)
+                .where(
+                    UserLlmSettings.user_id == user_id,
+                    UserLlmSettings.provider != provider,
+                )
+                .values(is_active=False)
+            )
+            stmt = select(UserLlmSettings).where(
+                UserLlmSettings.user_id == user_id,
+                UserLlmSettings.provider == provider,
+            )
+            row = session.execute(stmt).scalar_one_or_none()
+            api_key_encrypted = (
+                secrets_crypto.encrypt(settings.api_key) if settings.api_key else None
+            )
+            local_interface = (
+                settings.local_interface.value if settings.local_interface else None
+            )
+            # For a known preset, which local client it needs is a property of
+            # the model, not a user choice — the registry overrides whatever
+            # the client sent. For a custom model the registry can't derive
+            # it, so the client's requested_mode is honored (defaulting to
+            # NATIVE_COMPLETIONS). See resolve_local_mode's docstring.
+            local_mode = (
+                resolve_local_mode(settings.model_name, settings.local_mode).value
+                if settings.provider == api_schema_settings.LlmProvider.LOCAL
+                else None
+            )
+            if row is not None:
+                row.is_active = True
+                row.model_name = settings.model_name
+                # A blank api_key on update keeps this provider's existing key
+                # rather than clearing it.
+                if settings.api_key:
+                    row.api_key_encrypted = api_key_encrypted
+                row.local_host = settings.local_host
+                row.local_port = settings.local_port
+                row.local_interface = local_interface
+                row.local_mode = local_mode
+            else:
+                session.add(
+                    UserLlmSettings(
+                        user_id=user_id,
+                        provider=provider,
+                        is_active=True,
+                        model_name=settings.model_name,
+                        api_key_encrypted=api_key_encrypted,
+                        local_host=settings.local_host,
+                        local_port=settings.local_port,
+                        local_interface=local_interface,
+                        local_mode=local_mode,
+                    )
+                )
+            session.commit()
+
+    def delete_llm_settings(self, user_id: str) -> None:
+        """Remove *all* of the user's stored provider settings so
+        `build_gamemaster` falls back to the deployment's env-var config again.
+        No-op if none exist."""
+        with self._sessionmaker() as session:
+            session.execute(
+                delete(UserLlmSettings).where(UserLlmSettings.user_id == user_id)
+            )
             session.commit()
 
 
