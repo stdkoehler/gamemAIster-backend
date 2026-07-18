@@ -201,6 +201,9 @@
             "$ref": "#/definitions/SeventhSeaWeapon"
           }
         },
+        "armor": {
+          "$ref": "#/definitions/ArmorItem"
+        },
         "gear": {
           "type": "array",
           "items": {
@@ -293,6 +296,22 @@
         "name",
         "trait",
         "type"
+      ],
+      "additionalProperties": false
+    },
+    "ArmorItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "rating"
       ],
       "additionalProperties": false
     },

@@ -17,6 +17,20 @@ class GameType(StrEnum):
     CUSTOM = "custom"
 
 
+class EquipmentType(StrEnum):
+    """Generic equipment slots a character sheet can suggest catalog items for.
+
+    Not every system supports every slot (e.g. only Shadowrun has cyberware) —
+    see `src.brain.npc_equipment.catalog.get_equipment_types` for the per-system
+    subset actually available.
+    """
+
+    WEAPONS = "weapons"
+    ARMOR = "armor"
+    CYBERWARE = "cyberware"
+    GEAR = "gear"
+
+
 # GameTypes with a dedicated non-hero GameConfig entry in system_registry.py
 # (ordinary working people instead of protagonists/heroes) — add here when
 # wiring non-hero support for a new system.
