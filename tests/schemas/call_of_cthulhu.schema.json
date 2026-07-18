@@ -193,6 +193,12 @@
             "type": "number"
           }
         },
+        "skillImprovementChecks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "hitPoints": {
           "$ref": "#/definitions/StatTrack"
         },

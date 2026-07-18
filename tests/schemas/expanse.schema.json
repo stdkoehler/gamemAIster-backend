@@ -98,6 +98,9 @@
         "fortune": {
           "type": "number"
         },
+        "experience": {
+          "type": "number"
+        },
         "conditions": {
           "type": "array",
           "items": {

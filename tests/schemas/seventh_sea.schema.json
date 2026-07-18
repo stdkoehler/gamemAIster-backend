@@ -210,6 +210,9 @@
             "type": "string"
           }
         },
+        "experience": {
+          "type": "number"
+        },
         "stories": {
           "type": "array",
           "items": {
