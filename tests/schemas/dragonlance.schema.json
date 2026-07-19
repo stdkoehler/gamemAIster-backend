@@ -144,6 +144,12 @@
             "type": "string"
           }
         },
+        "gold": {
+          "type": "number"
+        },
+        "experience": {
+          "type": "number"
+        },
         "spellcasting": {
           "type": "object",
           "properties": {

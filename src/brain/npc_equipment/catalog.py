@@ -4,19 +4,24 @@ Each catalog is a flat ``{"metadata": ..., "items": [...], "npc_equipment_sets":
 JSON file normalized from the source TTRPG rulebooks. Field coverage varies per
 system (e.g. Shadowrun items only have name/category/cost/source, Vampire items
 additionally have subcategory/type/damage/availability) but ``name`` and
-``category`` are always present. Two systems need special handling, both
+``category`` are always present. A few systems need special handling, all
 addressed in `load_catalog`/`filter_equipment` below:
 - Call of Cthulhu prices items per era (`cost_by_era`); this app pins to the
   1920s and drops items that don't exist yet in that era.
 - The Expanse has no price at all, only an Availability TN; equipment-budget
   filtering uses that field in place of a price (see `_COST_FIELD`).
+- Seventh Sea's Armor items store their defensive rating under
+  `damage_reduction` instead of `damage` (every other system's convention for
+  an armor rating); normalized onto `damage` so callers (and the NPC/PC
+  equipment-suggestion UI, which reads `damage` uniformly across systems)
+  don't need a per-system special case.
 """
 
 import json
 from functools import lru_cache
 from pathlib import Path
 
-from src.routers.schema.mission import GameType
+from src.routers.schema.mission import EquipmentType, GameType
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -45,6 +50,8 @@ def load_catalog(game_type: GameType) -> list[dict]:
     items = data.get("items", [])
     if game_type == GameType.CALL_OF_CTHULHU:
         items = _normalize_coc_items(items)
+    elif game_type == GameType.SEVENTH_SEA:
+        items = _normalize_seventh_sea_items(items)
     return items
 
 
@@ -59,6 +66,17 @@ def _normalize_coc_items(items: list[dict]) -> list[dict]:
         if cost_1920s is None:
             continue  # didn't exist yet in the 1920s; not offerable to NPCs
         normalized.append({**item, "cost": cost_1920s})
+    return normalized
+
+
+def _normalize_seventh_sea_items(items: list[dict]) -> list[dict]:
+    normalized = []
+    for item in items:
+        damage_reduction = item.get("damage_reduction")
+        if damage_reduction is None:
+            normalized.append(item)
+            continue
+        normalized.append({**item, "damage": damage_reduction})
     return normalized
 
 
@@ -149,6 +167,108 @@ _NPC_EQUIPMENT_ITEM_FIELDS = (
     "name", "category", "subcategory", "cost", "damage", "type", "availability",
     "availability_tn", "notes",
 )
+
+# Maps each system's real catalog categories (see the per-system lists above)
+# onto the generic equipment slots a PC/NPC sheet actually has fields for
+# (`ShadowrunCharacter.weapons`/`.armor`/`.cyberware`/`.gear`, etc. in the
+# frontend's CharacterProps.tsx). A system that has no field for a slot (e.g.
+# no system but Shadowrun has cyberware) simply omits that key — see
+# `get_equipment_types`.
+_EQUIPMENT_TYPE_CATEGORIES: dict[GameType, dict[EquipmentType, list[str]]] = {
+    GameType.SHADOWRUN: {
+        EquipmentType.WEAPONS: [
+            "Pistols", "Rifles", "Shotguns", "Submachine Guns", "Machine Guns",
+            "Assault Cannons", "Blades", "Clubs", "Bows", "Crossbows", "Unarmed",
+            "Tasers", "Holdouts", "Exotic Melee Weapons", "Exotic Ranged Weapons",
+            "Improvised Weapons", "Underbarrel Weapons", "Bio-Weapon", "Cyberweapon",
+        ],
+        EquipmentType.ARMOR: ["Armor"],
+        EquipmentType.CYBERWARE: [
+            "Headware", "Bodyware", "Eyeware", "Earware", "Cyberlimb", "Health",
+        ],
+        EquipmentType.GEAR: ["Gear", "Survival Gear", "Tools of the Trade", "Commlinks"],
+    },
+    GameType.VAMPIRE_THE_MASQUERADE: {
+        EquipmentType.WEAPONS: ["Melee", "Ranged", "Heavy"],
+        EquipmentType.ARMOR: ["Armor"],
+        EquipmentType.GEAR: ["Gear", "Vampire Gear"],
+    },
+    GameType.CALL_OF_CTHULHU: {
+        EquipmentType.WEAPONS: ["weapons"],
+        EquipmentType.GEAR: [
+            "investigative_and_field_gear", "medical_supplies_and_forensics",
+        ],
+    },
+    GameType.SEVENTH_SEA: {
+        EquipmentType.WEAPONS: ["Melee", "Ranged", "Firearms", "Offhand", "Explosives"],
+        EquipmentType.ARMOR: ["Armor", "Shield"],
+        EquipmentType.GEAR: ["Gear"],
+    },
+    GameType.EXPANSE: {
+        EquipmentType.WEAPONS: ["weapons", "ship_weapons_and_vehicle_equipment"],
+        EquipmentType.ARMOR: ["armor_and_apparel", "environment_suits_and_survival"],
+        EquipmentType.GEAR: [
+            "electronics_tools_and_scifi_tech", "medical_supplies_and_pharmaceuticals",
+        ],
+    },
+    GameType.SLAVIC: {
+        EquipmentType.WEAPONS: ["Melee", "Ranged"],
+        EquipmentType.ARMOR: ["Armor", "Helmet", "Shield"],
+        EquipmentType.GEAR: ["Container", "Tools", "Trade"],
+    },
+    GameType.DRAGONLANCE: {
+        EquipmentType.WEAPONS: ["Melee", "Ranged"],
+        EquipmentType.ARMOR: ["Armor", "Shield"],
+        EquipmentType.GEAR: ["Adventuring Gear", "Tools", "Trade Goods"],
+    },
+    GameType.DESOLATE_FRONTIER: {
+        EquipmentType.WEAPONS: ["Melee", "Ranged"],
+        EquipmentType.ARMOR: ["Armor"],
+        EquipmentType.GEAR: ["Container", "Tools", "Trade"],
+    },
+}
+
+
+def get_equipment_types(game_type: GameType) -> list[EquipmentType]:
+    """Returns the equipment slots this system's catalog can suggest items for."""
+    return list(_EQUIPMENT_TYPE_CATEGORIES.get(game_type, {}).keys())
+
+
+def equipment_by_type(
+    game_type: GameType,
+    equipment_type: EquipmentType,
+    max_cost: float | None = None,
+    keywords: str | None = None,
+    limit: int = 20,
+) -> list[dict]:
+    """
+    Returns catalog items for one equipment slot (weapons/armor/cyberware/gear),
+    trimmed to the fields worth showing (see `_NPC_EQUIPMENT_ITEM_FIELDS`), for
+    use as character-sheet equipment suggestions.
+
+    Raises `ValueError` if `equipment_type` isn't offered for this system (see
+    `get_equipment_types`) — e.g. asking Vampire for cyberware.
+    """
+    categories = _EQUIPMENT_TYPE_CATEGORIES.get(game_type, {}).get(equipment_type)
+    if categories is None:
+        raise ValueError(
+            f"{game_type.value} has no {equipment_type.value} slot; "
+            f"available: {[t.value for t in get_equipment_types(game_type)]}"
+        )
+    seen_names: set[str] = set()
+    results: list[dict] = []
+    for category in categories:
+        for item in filter_equipment(
+            game_type, category=category, max_cost=max_cost, keywords=keywords, limit=limit
+        ):
+            name = str(item.get("name", ""))
+            if name in seen_names:
+                continue
+            seen_names.add(name)
+            results.append({k: item[k] for k in _NPC_EQUIPMENT_ITEM_FIELDS if k in item})
+            if len(results) >= limit:
+                return results
+    return results
 
 
 def get_npc_equipment_categories(game_type: GameType) -> list[str]:

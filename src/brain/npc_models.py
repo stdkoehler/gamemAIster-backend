@@ -315,6 +315,8 @@ class SeventhSeaNpcStats(BaseModel):
 
 class SeventhSeaNpcEquipment(BaseModel):
     weapons: list[dict] = Field(default_factory=list)  # SeventhSeaWeapon-shaped
+    armor_name: str | None = None
+    armor_rating: int | None = None
     gear: list[str] = Field(default_factory=list)
 
 
@@ -327,7 +329,7 @@ def _merge_seventh_sea(
 ) -> dict:
     full_traits = {**_SS_BLANK_TRAITS, **stats.traits}
     full_skills = {**_SS_BLANK_SKILLS, **stats.skills}
-    return {
+    result = {
         "gameType": GameType.SEVENTH_SEA.value,
         "id": npc_id,
         "name": name,
@@ -343,6 +345,9 @@ def _merge_seventh_sea(
         "wounds": {"current": 0, "max": stats.wounds_max},
         "heroPoints": 3,
     }
+    if equipment.armor_name:
+        result["armor"] = {"name": equipment.armor_name, "rating": equipment.armor_rating or 0}
+    return result
 
 
 # ───────────────────────── The Expanse ─────────────────────────

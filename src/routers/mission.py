@@ -6,6 +6,7 @@ from src.auth.auth import verify_user
 
 from src.crud.crud import crud_instance
 from src.brain.gamemaster import Gamemaster
+from src.brain.npc_equipment.catalog import equipment_by_type, get_equipment_types
 
 from src.routers.dependencies import get_gamemaster_for_mission, get_gamemaster_for_npc
 from src.utils.logger import configure_logger
@@ -18,6 +19,8 @@ from src.routers.schema.mission import (
     DeleteCharacterSheet,
     CreateNpcPayload,
     SetNpcActivePayload,
+    GameType,
+    EquipmentType,
 )
 
 log = configure_logger("mission")
@@ -196,6 +199,40 @@ def set_npc_active(
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@router.get("/equipment-types/{game_type}")
+async def equipment_types(
+    game_type: GameType,
+    user: str = Depends(verify_user),
+) -> list[EquipmentType]:
+    """List the equipment slots (weapons/armor/cyberware/gear) this system's catalog supports."""
+    return get_equipment_types(game_type)
+
+
+@router.get("/equipment/{game_type}/{equipment_type}")
+async def equipment(
+    game_type: GameType,
+    equipment_type: EquipmentType,
+    max_cost: float | None = None,
+    keywords: str | None = None,
+    limit: int = 20,
+    user: str = Depends(verify_user),
+) -> list[dict]:
+    """
+    Catalog items for one equipment slot, for use as character-sheet
+    equipment suggestions (e.g. an autocomplete when adding a weapon).
+    """
+    try:
+        return equipment_by_type(
+            game_type,
+            equipment_type,
+            max_cost=max_cost,
+            keywords=keywords,
+            limit=limit,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
 @router.post("/create-npc")
